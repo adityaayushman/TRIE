@@ -110,10 +110,10 @@ no PostgreSQL or Docker is needed.
   (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
   loses trend continuity. Fine for one backend process; a real fleet
   deployment wants that history in a shared store (Redis, or the DB) instead.
-- `docker-compose.yml` has no DB healthcheck, so the backend can race
-  PostgreSQL on a cold `up` (it runs `create_all` at startup).
-- `frontend/Dockerfile` copies only `package.json`, so the image build
-  re-resolves deps instead of using the committed `package-lock.json`.
-- The schema is created via `create_all`; there are no migrations, so column
-  changes need the volume dropped.
-- `next@14.2.5` has a known security advisory; needs an upgrade.
+- The schema is created via `create_all`; there are no migrations (Alembic or
+  otherwise), so column changes need the volume dropped rather than an
+  upgrade path.
+- `next` is on 14.2.35, not the advisory-clean 16.2.10 — `npm audit`'s own
+  fix requires that major bump (React 19, likely breaking changes), which
+  deserves dedicated test time rather than a quick patch. The 14.2.x line
+  still carries several high-severity entries as a result.
