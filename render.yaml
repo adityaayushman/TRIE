@@ -1,0 +1,33 @@
+# Render Blueprint for the backend + database. Deploy: connect this repo at
+# render.com/select-repo, and Render provisions everything below from this
+# file. The frontend is deployed separately to Vercel — see README.md.
+#
+# databaseUrl below is written by Render into TRIE_DATABASE_URL as a bare
+# postgresql:// URL; backend/app/core/config.py normalizes that to the
+# +asyncpg scheme SQLAlchemy's async engine needs, so no manual edit is
+# required.
+databases:
+  - name: trie-db
+    plan: free
+    databaseName: trie
+    user: trie
+
+services:
+  - type: web
+    name: trie-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: TRIE_DATABASE_URL
+        fromDatabase:
+          name: trie-db
+          property: connectionString
+      - key: TRIE_CORS_ORIGINS
+        # Update after the Vercel frontend is deployed, e.g.
+        # '["https://your-project.vercel.app"]' — a bare "*" would let any
+        # site call this API, which is fine for a first deploy but should
+        # be narrowed once the real frontend URL is known.
+        value: '["*"]'

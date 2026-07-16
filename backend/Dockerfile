@@ -18,4 +18,8 @@ WORKDIR /srv/backend
 # is a single backend instance today, so there is no risk of two containers
 # racing to apply the same migration concurrently. A multi-replica deployment
 # would want this as a separate one-shot job instead.
-CMD alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000
+#
+# $PORT: hosts like Render inject the port the container must bind to;
+# defaults to 8000 for local `docker run`/Compose, which sets no such var.
+ENV PORT=8000
+CMD alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
