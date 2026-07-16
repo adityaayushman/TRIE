@@ -88,3 +88,27 @@ def test_events_respects_limit(client):
 
 def test_assess_requires_a_vehicle_id(client):
     assert client.post(ASSESS, json={"speed_kmh": 95}).status_code == 422
+
+
+def test_concurrent_vehicles_get_independent_temporal_trends(client):
+    """Regression: the API holds one process-wide pipeline for every vehicle,
+    and its temporal engine used to keep a single shared risk history. Two
+    vehicles reporting interleaved would blend into one meaningless trend.
+    Unique vehicle_ids per test avoid collision with the session-shared
+    pipeline's state from other tests.
+    """
+    escalating, calming = "VEH-TEMPORAL-UP", "VEH-TEMPORAL-DOWN"
+
+    assess(client, escalating, speed_kmh=20)
+    assess(client, calming, speed_kmh=110)
+    assess(client, escalating, speed_kmh=60)
+    rising = assess(client, escalating, speed_kmh=110)
+    falling = assess(client, calming, speed_kmh=20)
+
+    assert rising["future_risk_score"] > rising["risk_score"], (
+        "the escalating vehicle's own trend must read as rising"
+    )
+    assert falling["future_risk_score"] < falling["risk_score"], (
+        "the calming vehicle's own trend must read as falling, "
+        "not diluted by the other vehicle's history"
+    )

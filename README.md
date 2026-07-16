@@ -105,12 +105,11 @@ no PostgreSQL or Docker is needed.
 
 ## Known gaps
 
-- `backend/app/api/routes/risk.py` holds one process-wide pipeline instance,
-  but `TemporalPredictionEngine` keeps a rolling risk history in memory. That
-  history is shared across every `vehicle_id`, so concurrent vehicles corrupt
-  each other's trend, and `future_risk_score` / `time_to_risk_s` are only
-  meaningful today when a single vehicle is reporting. Needs per-vehicle state.
 - No CI runs the test suite.
+- `TemporalPredictionEngine`'s per-vehicle history lives in process memory
+  (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
+  loses trend continuity. Fine for one backend process; a real fleet
+  deployment wants that history in a shared store (Redis, or the DB) instead.
 - `docker-compose.yml` has no DB healthcheck, so the backend can race
   PostgreSQL on a cold `up` (it runs `create_all` at startup).
 - `frontend/Dockerfile` copies only `package.json`, so the image build
