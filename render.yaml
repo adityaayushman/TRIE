@@ -25,6 +25,12 @@ services:
         fromDatabase:
           name: trie-db
           property: connectionString
+      - key: TRIE_SECRET_KEY
+        # Render generates this once and keeps it stable across deploys.
+        # Required: app.core.config defaults it to a fresh random value per
+        # process (so no constant is ever committed), which would silently
+        # invalidate every issued token on each restart if left unset here.
+        generateValue: true
       - key: TRIE_CORS_ORIGINS
         # Update after the Vercel frontend is deployed, e.g.
         # '["https://your-project.vercel.app"]' — a bare "*" would let any
