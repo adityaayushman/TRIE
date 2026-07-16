@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { RiskAssessment } from "@/lib/types";
+import { RiskSnapshot } from "@/lib/types";
 import { RiskGauge } from "./RiskGauge";
 
-export function RiskDashboard({ assessment }: { assessment: RiskAssessment }) {
+export function RiskDashboard({ assessment }: { assessment: RiskSnapshot }) {
   return (
     <div className="mx-auto grid max-w-5xl gap-6 p-8 md:grid-cols-2">
       <motion.div

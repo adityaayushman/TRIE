@@ -25,8 +25,11 @@ services:
   frontend:
     build:
       context: ./frontend
-    environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      # Build-time, not runtime: see frontend/Dockerfile. This is the URL the
+      # browser calls, so it must be reachable from the host, not from the
+      # compose network.
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
     ports:
       - "3000:3000"
     depends_on:

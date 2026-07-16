@@ -1,5 +1,4 @@
-import { RiskDashboard } from "@/components/RiskDashboard";
-import { mockRiskAssessment } from "@/lib/mockData";
+import { LiveRiskDashboard } from "@/components/LiveRiskDashboard";
 
 export default function Home() {
   return (
@@ -8,7 +7,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Smart Road Guardian AI X</h1>
         <p className="text-sm text-slate-500">Predict. Explain. Prevent.</p>
       </header>
-      <RiskDashboard assessment={mockRiskAssessment} />
+      <LiveRiskDashboard />
     </main>
   );
 }
