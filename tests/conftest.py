@@ -89,3 +89,26 @@ def moderate_scene(client):
     yield
     shared = fake_pipeline()
     app.dependency_overrides[get_pipeline] = lambda: shared
+
+
+@pytest.fixture
+def writer(client):
+    """The `client`, authenticated as a freshly-registered account.
+
+    POST /risk/assess requires an account (it appends to a shared database on
+    a public URL); every read route stays anonymous. Tests that write take
+    this fixture, tests that only read take `client`.
+
+    The account is registered per-test because `clean_db` drops the users
+    table between tests. The Authorization header is removed afterwards so it
+    cannot leak into a test that means to be anonymous — `client` is
+    session-scoped and shared.
+    """
+    response = client.post(
+        "/api/v1/auth/register",
+        json={"email": "writer@test.example", "password": "test-password-1234"},
+    )
+    assert response.status_code == 201, response.text
+    client.headers["Authorization"] = f"Bearer {response.json()['access_token']}"
+    yield client
+    client.headers.pop("Authorization", None)

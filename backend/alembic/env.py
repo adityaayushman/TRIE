@@ -9,7 +9,10 @@ from alembic import context
 
 from app.core.config import get_settings
 from app.db.base import Base
-from app.models import risk_event  # noqa: F401  registers the table on Base
+# Every model must be imported here, not just the first one: autogenerate
+# diffs Base.metadata against the database, so a model that is never imported
+# is invisible to it and silently omitted from the migration.
+from app.models import risk_event, user  # noqa: F401  registers tables on Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

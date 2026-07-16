@@ -9,8 +9,10 @@ from ai.blackspot.geo import DEFAULT_CELL_SIZE_M
 from ai.common.types import RiskLevel, VehicleDynamics
 from ai.no_camera import telemetry_only_pipeline
 from ai.pipeline import TransportationRiskPipeline
+from app.auth.dependencies import current_user
 from app.db.session import get_db
 from app.models.risk_event import RiskEvent
+from app.models.user import User
 from app.schemas.risk import (
     BlackSpotRead,
     DetectedObjectRead,
@@ -49,7 +51,14 @@ async def assess_risk(
     request: RiskAssessmentRequest,
     db: AsyncSession = Depends(get_db),
     pipeline: TransportationRiskPipeline = Depends(get_pipeline),
+    user: User = Depends(current_user),
 ) -> RiskAssessmentResponse:
+    """Assess one moment of telemetry.
+
+    Requires a signed-in account: this appends to a shared database, and the
+    endpoint is public on the internet. Every read route stays anonymous, so a
+    reviewer can inspect the dashboard without registering.
+    """
     vehicle = VehicleDynamics(
         speed_kmh=request.speed_kmh,
         acceleration_ms2=request.acceleration_ms2,

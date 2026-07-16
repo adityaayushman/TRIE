@@ -23,8 +23,8 @@ SNAPSHOT_FIELDS = (
 )
 
 
-def assess(client, vehicle_id="VEH-001", **telemetry):
-    response = client.post(ASSESS, json={"vehicle_id": vehicle_id, **telemetry})
+def assess(writer, vehicle_id="VEH-001", **telemetry):
+    response = writer.post(ASSESS, json={"vehicle_id": vehicle_id, **telemetry})
     assert response.status_code == 200, response.text
     return response.json()
 
@@ -35,8 +35,8 @@ def test_health(client):
     assert response.json() == {"status": "ok"}
 
 
-def test_assess_returns_a_complete_assessment(client):
-    body = assess(client, speed_kmh=95, acceleration_ms2=1.2)
+def test_assess_returns_a_complete_assessment(writer):
+    body = assess(writer, speed_kmh=95, acceleration_ms2=1.2)
 
     for field in SNAPSHOT_FIELDS:
         assert field in body, f"missing {field}"
@@ -47,20 +47,20 @@ def test_assess_returns_a_complete_assessment(client):
     assert body["explanation"]
 
 
-def test_assess_broadcasts_to_a_connected_websocket(client):
+def test_assess_broadcasts_to_a_connected_websocket(writer):
     """A dashboard connected to /alerts/ws sees assessments as they happen."""
-    with client.websocket_connect(ALERTS_WS) as websocket:
-        body = assess(client, speed_kmh=95)
+    with writer.websocket_connect(ALERTS_WS) as websocket:
+        body = assess(writer, speed_kmh=95)
         assert websocket.receive_json() == body
 
 
-def test_assess_persists_every_field_the_dashboard_renders(client):
+def test_assess_persists_every_field_the_dashboard_renders(writer):
     """Regression: secondary_causes and explanation were produced by the
     pipeline and broadcast live, but not persisted — so a dashboard reload
     hydrated them as missing."""
-    posted = assess(client, speed_kmh=95)
+    posted = assess(writer, speed_kmh=95)
 
-    [stored] = client.get(EVENTS).json()
+    [stored] = writer.get(EVENTS).json()
     for field in SNAPSHOT_FIELDS:
         assert stored[field] == posted[field], f"{field} did not survive persistence"
     assert stored["secondary_causes"]
@@ -71,26 +71,26 @@ def test_events_is_empty_before_any_assessment(client):
     assert client.get(EVENTS).json() == []
 
 
-def test_events_returns_most_recent_first(client):
-    assess(client, vehicle_id="VEH-001")
-    assess(client, vehicle_id="VEH-002")
+def test_events_returns_most_recent_first(writer):
+    assess(writer, vehicle_id="VEH-001")
+    assess(writer, vehicle_id="VEH-002")
 
-    events = client.get(EVENTS).json()
+    events = writer.get(EVENTS).json()
     assert [event["vehicle_id"] for event in events] == ["VEH-002", "VEH-001"]
 
 
-def test_events_respects_limit(client):
+def test_events_respects_limit(writer):
     for index in range(3):
-        assess(client, vehicle_id=f"VEH-{index}")
+        assess(writer, vehicle_id=f"VEH-{index}")
 
-    assert len(client.get(EVENTS, params={"limit": 2}).json()) == 2
-
-
-def test_assess_requires_a_vehicle_id(client):
-    assert client.post(ASSESS, json={"speed_kmh": 95}).status_code == 422
+    assert len(writer.get(EVENTS, params={"limit": 2}).json()) == 2
 
 
-def test_concurrent_vehicles_get_independent_temporal_trends(client):
+def test_assess_requires_a_vehicle_id(writer):
+    assert writer.post(ASSESS, json={"speed_kmh": 95}).status_code == 422
+
+
+def test_concurrent_vehicles_get_independent_temporal_trends(writer):
     """Regression: the API holds one process-wide pipeline for every vehicle,
     and its temporal engine used to keep a single shared risk history. Two
     vehicles reporting interleaved would blend into one meaningless trend.
@@ -99,11 +99,11 @@ def test_concurrent_vehicles_get_independent_temporal_trends(client):
     """
     escalating, calming = "VEH-TEMPORAL-UP", "VEH-TEMPORAL-DOWN"
 
-    assess(client, escalating, speed_kmh=20)
-    assess(client, calming, speed_kmh=110)
-    assess(client, escalating, speed_kmh=60)
-    rising = assess(client, escalating, speed_kmh=110)
-    falling = assess(client, calming, speed_kmh=20)
+    assess(writer, escalating, speed_kmh=20)
+    assess(writer, calming, speed_kmh=110)
+    assess(writer, escalating, speed_kmh=60)
+    rising = assess(writer, escalating, speed_kmh=110)
+    falling = assess(writer, calming, speed_kmh=20)
 
     assert rising["future_risk_score"] > rising["risk_score"], (
         "the escalating vehicle's own trend must read as rising"
@@ -114,11 +114,11 @@ def test_concurrent_vehicles_get_independent_temporal_trends(client):
     )
 
 
-def test_road_damage_detections_reach_the_assess_response(client, dangerous_scene):
+def test_road_damage_detections_reach_the_assess_response(writer, dangerous_scene):
     """Real-time road hazard detail (potholes/cracks/waterlogging), computed
     by ai/road_intelligence/ but previously discarded after only its scalar
     contribution to contributing_factors reached the client."""
-    posted = assess(client, "VEH-ROAD-HAZARD", speed_kmh=60)
+    posted = assess(writer, "VEH-ROAD-HAZARD", speed_kmh=60)
 
     assert posted["potholes"] == [{"label": "pothole", "confidence": 0.7, "bbox": [0.4, 0.6, 0.5, 0.7]}]
     assert posted["cracks"] == [{"label": "crack", "confidence": 0.6, "bbox": [0.2, 0.55, 0.6, 0.58]}]
@@ -126,20 +126,20 @@ def test_road_damage_detections_reach_the_assess_response(client, dangerous_scen
     assert posted["surface_quality_score"] == 0.35
 
 
-def test_road_damage_detections_are_broadcast_live(client, dangerous_scene):
+def test_road_damage_detections_are_broadcast_live(writer, dangerous_scene):
     """The whole point: a dashboard connected to /alerts/ws sees pothole
     detections the moment they happen, not only in a later GET."""
-    with client.websocket_connect("/api/v1/alerts/ws") as websocket:
-        posted = assess(client, "VEH-ROAD-HAZARD-WS", speed_kmh=60)
+    with writer.websocket_connect("/api/v1/alerts/ws") as websocket:
+        posted = assess(writer, "VEH-ROAD-HAZARD-WS", speed_kmh=60)
         broadcast = websocket.receive_json()
 
     assert broadcast["potholes"] == posted["potholes"]
     assert broadcast["cracks"] == posted["cracks"]
 
 
-def test_a_clean_road_reports_no_hazards(client):
+def test_a_clean_road_reports_no_hazards(writer):
     """The default fake (a good surface) must not fabricate damage."""
-    posted = assess(client, "VEH-CLEAN-ROAD", speed_kmh=60)
+    posted = assess(writer, "VEH-CLEAN-ROAD", speed_kmh=60)
 
     assert posted["potholes"] == []
     assert posted["cracks"] == []
