@@ -13,6 +13,7 @@ from app.db.session import get_db
 from app.models.risk_event import RiskEvent
 from app.schemas.risk import (
     BlackSpotRead,
+    DetectedObjectRead,
     RiskAssessmentRequest,
     RiskAssessmentResponse,
     RiskEventRead,
@@ -90,6 +91,16 @@ async def assess_risk(
         explanation=result.recommendation.explanation,
         latitude=request.latitude,
         longitude=request.longitude,
+        potholes=[
+            DetectedObjectRead(label=p.label, confidence=p.confidence, bbox=p.bbox)
+            for p in result.road.potholes
+        ],
+        cracks=[
+            DetectedObjectRead(label=c.label, confidence=c.confidence, bbox=c.bbox)
+            for c in result.road.cracks
+        ],
+        is_waterlogged=result.road.is_waterlogged,
+        surface_quality_score=result.road.surface_quality_score,
     )
     await manager.broadcast(response.model_dump())
     return response

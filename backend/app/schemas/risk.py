@@ -44,6 +44,14 @@ class RiskAssessmentRequest(BaseModel):
     longitude: float | None = Longitude
 
 
+class DetectedObjectRead(BaseModel):
+    """One detection from a vision engine. Mirrors ai.common.types.DetectedObject."""
+
+    label: str
+    confidence: float
+    bbox: tuple[float, float, float, float]
+
+
 class RiskAssessmentResponse(BaseModel):
     vehicle_id: str
     risk_score: float
@@ -59,6 +67,17 @@ class RiskAssessmentResponse(BaseModel):
     explanation: str
     latitude: float | None = None
     longitude: float | None = None
+
+    # Real-time road surface detail from ai/road_intelligence/ — previously
+    # computed by the pipeline and then discarded, with only the scalar
+    # `contributing_factors["road_quality"]` reaching the client. Live over
+    # /alerts/ws the moment each assessment is broadcast, so a dashboard can
+    # show potholes/cracks as they are detected rather than only an aggregate
+    # score.
+    potholes: list[DetectedObjectRead] = []
+    cracks: list[DetectedObjectRead] = []
+    is_waterlogged: bool = False
+    surface_quality_score: float = 1.0
 
 
 class BlackSpotRead(BaseModel):
