@@ -1,72 +1,86 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { alertsSocketUrl, fetchRecentEvents } from "./api";
-import { RiskAssessment, RiskEvent } from "./types";
+import { RiskAssessment, RiskEvent, Snapshot } from "./types";
 
 export type StreamStatus = "loading" | "live" | "reconnecting" | "error";
 
 const MAX_RECONNECT_DELAY_MS = 15_000;
+const HISTORY_LIMIT = 50;
 
 export interface RiskStream {
   /** Most recent assessment: seeded from history (RiskEvent, no live-only
-   * fields like potholes), then updated live (RiskAssessment, has them). */
-  snapshot: RiskAssessment | RiskEvent | null;
+   * fields), then replaced by live websocket payloads (RiskAssessment). */
+  snapshot: Snapshot | null;
+  /** Persisted history, newest-first, for the timeline. */
+  events: RiskEvent[];
   status: StreamStatus;
-  /** Set when the initial history fetch failed — the backend is unreachable. */
+  /** Set when the history fetch failed — the backend is unreachable. */
   error: string | null;
+  /** Re-fetch history. The websocket keeps `snapshot` current on its own, but
+   * a new assessment is only *persisted* history after a round trip. */
+  refresh: () => void;
 }
 
-/** Seeds from GET /risk/events, then keeps the latest assessment current from
- * the /alerts/ws broadcast. Reconnects with exponential backoff. */
 export function useRiskStream(): RiskStream {
-  const [snapshot, setSnapshot] = useState<RiskAssessment | RiskEvent | null>(null);
+  const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
+  const [events, setEvents] = useState<RiskEvent[]>([]);
   const [status, setStatus] = useState<StreamStatus>("loading");
   const [error, setError] = useState<string | null>(null);
-  const socketRef = useRef<WebSocket | null>(null);
+  const cancelledRef = useRef(false);
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const history = await fetchRecentEvents(HISTORY_LIMIT);
+      if (cancelledRef.current) return;
+      setEvents(history);
+      setError(null);
+      // Only seed the snapshot from history if the websocket has not already
+      // delivered something fresher — a live payload carries the forecast and
+      // road-surface detail that persisted history does not.
+      setSnapshot((current) => current ?? history[0] ?? null);
+    } catch (cause) {
+      if (cancelledRef.current) return;
+      setError((cause as Error).message);
+      setStatus("error");
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    cancelledRef.current = false;
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let socket: WebSocket | null = null;
     let attempt = 0;
 
-    fetchRecentEvents(1)
-      .then((events) => {
-        if (cancelled) return;
-        setError(null);
-        // No events yet is normal on a cold database; the websocket will
-        // deliver the first one as soon as POST /risk/assess is called.
-        if (events.length > 0) setSnapshot(events[0]);
-      })
-      .catch((cause: Error) => {
-        if (cancelled) return;
-        setError(cause.message);
-        setStatus("error");
-      });
+    void loadHistory();
 
     const connect = () => {
-      if (cancelled) return;
-      const socket = new WebSocket(alertsSocketUrl());
-      socketRef.current = socket;
+      if (cancelledRef.current) return;
+      socket = new WebSocket(alertsSocketUrl());
 
       socket.onopen = () => {
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         attempt = 0;
         setStatus("live");
         setError(null);
       };
 
       socket.onmessage = (event) => {
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         try {
-          setSnapshot(JSON.parse(event.data) as RiskAssessment);
+          const assessment = JSON.parse(event.data) as RiskAssessment;
+          setSnapshot(assessment);
+          // The broadcast is not a persisted row, so pull history again to
+          // keep the timeline honest rather than synthesising an entry.
+          void loadHistory();
         } catch {
           // A malformed frame shouldn't tear down a working stream.
         }
       };
 
       socket.onclose = () => {
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         setStatus("reconnecting");
         const delay = Math.min(1000 * 2 ** attempt, MAX_RECONNECT_DELAY_MS);
         attempt += 1;
@@ -74,17 +88,17 @@ export function useRiskStream(): RiskStream {
       };
 
       // onclose always follows onerror, so reconnection is handled there.
-      socket.onerror = () => socket.close();
+      socket.onerror = () => socket?.close();
     };
 
     connect();
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
-      socketRef.current?.close();
+      socket?.close();
     };
-  }, []);
+  }, [loadHistory]);
 
-  return { snapshot, status, error };
+  return { snapshot, events, status, error, refresh: loadHistory };
 }
