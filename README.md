@@ -6,10 +6,11 @@ An Explainable Multimodal Edge AI Transportation Intelligence Platform for
 real-time accident prevention and causal risk analysis. Full spec and
 system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-This repo is a **full skeleton** — every module is wired together end-to-end
-but currently returns deterministic mock/heuristic data instead of running
-trained models. See "Status" in the architecture doc for what to replace
-first.
+Every module is wired together end-to-end. Perception (YOLOv11), driver
+monitoring (MediaPipe), and road damage detection (classical CV) run real
+algorithms on real frames; TRIE fusion, temporal prediction, causal reasoning
+and explainability are honest rule-based placeholders pending a learned model.
+See "Status" in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the detail.
 
 ## Layout
 
@@ -105,7 +106,6 @@ no PostgreSQL or Docker is needed.
 
 ## Known gaps
 
-- No CI runs the test suite.
 - `TemporalPredictionEngine`'s per-vehicle history lives in process memory
   (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
   loses trend continuity. Fine for one backend process; a real fleet
