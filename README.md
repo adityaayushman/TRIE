@@ -57,10 +57,15 @@ frame, for hardware that can't keep up with capture.
 pip install -r backend/requirements.txt -r ai/requirements.txt
 cd backend
 $env:PYTHONPATH = "..;."          # PowerShell; use ..:. on macOS/Linux
+alembic upgrade head              # apply the schema — see backend/alembic/
 uvicorn app.main:app --reload
 ```
 Requires a running PostgreSQL matching `TRIE_DATABASE_URL` (see
-`backend/.env.example`) — `docker compose up db` starts one.
+`backend/.env.example`) — `docker compose up db` starts one. The schema is
+managed by Alembic, not `create_all`; the Docker image runs `alembic upgrade
+head` automatically on every container start (see `backend/Dockerfile`), but
+a local run needs it done once by hand, and again after pulling a change
+that adds a migration.
 
 ### Frontend, locally
 

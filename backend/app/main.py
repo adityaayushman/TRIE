@@ -1,24 +1,16 @@
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.config import get_settings
-from app.db.base import Base
-from app.db.session import engine
 
 settings = get_settings()
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
-
-
-app = FastAPI(title=settings.app_name, lifespan=lifespan)
+# Schema is managed by Alembic (backend/alembic/), not create_all: run
+# `alembic upgrade head` before starting the app (see README). The Docker
+# image's CMD does this automatically; local/test setups apply their own
+# schema directly (tests/conftest.py) or via the migration.
+app = FastAPI(title=settings.app_name)
 
 app.add_middleware(
     CORSMiddleware,
