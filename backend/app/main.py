@@ -15,7 +15,13 @@ app = FastAPI(title=settings.app_name)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    # No cookie/session auth exists in this API (see app/api/routes/) --
+    # every request is stateless JSON or an unauthenticated websocket -- so
+    # credentialed CORS is not needed. This also matters for deployability:
+    # allow_credentials=True combined with a wildcard allow_origins (a
+    # reasonable default before a frontend's real deployed URL is known) is
+    # invalid per the CORS spec and browsers reject it outright.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
