@@ -95,6 +95,7 @@ async def assess_risk(
         explanation=result.recommendation.explanation,
         latitude=request.latitude,
         longitude=request.longitude,
+        unobserved_factors=result.risk.unobserved_factors,
         potholes=[
             DetectedObjectRead(label=p.label, confidence=p.confidence, bbox=p.bbox)
             for p in result.road.potholes

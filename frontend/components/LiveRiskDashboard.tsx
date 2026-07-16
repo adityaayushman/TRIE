@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { API_URL } from "@/lib/api";
 import { StreamStatus, useRiskStream } from "@/lib/useRiskStream";
+import { BlackSpotPanel } from "./BlackSpotPanel";
 import { RiskDashboard } from "./RiskDashboard";
-import { RoadHazardPanel } from "./RoadHazardPanel";
+import { RiskTimeline } from "./RiskTimeline";
+import { TelemetryControls } from "./TelemetryControls";
+import { EmptyState } from "./ui";
 
 const STATUS_LABEL: Record<StreamStatus, string> = {
   loading: "Connecting",
@@ -19,11 +23,19 @@ const STATUS_COLOR: Record<StreamStatus, string> = {
   error: "bg-red-500",
 };
 
+const TABS = [
+  { id: "live", label: "Live Risk" },
+  { id: "history", label: "Risk History" },
+  { id: "blackspots", label: "Black Spots" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 function ConnectionBadge({ status }: { status: StreamStatus }) {
   return (
-    <span className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+    <span className="flex items-center gap-2 text-[0.7rem] font-medium uppercase tracking-wide text-slate-400">
       <span
-        className={`h-2 w-2 rounded-full ${STATUS_COLOR[status]} ${
+        className={`h-1.5 w-1.5 rounded-full ${STATUS_COLOR[status]} ${
           status === "live" ? "animate-pulse" : ""
         }`}
       />
@@ -32,42 +44,57 @@ function ConnectionBadge({ status }: { status: StreamStatus }) {
   );
 }
 
-function Notice({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="mx-auto max-w-5xl p-8">
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center">
-        <p className="text-lg font-semibold text-slate-100">{title}</p>
-        <p className="mt-2 text-sm leading-relaxed text-slate-400">{body}</p>
-      </div>
-    </div>
-  );
-}
-
 export function LiveRiskDashboard() {
-  const { snapshot, status, error } = useRiskStream();
+  const { snapshot, events, status, error, refresh } = useRiskStream();
+  const [tab, setTab] = useState<TabId>("live");
 
   return (
-    <>
-      <div className="flex justify-end px-8 pt-4">
-        <ConnectionBadge status={status} />
+    <div className="mx-auto max-w-6xl px-5 pb-16">
+      <div className="sticky top-0 z-10 -mx-5 mb-5 border-b border-slate-800/80 bg-slate-950/85 px-5 backdrop-blur">
+        <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+          <nav className="flex gap-1" role="tablist">
+            {TABS.map(({ id, label }) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  tab === id
+                    ? "bg-slate-800 text-slate-100"
+                    : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
+          <ConnectionBadge status={status} />
+        </div>
       </div>
 
-      {snapshot ? (
-        <>
-          <RiskDashboard assessment={snapshot} />
-          <RoadHazardPanel snapshot={snapshot} />
-        </>
-      ) : error ? (
-        <Notice
-          title="Cannot reach the backend"
-          body={`${error}. Check that the API is running at ${API_URL}.`}
-        />
-      ) : (
-        <Notice
-          title="Waiting for the first assessment"
-          body="No risk events recorded yet. POST to /risk/assess and this dashboard will update live."
-        />
+      {tab === "live" && (
+        <div className="space-y-5">
+          <TelemetryControls onAssessed={refresh} />
+          {snapshot ? (
+            <RiskDashboard assessment={snapshot} />
+          ) : error ? (
+            <EmptyState
+              title="Cannot reach the backend"
+              body={`${error}. The API at ${API_URL} may be waking from idle — a free-tier instance sleeps after inactivity and can take ~50s on the first request.`}
+            />
+          ) : (
+            <EmptyState
+              title="Waiting for the first assessment"
+              body="No risk events recorded yet. Run an assessment above and this dashboard updates live over the websocket."
+            />
+          )}
+        </div>
       )}
-    </>
+
+      {tab === "history" && <RiskTimeline events={events} />}
+
+      {tab === "blackspots" && <BlackSpotPanel />}
+    </div>
   );
 }

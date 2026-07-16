@@ -68,6 +68,13 @@ class RiskAssessmentResponse(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
 
+    # Which factors had no sensor behind them and were dropped from the score
+    # (their weight redistributed) rather than measured. Carried explicitly so
+    # a client can distinguish "measured, contributed nothing" from "could not
+    # be measured at all" — a distinction the explanation states in prose but
+    # which UI cannot parse out of a sentence.
+    unobserved_factors: list[str] = []
+
     # Real-time road surface detail from ai/road_intelligence/ — previously
     # computed by the pipeline and then discarded, with only the scalar
     # `contributing_factors["road_quality"]` reaching the client. Live over
