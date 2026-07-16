@@ -1,0 +1,15 @@
+# Base image matches the Jetson's L4T (Linux for Tegra) version + JetPack.
+# Pin this to the exact tag your device runs, e.g.:
+# nvcr.io/nvidia/l4t-ml:r36.2.0-py3
+FROM nvcr.io/nvidia/l4t-ml:r36.2.0-py3
+
+WORKDIR /srv
+
+COPY ai/requirements.txt ai/requirements.txt
+RUN pip install --no-cache-dir -r ai/requirements.txt
+
+COPY ai/ ai/
+
+ENV PYTHONPATH=/srv
+
+CMD ["python3", "-m", "ai.pipeline"]
