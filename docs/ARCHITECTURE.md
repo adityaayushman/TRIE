@@ -146,14 +146,28 @@ Three consequences for the architecture, none of which discard the vision:
 - `ai/driver_intelligence/` — MediaPipe FaceLandmarker (Tasks API) with EAR
   blink detection, PERCLOS, and solvePnP head pose. Reports `face_detected=
   False` honestly when no driver is visible (e.g. a two-wheeler rider).
+- `ai/road_intelligence/` — classical CV (`ai/road_intelligence/damage.py`):
+  adaptive thresholding + contour shape for potholes/cracks (elongation via
+  `minAreaRect`, so a diagonal crack isn't misjudged by its axis-aligned
+  bounding box), texture-and-colour heuristics for waterlogging. Not a learned
+  detector and not benchmarked against a labelled road-damage dataset — a
+  genuine, responsive signal, not an accuracy claim. Validated against a real
+  street photo, not only synthetic fixtures: ordinary dry pavement correctly
+  reads as *not* waterlogged (an earlier threshold flagged plain grey
+  sidewalk as water about as often as actual water would). The upgrade is a
+  YOLOv11 fine-tuned on RDD2022 or equivalent Indian road-damage data.
 - `ai/ingestion/` (frames reach the pipeline from video and cameras),
   `ai/blackspot/` (exposure-normalised aggregation, fed by GPS through the
-  API), the FastAPI backend, the dashboard, and the 113-test suite.
+  API), the FastAPI backend, the dashboard, and the 137-test suite.
 
 The whole pipeline has been run end to end on a real street frame: it detected
 four pedestrians, named *Vulnerable Road Users Nearby* as the primary cause,
 predicted a *Pedestrian or Two-Wheeler Collision*, and flagged driver
 distraction as unobserved — the India-specific design working on real input.
+`ai/road_intelligence/` on the same frame reported a quality score of 0.39 and
+several candidate potholes/cracks — plausible for a busy street, but classical
+CV on a cluttered real photo is noisier than on a clean synthetic one, which
+the module's own docstring says plainly.
 
 **Rule-based, not learned:** TRIE fusion is a weighted formula rather than a
 trained model; temporal prediction extrapolates linearly rather than via an
@@ -161,11 +175,10 @@ LSTM; causal reasoning ranks factors against a rule table rather than a causal
 DAG; explainability derives importance from the additive score rather than
 SHAP. All produce sensible output and are honest placeholders.
 
-**Not started:** `ai/perception/`, `ai/driver_intelligence/` and
-`ai/road_intelligence/` return hardcoded constants — no model runs on the
-frames ingestion now delivers. Because those three are frozen, the pipeline's
-output currently varies only with `speed_kmh`. `ai/traffic_intelligence/`
-computes real metrics, but from `ai/perception/`'s mock detections.
+**Not started:** no model runs on any frame yet — every vision engine above is
+a classical CV or pretrained-COCO baseline, not fine-tuned on Indian road data.
+`ai/traffic_intelligence/` computes real metrics, but from `ai/perception/`'s
+detections, which is where the accuracy ceiling actually is.
 
 Replace one engine at a time, keeping the `ai/common/types.py` contracts stable
 so the rest of the pipeline keeps working.
