@@ -2,19 +2,15 @@ FROM python:3.12-slim
 
 WORKDIR /srv
 
+# Only backend/requirements.txt — the ~2GB ai/ stack (torch, ultralytics,
+# mediapipe, opencv) is deliberately absent. This service has no camera:
+# POST /assess carries telemetry, never frames, so it runs the telemetry-only
+# pipeline (ai/no_camera.py) whose output is identical to what the real
+# engines produce on a blank frame, without loading any model. Perception runs
+# at the edge (ai/ingestion/, ai/cli.py) against `pip install -r
+# ai/requirements.txt`, which is where those dependencies belong.
 COPY backend/requirements.txt backend/requirements.txt
-COPY ai/requirements.txt ai/requirements.txt
-
-# The full ai/requirements.txt is required, not just backend/requirements.txt:
-# ai/perception/lanes.py and ai/road_intelligence/damage.py import cv2 at
-# module level, and PerceptionEngine/DriverIntelligenceEngine both run real
-# YOLO/MediaPipe inference even on the blank-frame stub POST /assess uses
-# (neither analyze() early-returns for a frame that is blank but non-empty).
-# CPU wheels for torch: this image has no GPU, and the CUDA build is
-# several times larger for no benefit.
-RUN pip install --no-cache-dir \
-      --extra-index-url https://download.pytorch.org/whl/cpu \
-      -r backend/requirements.txt -r ai/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
 COPY ai/ ai/
 COPY backend/app/ backend/app/

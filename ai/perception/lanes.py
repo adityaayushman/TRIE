@@ -15,7 +15,6 @@ flag, not this implementation.
 """
 from __future__ import annotations
 
-import cv2
 import numpy as np
 
 # Indian National Highway lanes are 3.5m (IRC:SP:84). Used to convert the
@@ -27,6 +26,8 @@ _MIN_ABS_SLOPE = 0.4  # reject near-horizontal lines (shadows, road edges, wires
 
 def _region_of_interest(edges: np.ndarray) -> np.ndarray:
     """Mask everything but the trapezoid of road directly ahead."""
+    import cv2
+
     height, width = edges.shape
     polygon = np.array(
         [[
@@ -60,6 +61,11 @@ def detect_lane_offset(frame: np.ndarray) -> tuple[float, bool]:
     """
     if frame is None or frame.size == 0:
         return 0.0, False
+
+    # Imported here, not at module scope: a telemetry-only deployment (see
+    # ai/no_camera.py) imports ai.pipeline but never calls this, and must not
+    # need OpenCV installed at all to start.
+    import cv2
 
     grayscale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(grayscale, (5, 5), 0)

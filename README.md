@@ -26,6 +26,23 @@ edge/        NVIDIA Jetson / TensorRT / ONNX deployment for the ai/ layer.
 docs/        Architecture reference.
 ```
 
+## Two deployments, two dependency sets
+
+The split matters, and it is why `backend/requirements.txt` and
+`ai/requirements.txt` are separate files rather than one:
+
+| | Backend (`backend/`) | Edge (`ai/cli.py`, `ai/ingestion/`) |
+|---|---|---|
+| Input | telemetry JSON — **never frames** | camera / video frames |
+| Needs | `backend/requirements.txt` only | `ai/requirements.txt` (torch, YOLO, MediaPipe, OpenCV) |
+| Pipeline | `ai/no_camera.py` telemetry-only | the real vision engines |
+| Image size | ~150MB | ~2GB |
+
+`POST /risk/assess` carries no frames, so the backend runs the telemetry-only
+pipeline: every camera-dependent factor is reported *unobserved* and dropped
+from the score by `ai/trie/`, rather than measured against an image that does
+not exist. Perception runs at the edge and sends results on.
+
 ## Quickstart
 
 ### Everything, via Docker Compose
