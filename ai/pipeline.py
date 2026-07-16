@@ -23,26 +23,52 @@ from ai.trie.risk_fusion import RiskFusionEngine
 
 
 class TransportationRiskPipeline:
-    def __init__(self) -> None:
-        self.perception = PerceptionEngine()
-        self.driver_intelligence = DriverIntelligenceEngine()
-        self.road_intelligence = RoadIntelligenceEngine()
-        self.traffic_intelligence = TrafficIntelligenceEngine()
-        self.risk_fusion = RiskFusionEngine()
-        self.temporal_prediction = TemporalPredictionEngine()
-        self.causal_intelligence = CausalIntelligenceEngine()
-        self.explainable_ai = ExplainableAIEngine()
+    """Runs every engine over one moment and returns the fused assessment.
+
+    Engines are injectable. Two reasons, both practical: a Jetson wants to hand
+    PerceptionEngine and DriverIntelligenceEngine the *same* loaded YOLO rather
+    than two copies of it, and tests need to drive the wiring without
+    downloading weights or running inference.
+    """
+
+    def __init__(
+        self,
+        perception: PerceptionEngine | None = None,
+        driver_intelligence: DriverIntelligenceEngine | None = None,
+        road_intelligence: RoadIntelligenceEngine | None = None,
+        traffic_intelligence: TrafficIntelligenceEngine | None = None,
+        risk_fusion: RiskFusionEngine | None = None,
+        temporal_prediction: TemporalPredictionEngine | None = None,
+        causal_intelligence: CausalIntelligenceEngine | None = None,
+        explainable_ai: ExplainableAIEngine | None = None,
+    ) -> None:
+        self.perception = perception or PerceptionEngine()
+        self.driver_intelligence = driver_intelligence or DriverIntelligenceEngine()
+        self.road_intelligence = road_intelligence or RoadIntelligenceEngine()
+        self.traffic_intelligence = traffic_intelligence or TrafficIntelligenceEngine()
+        self.risk_fusion = risk_fusion or RiskFusionEngine()
+        self.temporal_prediction = temporal_prediction or TemporalPredictionEngine()
+        self.causal_intelligence = causal_intelligence or CausalIntelligenceEngine()
+        self.explainable_ai = explainable_ai or ExplainableAIEngine()
 
     def run(
         self,
         road_frame: np.ndarray,
         cabin_frame: np.ndarray,
         vehicle: VehicleDynamics | None = None,
+        timestamp_s: float | None = None,
     ) -> PipelineResult:
+        """Assess one moment.
+
+        `timestamp_s` should come from the frame's own clock. Driver monitoring
+        measures PERCLOS over a rolling time window, so replaying recorded
+        video faster than real time would corrupt it if the engine fell back to
+        the wall clock.
+        """
         vehicle = vehicle or VehicleDynamics()
 
         perception = self.perception.analyze(road_frame)
-        driver = self.driver_intelligence.analyze(cabin_frame)
+        driver = self.driver_intelligence.analyze(cabin_frame, timestamp_s=timestamp_s)
         road = self.road_intelligence.analyze(road_frame)
         traffic = self.traffic_intelligence.analyze(perception)
 
@@ -51,7 +77,7 @@ class TransportationRiskPipeline:
             road=road,
             traffic=traffic,
             vehicle=vehicle,
-            lane_offset_m=perception.lane_offset_m,
+            perception=perception,
         )
         forecast = self.temporal_prediction.predict(risk)
         causal = self.causal_intelligence.explain(risk)
