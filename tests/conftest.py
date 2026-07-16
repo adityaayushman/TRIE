@@ -25,6 +25,7 @@ from app.db.base import Base  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import risk_event  # noqa: E402,F401  registers the table on Base
 
+from ai.no_camera import telemetry_only_pipeline  # noqa: E402
 from tests.fakes import dangerous_pipeline, fake_pipeline  # noqa: E402
 
 
@@ -72,6 +73,19 @@ def dangerous_scene(client):
     the default fake pipeline afterwards."""
     hazardous = dangerous_pipeline()
     app.dependency_overrides[get_pipeline] = lambda: hazardous
+    yield
+    shared = fake_pipeline()
+    app.dependency_overrides[get_pipeline] = lambda: shared
+
+
+@pytest.fixture
+def moderate_scene(client):
+    """Swap in the real telemetry-only pipeline — the one the deployed backend
+    actually runs. With no camera, speed is the only live factor and risk tops
+    out around 35% (MODERATE), which is exactly why `near_miss_level` matters:
+    at the HIGH default this pipeline can never produce a near-miss."""
+    telemetry = telemetry_only_pipeline()
+    app.dependency_overrides[get_pipeline] = lambda: telemetry
     yield
     shared = fake_pipeline()
     app.dependency_overrides[get_pipeline] = lambda: shared

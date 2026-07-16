@@ -128,6 +128,15 @@ async def discover_blackspots(
     cell_size_m: float = Query(DEFAULT_CELL_SIZE_M, gt=0, description="Spatial bin size"),
     min_exposure: int = Query(30, ge=1, description="Vehicle passes required to nominate"),
     min_near_misses: int = Query(5, ge=1, description="Near-misses required to nominate"),
+    near_miss_level: RiskLevel = Query(
+        RiskLevel.HIGH,
+        description=(
+            "Minimum risk level counted as a near-miss. A study knob, and load-bearing: "
+            "a telemetry-only deployment (no camera) tops out at ~35% because speed is "
+            "its only live factor, so at the HIGH default nothing it records can ever "
+            "qualify. Lower it to exercise the engine against telemetry-only data."
+        ),
+    ),
     sample_limit: int = Query(200_000, ge=1, description="Cap on observations loaded"),
     db: AsyncSession = Depends(get_db),
 ) -> list[BlackSpotRead]:
@@ -174,5 +183,6 @@ async def discover_blackspots(
         cell_size_m=cell_size_m,
         min_exposure=min_exposure,
         min_near_misses=min_near_misses,
+        near_miss_level=near_miss_level,
     )
     return [BlackSpotRead.model_validate(spot) for spot in engine.discover(observations)]

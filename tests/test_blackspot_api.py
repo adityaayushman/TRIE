@@ -131,3 +131,31 @@ class TestBlackSpotEndpoint:
 
         assert spot["intervention"] in {"engineering", "enforcement", "education"}
         assert sum(spot["cause_breakdown"].values()) > 0
+
+
+class TestNearMissLevel:
+    """`near_miss_level` is load-bearing for a telemetry-only deployment: with
+    no camera, speed is the only live factor and risk tops out around 35%, so
+    at the HIGH default nothing the API records can ever qualify as a
+    near-miss and no stretch is ever nominated."""
+
+    def test_the_default_high_threshold_excludes_moderate_risk(self, client, moderate_scene):
+        drive_past(client, 40, speed_kmh=200)
+
+        spots = client.get(BLACKSPOTS, params={"min_exposure": 30, "min_near_misses": 5}).json()
+
+        assert spots == [], "a moderate-risk pass must not count as a near-miss at the HIGH default"
+
+    def test_lowering_the_level_lets_moderate_risk_nominate(self, client, moderate_scene):
+        drive_past(client, 40, speed_kmh=200)
+
+        spots = client.get(
+            BLACKSPOTS,
+            params={"min_exposure": 30, "min_near_misses": 5, "near_miss_level": "moderate"},
+        ).json()
+
+        assert len(spots) == 1
+        assert spots[0]["near_miss_count"] == 40
+
+    def test_an_invalid_level_is_rejected(self, client):
+        assert client.get(BLACKSPOTS, params={"near_miss_level": "extreme"}).status_code == 422
