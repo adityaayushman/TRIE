@@ -76,7 +76,12 @@ class DangerousPerceptionEngine:
 
 class DangerousRoadEngine:
     def analyze(self, frame: np.ndarray) -> RoadState:
-        return RoadState(surface_quality_score=0.35)  # broken surface
+        return RoadState(
+            potholes=[DetectedObject("pothole", 0.7, (0.4, 0.6, 0.5, 0.7))],
+            cracks=[DetectedObject("crack", 0.6, (0.2, 0.55, 0.6, 0.58))],
+            is_waterlogged=False,
+            surface_quality_score=0.35,  # broken surface
+        )
 
 
 def fake_pipeline() -> TransportationRiskPipeline:

@@ -3,6 +3,7 @@
 import { API_URL } from "@/lib/api";
 import { StreamStatus, useRiskStream } from "@/lib/useRiskStream";
 import { RiskDashboard } from "./RiskDashboard";
+import { RoadHazardPanel } from "./RoadHazardPanel";
 
 const STATUS_LABEL: Record<StreamStatus, string> = {
   loading: "Connecting",
@@ -52,7 +53,10 @@ export function LiveRiskDashboard() {
       </div>
 
       {snapshot ? (
-        <RiskDashboard assessment={snapshot} />
+        <>
+          <RiskDashboard assessment={snapshot} />
+          <RoadHazardPanel snapshot={snapshot} />
+        </>
       ) : error ? (
         <Notice
           title="Cannot reach the backend"

@@ -112,3 +112,35 @@ def test_concurrent_vehicles_get_independent_temporal_trends(client):
         "the calming vehicle's own trend must read as falling, "
         "not diluted by the other vehicle's history"
     )
+
+
+def test_road_damage_detections_reach_the_assess_response(client, dangerous_scene):
+    """Real-time road hazard detail (potholes/cracks/waterlogging), computed
+    by ai/road_intelligence/ but previously discarded after only its scalar
+    contribution to contributing_factors reached the client."""
+    posted = assess(client, "VEH-ROAD-HAZARD", speed_kmh=60)
+
+    assert posted["potholes"] == [{"label": "pothole", "confidence": 0.7, "bbox": [0.4, 0.6, 0.5, 0.7]}]
+    assert posted["cracks"] == [{"label": "crack", "confidence": 0.6, "bbox": [0.2, 0.55, 0.6, 0.58]}]
+    assert posted["is_waterlogged"] is False
+    assert posted["surface_quality_score"] == 0.35
+
+
+def test_road_damage_detections_are_broadcast_live(client, dangerous_scene):
+    """The whole point: a dashboard connected to /alerts/ws sees pothole
+    detections the moment they happen, not only in a later GET."""
+    with client.websocket_connect("/api/v1/alerts/ws") as websocket:
+        posted = assess(client, "VEH-ROAD-HAZARD-WS", speed_kmh=60)
+        broadcast = websocket.receive_json()
+
+    assert broadcast["potholes"] == posted["potholes"]
+    assert broadcast["cracks"] == posted["cracks"]
+
+
+def test_a_clean_road_reports_no_hazards(client):
+    """The default fake (a good surface) must not fabricate damage."""
+    posted = assess(client, "VEH-CLEAN-ROAD", speed_kmh=60)
+
+    assert posted["potholes"] == []
+    assert posted["cracks"] == []
+    assert posted["is_waterlogged"] is False

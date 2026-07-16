@@ -2,15 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { alertsSocketUrl, fetchRecentEvents } from "./api";
-import { RiskAssessment, RiskSnapshot } from "./types";
+import { RiskAssessment, RiskEvent } from "./types";
 
 export type StreamStatus = "loading" | "live" | "reconnecting" | "error";
 
 const MAX_RECONNECT_DELAY_MS = 15_000;
 
 export interface RiskStream {
-  /** Most recent assessment: seeded from history, then updated live. */
-  snapshot: RiskSnapshot | null;
+  /** Most recent assessment: seeded from history (RiskEvent, no live-only
+   * fields like potholes), then updated live (RiskAssessment, has them). */
+  snapshot: RiskAssessment | RiskEvent | null;
   status: StreamStatus;
   /** Set when the initial history fetch failed — the backend is unreachable. */
   error: string | null;
@@ -19,7 +20,7 @@ export interface RiskStream {
 /** Seeds from GET /risk/events, then keeps the latest assessment current from
  * the /alerts/ws broadcast. Reconnects with exponential backoff. */
 export function useRiskStream(): RiskStream {
-  const [snapshot, setSnapshot] = useState<RiskSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<RiskAssessment | RiskEvent | null>(null);
   const [status, setStatus] = useState<StreamStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
