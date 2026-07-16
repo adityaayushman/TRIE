@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { fetchBlackSpots } from "@/lib/api";
-import { BlackSpot } from "@/lib/types";
+import { BlackSpot, RiskLevel } from "@/lib/types";
 import { Badge, Card, EmptyState, SectionTitle, Stat } from "./ui";
+
+const NEAR_MISS_LEVELS: RiskLevel[] = ["moderate", "high", "critical"];
 
 /** Which arm of MoRTH's 4E framework a nomination routes to. Emergency Care
  * is absent by construction — it responds to crashes that already happened,
@@ -85,19 +87,25 @@ export function BlackSpotPanel() {
   const [error, setError] = useState<string | null>(null);
   const [minExposure, setMinExposure] = useState(30);
   const [minNearMisses, setMinNearMisses] = useState(5);
+  /** Defaults to `moderate`, not the engine's own `high`: this deployment has
+   * no camera, so speed is the only live factor and risk tops out near 35% —
+   * at `high` nothing the live API records could ever qualify and this panel
+   * would always be empty. The control is exposed so that trade-off is
+   * visible rather than hidden behind a default. */
+  const [nearMissLevel, setNearMissLevel] = useState<RiskLevel>("moderate");
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setSpots(await fetchBlackSpots({ minExposure, minNearMisses }));
+      setSpots(await fetchBlackSpots({ minExposure, minNearMisses, nearMissLevel }));
       setError(null);
     } catch (cause) {
       setError((cause as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [minExposure, minNearMisses]);
+  }, [minExposure, minNearMisses, nearMissLevel]);
 
   useEffect(() => {
     void load();
@@ -138,11 +146,31 @@ export function BlackSpotPanel() {
               className="w-40 accent-sky-500"
             />
           </label>
-          <p className="text-[0.7rem] text-slate-600">
-            The study&apos;s knobs — min exposure is what excludes a barely-seen cell,
-            since the Wilson bound alone cannot.
-          </p>
+          <label className="text-xs text-slate-500">
+            <span className="mb-1 block">Near-miss level</span>
+            <select
+              value={nearMissLevel}
+              onChange={(e) => setNearMissLevel(e.target.value as RiskLevel)}
+              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-600"
+            >
+              {NEAR_MISS_LEVELS.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
+
+        <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-600">
+          Min exposure is what excludes a barely-seen cell — the Wilson bound alone cannot,
+          since 1 near-miss in 1 pass scores higher than 40 in 200. Near-miss level defaults
+          to <span className="text-slate-500">moderate</span> here rather than the engine&apos;s
+          own <span className="text-slate-500">high</span>: with no camera attached, speed is
+          the only live factor and risk tops out near 35%, so at{" "}
+          <span className="text-slate-500">high</span> nothing this API records could ever
+          qualify. Real perception at the edge reaches the full range.
+        </p>
       </Card>
 
       {error ? (

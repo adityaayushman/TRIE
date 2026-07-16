@@ -1,4 +1,4 @@
-import { BlackSpot, RiskAssessment, RiskEvent } from "./types";
+import { BlackSpot, RiskAssessment, RiskEvent, RiskLevel } from "./types";
 
 /** Base URL of the backend's v1 API, e.g. http://localhost:8000/api/v1.
  * Baked in at build time via NEXT_PUBLIC_API_URL — Next.js inlines
@@ -32,12 +32,14 @@ export function fetchRecentEvents(limit = 50): Promise<RiskEvent[]> {
 export function fetchBlackSpots(params: {
   minExposure?: number;
   minNearMisses?: number;
+  nearMissLevel?: RiskLevel;
   days?: number;
 } = {}): Promise<BlackSpot[]> {
   const query = new URLSearchParams({
     days: String(params.days ?? 90),
     min_exposure: String(params.minExposure ?? 30),
     min_near_misses: String(params.minNearMisses ?? 5),
+    near_miss_level: params.nearMissLevel ?? "high",
   });
   return getJson<BlackSpot[]>(`/risk/blackspots?${query}`);
 }
