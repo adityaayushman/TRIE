@@ -115,9 +115,6 @@ no PostgreSQL or Docker is needed.
   (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
   loses trend continuity. Fine for one backend process; a real fleet
   deployment wants that history in a shared store (Redis, or the DB) instead.
-- The schema is created via `create_all`; there are no migrations (Alembic or
-  otherwise), so column changes need the volume dropped rather than an
-  upgrade path.
 - `next` is on 14.2.35, not the advisory-clean 16.2.10 — `npm audit`'s own
   fix requires that major bump (React 19, likely breaking changes), which
   deserves dedicated test time rather than a quick patch. The 14.2.x line
