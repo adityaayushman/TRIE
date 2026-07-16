@@ -52,7 +52,12 @@ async def assess_risk(
         acceleration_ms2=request.acceleration_ms2,
         heading_deg=request.heading_deg,
     )
-    result = pipeline.run(road_frame=_BLANK_FRAME, cabin_frame=_BLANK_FRAME, vehicle=vehicle)
+    result = pipeline.run(
+        road_frame=_BLANK_FRAME,
+        cabin_frame=_BLANK_FRAME,
+        vehicle=vehicle,
+        vehicle_id=request.vehicle_id,
+    )
 
     event = RiskEvent(
         vehicle_id=request.vehicle_id,

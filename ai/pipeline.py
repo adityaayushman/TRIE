@@ -17,7 +17,7 @@ from ai.driver_intelligence.engine import DriverIntelligenceEngine
 from ai.explainable_ai.engine import ExplainableAIEngine
 from ai.perception.engine import PerceptionEngine
 from ai.road_intelligence.engine import RoadIntelligenceEngine
-from ai.temporal_prediction.engine import TemporalPredictionEngine
+from ai.temporal_prediction.engine import DEFAULT_VEHICLE_ID, TemporalPredictionEngine
 from ai.traffic_intelligence.engine import TrafficIntelligenceEngine
 from ai.trie.risk_fusion import RiskFusionEngine
 
@@ -57,6 +57,7 @@ class TransportationRiskPipeline:
         cabin_frame: np.ndarray,
         vehicle: VehicleDynamics | None = None,
         timestamp_s: float | None = None,
+        vehicle_id: str = DEFAULT_VEHICLE_ID,
     ) -> PipelineResult:
         """Assess one moment.
 
@@ -64,6 +65,11 @@ class TransportationRiskPipeline:
         measures PERCLOS over a rolling time window, so replaying recorded
         video faster than real time would corrupt it if the engine fell back to
         the wall clock.
+
+        `vehicle_id` scopes the temporal trend: one pipeline instance can serve
+        many vehicles (the API holds a single process-wide pipeline), and
+        without this every vehicle's risk history would blend into one shared,
+        meaningless trend.
         """
         vehicle = vehicle or VehicleDynamics()
 
@@ -79,7 +85,7 @@ class TransportationRiskPipeline:
             vehicle=vehicle,
             perception=perception,
         )
-        forecast = self.temporal_prediction.predict(risk)
+        forecast = self.temporal_prediction.predict(risk, vehicle_id=vehicle_id)
         causal = self.causal_intelligence.explain(risk)
         recommendation = self.explainable_ai.explain(risk, causal)
 

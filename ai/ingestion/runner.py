@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from ai.common.types import PipelineResult, VehicleDynamics
 from ai.ingestion.sync import FramePair
 from ai.pipeline import TransportationRiskPipeline
+from ai.temporal_prediction.engine import DEFAULT_VEHICLE_ID
 
 # Telemetry is sampled per moment because speed and heading change between
 # frames; a plain VehicleDynamics is accepted for the constant case.
@@ -51,12 +52,14 @@ class PipelineRunner:
         pipeline: TransportationRiskPipeline | None = None,
         telemetry: TelemetryProvider | VehicleDynamics | None = None,
         stride: int = 1,
+        vehicle_id: str = DEFAULT_VEHICLE_ID,
     ) -> None:
         if stride < 1:
             raise ValueError(f"stride must be at least 1, got {stride}")
 
         self.pipeline = pipeline or TransportationRiskPipeline()
         self.stride = stride
+        self.vehicle_id = vehicle_id
         self._telemetry = _as_provider(telemetry)
 
     def run(self, pairs: Iterable[FramePair]) -> Iterator[FrameAssessment]:
@@ -74,6 +77,7 @@ class PipelineRunner:
                 cabin_frame=pair.cabin.image,
                 vehicle=self._telemetry(pair.timestamp_s),
                 timestamp_s=pair.timestamp_s,
+                vehicle_id=self.vehicle_id,
             )
             yield FrameAssessment(
                 result=result,
