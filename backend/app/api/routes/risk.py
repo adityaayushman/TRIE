@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 
-import numpy as np
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ai.blackspot import BlackSpotEngine, RiskObservation
 from ai.blackspot.geo import DEFAULT_CELL_SIZE_M
 from ai.common.types import RiskLevel, VehicleDynamics
+from ai.no_camera import telemetry_only_pipeline
 from ai.pipeline import TransportationRiskPipeline
 from app.db.session import get_db
 from app.models.risk_event import RiskEvent
@@ -22,24 +22,26 @@ from app.websockets.manager import manager
 
 router = APIRouter(prefix="/risk", tags=["risk"])
 
-# One pipeline per process, built lazily so importing the app never loads model
-# weights — only the first real assessment does. Exposed as a dependency
-# (`get_pipeline`) so tests can override it with model-free fake engines via
-# app.dependency_overrides.
+# One pipeline per process, built lazily. Exposed as a dependency
+# (`get_pipeline`) so tests can override it via app.dependency_overrides.
 _pipeline: TransportationRiskPipeline | None = None
 
 
 def get_pipeline() -> TransportationRiskPipeline:
+    """The telemetry-only pipeline this API actually needs.
+
+    No camera feed is wired to the JSON API: `POST /assess` carries telemetry,
+    never frames — a real deployment runs perception at the edge
+    (`ai/ingestion/`, `ai/cli.py`) and sends results on. This used to build the
+    full pipeline and run YOLO/MediaPipe against a blank frame, which detects
+    nothing by construction, so the output is identical either way — but the
+    real engines pulled ~2GB of model weights into a process that never had an
+    image to look at. See ai/no_camera.py.
+    """
     global _pipeline
     if _pipeline is None:
-        _pipeline = TransportationRiskPipeline()
+        _pipeline = telemetry_only_pipeline()
     return _pipeline
-
-
-# No camera feed is wired to the JSON API: a real deployment streams frames
-# through ai/ingestion/ and correlates them by vehicle_id + timestamp. The
-# assess endpoint scores telemetry against a blank frame. See ai/pipeline.py.
-_BLANK_FRAME = np.zeros((480, 640, 3), dtype=np.uint8)
 
 
 @router.post("/assess", response_model=RiskAssessmentResponse)
@@ -53,9 +55,11 @@ async def assess_risk(
         acceleration_ms2=request.acceleration_ms2,
         heading_deg=request.heading_deg,
     )
+    # No frames: the engines behind this pipeline report an unobserved camera
+    # rather than inspecting an image. See get_pipeline().
     result = pipeline.run(
-        road_frame=_BLANK_FRAME,
-        cabin_frame=_BLANK_FRAME,
+        road_frame=None,
+        cabin_frame=None,
         vehicle=vehicle,
         vehicle_id=request.vehicle_id,
     )

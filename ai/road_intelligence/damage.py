@@ -18,10 +18,13 @@ implementation.
 """
 from __future__ import annotations
 
-import cv2
 import numpy as np
 
 from ai.common.types import DetectedObject
+
+# OpenCV is imported inside each function rather than at module scope: a
+# telemetry-only deployment (see ai/no_camera.py) imports ai.pipeline but
+# never calls these, and must not need OpenCV installed at all to start.
 
 # Fraction of the frame height treated as road surface, measured from the
 # bottom. A forward-facing dashcam has sky/horizon in the upper portion; there
@@ -67,6 +70,8 @@ def _classify_contour(
     space than the crack itself, and area-based scoring must use the real
     footprint, not the box.
     """
+    import cv2
+
     x, y, w, h = cv2.boundingRect(contour)
     area = cv2.contourArea(contour)
     area_fraction = area / roi_area if roi_area > 0 else 0.0
@@ -100,6 +105,8 @@ def detect_damage(
     """
     if frame is None or frame.size == 0:
         return [], [], 0.0, 0.0
+
+    import cv2
 
     height, width = frame.shape[:2]
     roi, y_offset = _road_roi(frame)
@@ -156,6 +163,8 @@ def detect_waterlogging(frame: np.ndarray) -> bool:
     """
     if frame is None or frame.size == 0:
         return False
+
+    import cv2
 
     roi, _ = _road_roi(frame)
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)

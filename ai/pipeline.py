@@ -53,13 +53,17 @@ class TransportationRiskPipeline:
 
     def run(
         self,
-        road_frame: np.ndarray,
-        cabin_frame: np.ndarray,
+        road_frame: np.ndarray | None,
+        cabin_frame: np.ndarray | None,
         vehicle: VehicleDynamics | None = None,
         timestamp_s: float | None = None,
         vehicle_id: str = DEFAULT_VEHICLE_ID,
     ) -> PipelineResult:
         """Assess one moment.
+
+        Frames may be None: a telemetry-only deployment has no camera (see
+        ai/no_camera.py), and every engine reports the relevant factor
+        unobserved rather than inventing a measurement.
 
         `timestamp_s` should come from the frame's own clock. Driver monitoring
         measures PERCLOS over a rolling time window, so replaying recorded
