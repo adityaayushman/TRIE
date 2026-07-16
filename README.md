@@ -6,6 +6,23 @@ An Explainable Multimodal Edge AI Transportation Intelligence Platform for
 real-time accident prevention and causal risk analysis. Full spec and
 system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## Live
+
+| | |
+|---|---|
+| Dashboard | https://trie-dashboard.vercel.app |
+| API | https://trie-backend.onrender.com |
+| API docs | https://trie-backend.onrender.com/docs |
+
+Both run on free tiers. The backend **sleeps after ~15 minutes idle**, so the
+first request after a quiet spell takes ~50s to wake it and the dashboard
+briefly shows "cannot reach the backend" before recovering. The free
+PostgreSQL instance expires ~30 days after creation and needs recreating.
+
+The dashboard's *Run an Assessment* control writes to that public database:
+there is no auth, so anyone with the URL can add events. Acceptable for a
+demo; not something to leave running unattended.
+
 Every module is wired together end-to-end. Perception (YOLOv11), driver
 monitoring (MediaPipe), and road damage detection (classical CV) run real
 algorithms on real frames; TRIE fusion, temporal prediction, causal reasoning
@@ -91,23 +108,25 @@ cd frontend
 npm install
 npm run dev
 ```
-The dashboard seeds from `GET /api/v1/risk/events` and then updates live from
-the `/api/v1/alerts/ws` websocket, reconnecting with backoff if the backend
-goes away. Point it at a backend with `NEXT_PUBLIC_API_URL` (default
-`http://localhost:8000/api/v1`).
+Point it at a backend with `NEXT_PUBLIC_API_URL` (default
+`http://localhost:8000/api/v1`). Next.js inlines `NEXT_PUBLIC_*` at **build**
+time, so when building an image this must be a build arg, not a runtime env
+var — see `frontend/Dockerfile`.
 
-Next.js inlines `NEXT_PUBLIC_*` at **build** time, so when building an image
-this must be passed as a build arg, not a runtime env var — see
-`frontend/Dockerfile`.
+Three tabs:
 
-Until something calls `POST /api/v1/risk/assess`, the dashboard shows a
-"waiting for the first assessment" state. To produce one:
-
-```bash
-curl -X POST http://localhost:8000/api/v1/risk/assess \
-  -H "Content-Type: application/json" \
-  -d '{"vehicle_id": "VEH-001", "speed_kmh": 95}'
-```
+- **Live Risk** — the gauge, the contributing-factor breakdown (bars sum to
+  the gauge), what was *not observed*, the causal chain, the temporal
+  forecast, and road surface. Seeds from `GET /api/v1/risk/events`, then
+  follows the `/api/v1/alerts/ws` websocket, reconnecting with backoff. *Run
+  an Assessment* posts telemetry and the whole page updates from the
+  broadcast.
+- **Risk History** — the per-vehicle risk trend, with the engine's own
+  30/55/80 thresholds as reference lines. Per-vehicle because
+  `ai/temporal_prediction/` keys its trend by `vehicle_id`.
+- **Black Spots** — nominations from `GET /api/v1/risk/blackspots`, ranked by
+  Wilson lower bound, routed to Engineering / Enforcement / Education, with
+  the evidence thresholds exposed as controls.
 
 ### Tests
 
@@ -115,24 +134,94 @@ curl -X POST http://localhost:8000/api/v1/risk/assess \
 pip install -r backend/requirements-dev.txt
 pytest
 ```
-Covers the TRIE fusion contract, the end-to-end AI pipeline, and the risk API
-(assess -> persist -> broadcast -> read). The API tests run against SQLite, so
-no PostgreSQL or Docker is needed.
+Covers the TRIE fusion contract, the end-to-end AI pipeline, frame ingestion,
+black-spot discovery and its evaluation, and the risk API (assess → persist →
+broadcast → read). The API tests run against SQLite, so no PostgreSQL or
+Docker is needed.
+
+```bash
+pytest -m "not model"   # the fast suite CI runs on every push
+pytest -m model         # the real YOLO/MediaPipe tests: needs the ai/ stack
+                        # installed, and fetches sample images on first run
+```
+
+`tests/test_no_camera.py` runs in subprocesses with torch/ultralytics/
+mediapipe/opencv blocked from `sys.meta_path`, reproducing the deployed
+backend's environment — it is what stops the ~2GB dependency stack creeping
+back into the image unnoticed.
+
+## Deploying
+
+Backend on **Render**, frontend on **Vercel** — split because the backend
+needs a persistent process (websockets, and a real runtime for the `ai/`
+stack), which Vercel's serverless functions cannot provide.
+
+**Backend.** [`render.yaml`](render.yaml) is a Blueprint: point Render at this
+repo (New → Blueprint) and it provisions the Postgres instance and the Docker
+web service, healthchecked at `/api/v1/health`. Migrations run on every
+container start (see [`backend/Dockerfile`](backend/Dockerfile)). Pushes to
+`main` auto-deploy.
+
+**Frontend.** Any Vercel deploy of `frontend/`. The one setting that matters:
+
+```
+NEXT_PUBLIC_API_URL=https://<your-backend>/api/v1
+```
+
+Two traps worth knowing, both of which cost a deploy cycle here:
+
+- **`NEXT_PUBLIC_*` is inlined at _build_ time.** Setting it as a runtime env
+  var does nothing — the value must be present when `next build` runs, as a
+  build environment variable or in the build command.
+- **The backend image must not install `ai/requirements.txt`.** It has no
+  camera, so it runs the telemetry-only pipeline and needs none of
+  torch/ultralytics/mediapipe/opencv. Installing them produced a ~2GB image
+  that could not start on a 512MB instance — and bought nothing, since the
+  output is identical (see `ai/no_camera.py`).
 
 ## Next steps
 
-1. Replace one `ai/*/engine.py` stub at a time with a real model, keeping
-   `ai/common/types.py` return shapes stable.
-2. Export a trained model via `edge/export_onnx.py` and follow
+1. **Fine-tune perception on the [India Driving Dataset](https://idd.insaan.iiit.ac.in/)**
+   and report mAP against it. The current weights are COCO-pretrained — a
+   Western, lane-disciplined, car-dominated distribution with no auto-rickshaw
+   class at all. `PerceptionEngine(model_path=...)` exists so that swap is a
+   constructor argument, not a rewrite. This is the single biggest gap between
+   "runs a real model" and "a defensible accuracy claim on Indian roads".
+2. **Replace the rule-based reasoning layer with learned models** — TRIE
+   fusion (weights → gradient-boosted trees or an MLP on labelled near-miss
+   telemetry), temporal prediction (linear extrapolation → LSTM), causal
+   reasoning (rule table → causal DAG), explainability (additive shares →
+   SHAP). Keep the `ai/common/types.py` contracts stable and the rest of the
+   pipeline keeps working.
+3. **Validate black-spot discovery against the official iRAD list.** The
+   simulation (`python -m ai.blackspot.report`) measures lead time against a
+   swept crash-conversion assumption; the real result is precision/recall
+   against MoRTH's published black spots, replaying telemetry from before
+   each qualified.
+4. Export a trained model via `edge/export_onnx.py` and follow
    `edge/README.md` to deploy it on a Jetson device.
 
 ## Known gaps
 
+- **Telemetry-only risk cannot exceed ~35%.** With no camera, speed is the
+  only live factor, and its weight after redistribution is 0.349. That is
+  correct behaviour — an unobserved factor is dropped, not assumed safe — but
+  it means the deployed API never emits a HIGH assessment, so black-spot
+  discovery there needs `near_miss_level=moderate` to nominate anything. Real
+  perception at the edge reaches the full range.
 - `TemporalPredictionEngine`'s per-vehicle history lives in process memory
   (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
   loses trend continuity. Fine for one backend process; a real fleet
   deployment wants that history in a shared store (Redis, or the DB) instead.
+- The API has **no authentication or rate limiting**, and `POST /risk/assess`
+  writes to the database. Fine for a demo behind an obscure URL; a real
+  deployment needs both.
+- The forecast, road-hazard detail and unobserved-factor list ride the
+  websocket but are **not persisted**, so a dashboard seeded from
+  `GET /risk/events` shows them as em dashes until the first live broadcast.
 - `next` is on 14.2.35, not the advisory-clean 16.2.10 — `npm audit`'s own
   fix requires that major bump (React 19, likely breaking changes), which
   deserves dedicated test time rather than a quick patch. The 14.2.x line
   still carries several high-severity entries as a result.
+- The frontend has **no component tests**; CI covers it with `tsc --noEmit`
+  and `next build` only.
