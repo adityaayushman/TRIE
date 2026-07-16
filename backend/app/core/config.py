@@ -1,6 +1,7 @@
+import secrets
 from functools import lru_cache
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +12,17 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     database_url: str = "postgresql+asyncpg://trie:trie@localhost:5432/trie"
     cors_origins: list[str] = ["http://localhost:3000"]
+
+    secret_key: str = Field(default_factory=lambda: secrets.token_urlsafe(32))
+    """Signing key for JWTs.
+
+    Defaults to a fresh random value *per process* rather than a constant:
+    a hardcoded fallback would be committed to a public repo and could sign
+    valid tokens against any deployment that forgot to override it. The cost
+    of this default is that tokens do not survive a restart, which is correct
+    for local development and unacceptable in production — so deployments set
+    TRIE_SECRET_KEY explicitly (render.yaml generates one per service).
+    """
 
     @field_validator("database_url")
     @classmethod
