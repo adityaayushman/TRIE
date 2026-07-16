@@ -16,7 +16,9 @@ import pytest
 from ai.blackspot.simulation import (
     DANGEROUS_PROFILE,
     SAFE_PROFILE,
+    find_nomination_day,
     generate_cumulative_near_miss_series,
+    generate_cumulative_series,
     run_multi_seed,
     run_simulation,
     sample_assessment,
@@ -140,3 +142,45 @@ class TestIradComparison:
         assert discovery.blackspot_lead_time_days is not None
         assert irad_day is not None
         assert discovery.blackspot_lead_time_days < irad_day
+
+
+class TestGenerateCumulativeSeries:
+    def test_matches_the_near_miss_only_wrapper(self):
+        """generate_cumulative_near_miss_series must delegate to the new
+        function rather than drift into its own separate implementation."""
+        near_misses, _ = generate_cumulative_series(DANGEROUS_PROFILE, seed=0, days=30)
+        assert near_misses == generate_cumulative_near_miss_series(DANGEROUS_PROFILE, seed=0, days=30)
+
+    def test_exposure_is_monotonically_non_decreasing(self):
+        _, exposure = generate_cumulative_series(DANGEROUS_PROFILE, seed=0, days=60)
+        assert exposure == sorted(exposure)
+
+    def test_exposure_accumulates_at_least_the_daily_mean(self):
+        """Sanity check on the Poisson sampling: over enough days, cumulative
+        exposure should land in the right ballpark of daily_passes * days."""
+        _, exposure = generate_cumulative_series(DANGEROUS_PROFILE, seed=0, days=100)
+        expected = DANGEROUS_PROFILE.daily_passes * 100
+        assert 0.5 * expected < exposure[-1] < 1.5 * expected
+
+
+class TestFindNominationDay:
+    def test_finds_the_day_both_thresholds_are_met(self):
+        near_misses = [0, 2, 4, 5, 6, 7]
+        exposure = [10, 20, 30, 40, 50, 60]
+        assert find_nomination_day(near_misses, exposure, min_near_misses=5, min_exposure=30) == 3
+
+    def test_exposure_can_be_the_later_binding_constraint(self):
+        """Low daily traffic can hold near-misses above the bar for days
+        before exposure catches up -- the exact case a near-miss-only check
+        would get wrong."""
+        near_misses = [5, 6, 7, 8]  # crosses 5 immediately on day 0
+        exposure = [3, 6, 9, 35]  # exposure only clears 30 on day 3
+        assert find_nomination_day(near_misses, exposure, min_near_misses=5, min_exposure=30) == 3
+
+    def test_near_misses_can_be_the_later_binding_constraint(self):
+        near_misses = [0, 1, 2, 5]
+        exposure = [40, 45, 50, 55]  # exposure clears 30 immediately
+        assert find_nomination_day(near_misses, exposure, min_near_misses=5, min_exposure=30) == 3
+
+    def test_returns_none_when_never_satisfied(self):
+        assert find_nomination_day([0, 1, 2], [40, 45, 50], min_near_misses=5, min_exposure=30) is None

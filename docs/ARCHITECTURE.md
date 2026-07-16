@@ -158,7 +158,21 @@ Three consequences for the architecture, none of which discard the vision:
   YOLOv11 fine-tuned on RDD2022 or equivalent Indian road-damage data.
 - `ai/ingestion/` (frames reach the pipeline from video and cameras),
   `ai/blackspot/` (exposure-normalised aggregation, fed by GPS through the
-  API), the FastAPI backend, the dashboard, and the 137-test suite.
+  API), the FastAPI backend, the dashboard, and the test suite.
+
+`ai/blackspot/simulation.py` and `ai/blackspot/report.py` quantify the
+platform's central claim over iRAD/e-DAR: not "we do it differently" but "here
+is the measured lead time." Across 15 seeded runs at a quiet single-lane
+volume (10 passes/day), the black-spot engine nominates the same authored
+dangerous stretch in 3-13 days (median 7); the safe control was never falsely
+nominated in 30 runs across two traffic volumes. Against iRAD's own reactive
+threshold (five fatal/grievous crashes, or ten deaths, in three years),
+simulated under a swept near-miss-to-crash conversion rate (no public source
+ties one to real telemetry, so it is a range, not an assumed constant):
+~170 days even under a generous 1-in-20 conversion, 2+ years or never within
+iRAD's own window under more conservative rates. `python -m ai.blackspot.report`
+reproduces every number in that comparison from the real engines, so it can be
+rerun and diffed rather than taken on faith.
 
 The whole pipeline has been run end to end on a real street frame: it detected
 four pedestrians, named *Vulnerable Road Users Nearby* as the primary cause,
