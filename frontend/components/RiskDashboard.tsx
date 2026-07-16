@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { RiskSnapshot } from "@/lib/types";
+import { FactorBreakdown } from "./FactorBreakdown";
 import { RiskGauge } from "./RiskGauge";
 
 export function RiskDashboard({ assessment }: { assessment: RiskSnapshot }) {
@@ -30,14 +31,18 @@ export function RiskDashboard({ assessment }: { assessment: RiskSnapshot }) {
         </section>
 
         <section>
-          <h2 className="text-xs uppercase tracking-wide text-slate-500">Contributing Factors</h2>
-          <ul className="mt-1 flex flex-wrap gap-2">
-            {assessment.secondary_causes.map((cause) => (
-              <li key={cause} className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
-                {cause}
-              </li>
-            ))}
-          </ul>
+          <h2 className="text-xs uppercase tracking-wide text-slate-500">
+            Contributing Factors
+            <span className="ml-1 normal-case tracking-normal text-slate-600">
+              (risk points)
+            </span>
+          </h2>
+          {/* The numeric breakdown, not `secondary_causes`: this heading used
+              to render those, which are only the *named* causes ranked below
+              the primary one — so whenever a single factor drove the whole
+              score (every telemetry-only assessment, where speed is the one
+              live input) the list was empty and left a dangling heading. */}
+          <FactorBreakdown factors={assessment.contributing_factors} />
         </section>
 
         <section>
