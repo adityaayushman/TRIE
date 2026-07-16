@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+frontend/tsconfig.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Model weights / exports
+*.onnx
+*.engine
+*.pt
+*.pth
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
