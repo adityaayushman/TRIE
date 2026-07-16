@@ -11,20 +11,29 @@ node_modules/
 .next/
 out/
 frontend/tsconfig.tsbuildinfo
+frontend/next-env.d.ts
 
 # Env / secrets
 .env
 .env.local
 *.local
 
-# Model weights / exports
+# Model weights / exports (downloaded on first use, not committed)
 *.onnx
 *.engine
 *.pt
 *.pth
+*.task
+
+# Sample images pulled during ad-hoc verification
+bus.jpg
+zidane.jpg
 
 # Editors / OS
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Claude Code local session settings (permission allowlists etc.)
+.claude/
