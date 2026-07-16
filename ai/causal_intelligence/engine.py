@@ -13,6 +13,7 @@ from ai.common.types import CausalExplanation, RiskAssessment
 _FACTOR_LABELS = {
     "driver_distraction": "Driver Distraction",
     "speed": "High Speed",
+    "vru_exposure": "Vulnerable Road Users Nearby",
     "lane_drift": "Lane Drift",
     "road_quality": "Poor Road Surface",
     "traffic_congestion": "Heavy Traffic",
@@ -21,6 +22,8 @@ _FACTOR_LABELS = {
 _PREDICTED_EVENT_BY_CAUSE = {
     "driver_distraction": "Rear-End Collision",
     "speed": "Loss of Control",
+    # The two-thirds of Indian road deaths a conventional ADAS never names.
+    "vru_exposure": "Pedestrian or Two-Wheeler Collision",
     "lane_drift": "Side-Swipe Collision",
     "road_quality": "Loss of Traction",
     "traffic_congestion": "Rear-End Collision",
