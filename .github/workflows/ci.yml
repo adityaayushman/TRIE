@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # Backend + AI test suite, excluding tests marked `model`. No torch/
+  # ultralytics/mediapipe install (multi-GB, GPU-oriented) needed, so this
+  # stays fast and runs on every push/PR.
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r backend/requirements-dev.txt
+      - run: pytest -m "not model" -q
+
+  # The real YOLO/MediaPipe model tests (tests/test_perception.py,
+  # tests/test_driver_intelligence.py). Separate job because the ML stack is
+  # a multi-GB CPU install and these tests fetch sample images over the
+  # network on first run; kept off pull_request so an external PR can't rack
+  # up minutes downloading torch, but always runs on main.
+  model-tests:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r backend/requirements-dev.txt torch ultralytics mediapipe --extra-index-url https://download.pytorch.org/whl/cpu
+      - run: pytest -m model -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
