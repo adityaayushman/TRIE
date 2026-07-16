@@ -404,30 +404,70 @@ def run_multi_seed(
     )
 
 
+def generate_cumulative_series(
+    profile: LocationProfile,
+    seed: int,
+    days: int,
+    near_miss_level: RiskLevel = RiskLevel.HIGH,
+) -> tuple[list[int], list[int]]:
+    """Cumulative (near-miss count, exposure) per day at one location.
+
+    Independent of BlackSpotEngine/discovery -- this only needs
+    RiskFusionEngine's per-pass scores, so it can run over a multi-year
+    horizon cheaply. Exposure is returned alongside near-misses because the
+    real engine's nomination rule requires *both* thresholds simultaneously
+    (min_near_misses AND min_exposure) -- reporting near-misses alone, as an
+    earlier version of this function did, invites reading a near-miss-count
+    crossing as the nomination day when exposure could be the later-binding
+    constraint.
+    """
+    rng = random.Random(seed)
+    cumulative_near_misses = 0
+    cumulative_exposure = 0
+    near_miss_series: list[int] = []
+    exposure_series: list[int] = []
+    for day in range(days):
+        pass_count = _poisson(rng, profile.daily_passes)
+        cumulative_exposure += pass_count
+        for _ in range(pass_count):
+            risk = sample_assessment(profile, rng)
+            if _LEVEL_SEVERITY[risk.risk_level] >= _LEVEL_SEVERITY[near_miss_level]:
+                cumulative_near_misses += 1
+        near_miss_series.append(cumulative_near_misses)
+        exposure_series.append(cumulative_exposure)
+    return near_miss_series, exposure_series
+
+
 def generate_cumulative_near_miss_series(
     profile: LocationProfile,
     seed: int,
     days: int,
     near_miss_level: RiskLevel = RiskLevel.HIGH,
 ) -> list[int]:
-    """Cumulative near-miss count per day at one location over `days`.
+    """Cumulative near-miss count per day -- see generate_cumulative_series
+    for exposure alongside it, needed to determine the true nomination day
+    under the real engine's dual threshold."""
+    near_miss_series, _ = generate_cumulative_series(profile, seed, days, near_miss_level)
+    return near_miss_series
 
-    Independent of BlackSpotEngine/discovery -- this only needs
-    RiskFusionEngine's per-pass scores, so it can run over a multi-year
-    horizon cheaply for the iRAD crash-threshold comparison, which needs a
-    much longer window than the discovery lead-time question does.
+
+def find_nomination_day(
+    near_miss_series: list[int],
+    exposure_series: list[int],
+    min_near_misses: int = 5,
+    min_exposure: int = 30,
+) -> int | None:
+    """First day both of BlackSpotEngine's real thresholds hold at once.
+
+    Checking near-misses alone (as a naive `series.index(threshold)` would)
+    can report the wrong day whenever exposure is the later-binding
+    constraint -- low daily traffic can hold near-misses above the bar for
+    days before enough distinct passes have accumulated to nominate at all.
     """
-    rng = random.Random(seed)
-    cumulative = 0
-    series: list[int] = []
-    for day in range(days):
-        pass_count = _poisson(rng, profile.daily_passes)
-        for _ in range(pass_count):
-            risk = sample_assessment(profile, rng)
-            if _LEVEL_SEVERITY[risk.risk_level] >= _LEVEL_SEVERITY[near_miss_level]:
-                cumulative += 1
-        series.append(cumulative)
-    return series
+    for day, (near_misses, exposure) in enumerate(zip(near_miss_series, exposure_series)):
+        if near_misses >= min_near_misses and exposure >= min_exposure:
+            return day
+    return None
 
 
 def simulate_irad_crash_threshold(
