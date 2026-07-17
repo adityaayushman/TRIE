@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import zipfile
 from pathlib import Path
 
@@ -39,22 +40,69 @@ DEFAULT_IMAGE_SIZE = 640
 # 16 fits 6GB at 640px for yolo11s; Ultralytics OOMs loudly rather than
 # silently degrading, so this is a starting point to lower if needed.
 DEFAULT_BATCH = 16
+# Each dataloader worker is a full `spawn`-ed Python process that re-imports
+# torch — on Windows that means reloading torch's CUDA DLLs (cufft, cublas,
+# ...) per worker, not just per GPU. Confirmed on this machine in order:
+# workers=8 (Ultralytics' own default) crashed with `WinError 1455: the
+# paging file is too small` after leaving 13+ orphaned processes and dropping
+# free RAM from 8GB to 1.8GB; workers=4 did not crash but hung, silently
+# accumulating 12 processes with zero training progress -- a retry loop
+# hitting the same underlying spawn cost, worse than an outright failure
+# because nothing in the log said so. workers=0 removes the risk class
+# entirely: data loading runs in the main process, no subprocess spawned at
+# all. Slower per epoch (no I/O/GPU overlap) on ~7,700 small images already
+# disk-cached, and correct, which an unattended multi-hour run needs more.
+DEFAULT_WORKERS = 0
+
+
+def _extract_country(country: str) -> Path:
+    """Extract one country's images from the 13.3GB archive.
+
+    RDD2022.zip is not a flat tree: it is seven *nested* per-country zips
+    (`RDD2022/India.zip`, `RDD2022/Norway.zip`, ...), the largest of which
+    (Norway) is 10.6GB alone. Extracting the outer archive naively would pull
+    every country to disk to reach one; this reads only the one nested zip
+    needed, then extracts only that.
+    """
+    if (EXTRACTED / country).is_dir():
+        return EXTRACTED
+
+    if not ARCHIVE.exists():
+        raise SystemExit(
+            f"{ARCHIVE} not found. Download it first:\n"
+            f"  curl -L https://ndownloader.figshare.com/files/38030910 -o {ARCHIVE}"
+        )
+
+    inner_name = f"RDD2022/{country}.zip"
+    with zipfile.ZipFile(ARCHIVE) as archive:
+        if inner_name not in archive.namelist():
+            available = sorted(
+                n.removeprefix("RDD2022/").removesuffix(".zip")
+                for n in archive.namelist()
+                if n.startswith("RDD2022/") and n.endswith(".zip")
+            )
+            raise SystemExit(f"No {inner_name} in the archive. Available: {available}")
+
+        size_mb = archive.getinfo(inner_name).file_size / 1e6
+        print(f"extracting {inner_name} ({size_mb:.0f} MB) from the archive...")
+        nested_path = DATASETS / f"{country}.zip"
+        # Streamed, not read() in one shot: correct for India (527MB) either
+        # way, but this same path also serves Norway's nested zip (10.6GB),
+        # where loading it whole would be a needless memory spike.
+        with archive.open(inner_name) as nested_bytes, open(nested_path, "wb") as out:
+            shutil.copyfileobj(nested_bytes, out)
+
+    print(f"extracting {nested_path} -> {EXTRACTED}...")
+    with zipfile.ZipFile(nested_path) as nested:
+        nested.extractall(EXTRACTED)
+    nested_path.unlink()  # the copy inside DATASETS/, not the 13.3GB original
+
+    return EXTRACTED
 
 
 def prepare(country: str = "India") -> None:
-    """Unzip RDD2022 if needed, then convert one country to YOLO format."""
-    if not EXTRACTED.is_dir():
-        if not ARCHIVE.exists():
-            raise SystemExit(
-                f"{ARCHIVE} not found. Download it first:\n"
-                f"  curl -L https://ndownloader.figshare.com/files/38030910 -o {ARCHIVE}"
-            )
-        print(f"extracting {ARCHIVE} ({ARCHIVE.stat().st_size / 1e9:.1f} GB)...")
-        with zipfile.ZipFile(ARCHIVE) as archive:
-            archive.extractall(DATASETS)
-
-    # The archive nests everything under a single RDD2022/ directory.
-    root = EXTRACTED if (EXTRACTED / country).is_dir() else DATASETS / "RDD2022" / "RDD2022"
+    """Extract one country from RDD2022 if needed, then convert to YOLO format."""
+    root = _extract_country(country)
 
     print(f"converting {country} -> {PREPARED}")
     report = convert(root, PREPARED, country=country)
@@ -77,6 +125,7 @@ def train(
     epochs: int = DEFAULT_EPOCHS,
     image_size: int = DEFAULT_IMAGE_SIZE,
     batch: int = DEFAULT_BATCH,
+    workers: int = DEFAULT_WORKERS,
 ) -> None:
     from ultralytics import YOLO
 
@@ -90,6 +139,7 @@ def train(
         epochs=epochs,
         imgsz=image_size,
         batch=batch,
+        workers=workers,
         project=str(RUNS),
         name="road_damage_india",
         exist_ok=True,
@@ -146,6 +196,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
     parser.add_argument("--batch", type=int, default=DEFAULT_BATCH)
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=DEFAULT_WORKERS,
+        help="dataloader worker processes (see DEFAULT_WORKERS docstring re: Windows pagefile)",
+    )
     parser.add_argument("--imgsz", type=int, default=DEFAULT_IMAGE_SIZE)
     args = parser.parse_args(argv)
 
@@ -156,7 +212,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.prepare:
         prepare(country=args.country)
     if args.train:
-        train(model_path=args.model, epochs=args.epochs, image_size=args.imgsz, batch=args.batch)
+        train(
+            model_path=args.model,
+            epochs=args.epochs,
+            image_size=args.imgsz,
+            batch=args.batch,
+            workers=args.workers,
+        )
     if args.evaluate:
         evaluate()
     return 0

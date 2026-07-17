@@ -38,3 +38,4 @@ Thumbs.db
 # Claude Code local session settings (permission allowlists etc.)
 .claude/
 datasets/
+runs/
