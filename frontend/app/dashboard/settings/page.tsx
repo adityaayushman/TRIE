@@ -11,6 +11,7 @@ import { Card, SectionTitle } from "@/components/ui";
 const MODEL_STATUS = [
   { module: "Road damage (potholes, cracks)", detail: "YOLOv11, fine-tuned on RDD2022 India", real: true },
   { module: "Perception (vehicles, VRUs)", detail: "YOLOv11, COCO-pretrained", real: true },
+  { module: "Traffic intelligence (congestion, density)", detail: "Derived from perception detections, run on recorded footage", real: true },
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
   { module: "Risk fusion (TRIE)", detail: "Weighted rule model — learned model pending", real: false },
   { module: "Temporal forecast", detail: "Linear extrapolation — LSTM pending", real: false },

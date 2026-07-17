@@ -1,10 +1,15 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.api.router import api_router
 from app.core.config import get_settings
 
 settings = get_settings()
+
+_DEMO_STATIC_DIR = Path(__file__).resolve().parent.parent / "static" / "demo"
 
 # Schema is managed by Alembic (backend/alembic/), not create_all: run
 # `alembic upgrade head` before starting the app (see README). The Docker
@@ -27,3 +32,13 @@ app.add_middleware(
 )
 
 app.include_router(api_router, prefix=settings.api_v1_prefix)
+
+# Serves the recorded clips + precomputed detections behind the Vehicle
+# Intelligence / Traffic Analytics pages (see ai/demo/build_traffic_demo.py).
+# check_dir=False: importing app.main (e.g. in tests) must not fail just
+# because that directory hasn't been generated in this checkout.
+app.mount(
+    "/demo",
+    StaticFiles(directory=_DEMO_STATIC_DIR, check_dir=False),
+    name="demo",
+)

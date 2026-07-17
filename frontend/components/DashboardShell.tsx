@@ -5,18 +5,21 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 
-/** Only sections backed by a real endpoint appear here.
+/** Sections backed by either a real endpoint or a real model's output.
  *
- * The product spec also calls for Live Monitoring (camera feeds), Vehicle /
- * Driver / Traffic Intelligence, and an Edge Devices page. Those are absent
- * deliberately: the deployed API has no camera attached, so a Driver page
- * would read `face_detected: false` on every load and an Edge page would have
- * no Jetson to poll. They arrive when the data does — see the honest status
- * table in docs/ARCHITECTURE.md.
+ * Vehicle Intelligence and Traffic Analytics run the real perception and
+ * traffic-intelligence engines against recorded street footage — genuine
+ * model output, since the deployed API has no live camera to point them at.
+ * Driver Intelligence and an Edge Devices page still don't exist: driver
+ * monitoring needs a cabin-facing recording we don't have a license to use,
+ * and there is no Jetson to poll. They arrive when the data does — see the
+ * honest status table in docs/ARCHITECTURE.md.
  */
 const SECTIONS = [
   { href: "/dashboard", label: "Overview", exact: true },
   { href: "/dashboard/live", label: "Live Risk" },
+  { href: "/dashboard/vehicles", label: "Vehicle Intelligence" },
+  { href: "/dashboard/traffic", label: "Traffic Analytics" },
   { href: "/dashboard/history", label: "Risk History" },
   { href: "/dashboard/blackspots", label: "Black Spots" },
   { href: "/dashboard/settings", label: "Settings" },
@@ -111,8 +114,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <p className="mt-6 px-3 text-[0.65rem] leading-relaxed text-slate-700">
-            Camera, driver and edge-device sections appear once real hardware feeds this API.
-            The JSON endpoint carries telemetry only.
+            Vehicle Intelligence and Traffic Analytics run on recorded footage, not a live
+            camera. Driver monitoring and edge-device sections appear once real hardware
+            feeds this API.
           </p>
         </aside>
 

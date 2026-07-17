@@ -39,3 +39,8 @@ Thumbs.db
 .claude/
 datasets/
 runs/
+
+# Raw downloaded demo source clips (large, re-downloadable) -- the trimmed,
+# processed output that actually gets served lives in backend/static/demo/
+# and IS committed.
+ai/demo/source_clips/
