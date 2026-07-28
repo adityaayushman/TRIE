@@ -9,7 +9,7 @@ import { Card, SectionTitle } from "@/components/ui";
  * this is the same status table as docs/ARCHITECTURE.md, rendered, so a
  * reviewer sees the real picture rather than the aspirational one. */
 const MODEL_STATUS = [
-  { module: "Road damage (potholes, cracks)", detail: "YOLOv11, fine-tuned on RDD2022 India", real: true },
+  { module: "Road damage (potholes, cracks)", detail: "YOLOv11s, fine-tuned on RDD2022 India — mAP50 0.28 (measured, see below)", real: true },
   { module: "Perception (vehicles, VRUs)", detail: "YOLOv11, COCO-pretrained", real: true },
   { module: "Traffic intelligence (congestion, density)", detail: "Derived from perception detections, run on recorded footage", real: true },
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
@@ -17,6 +17,22 @@ const MODEL_STATUS = [
   { module: "Temporal forecast", detail: "Linear extrapolation — LSTM pending", real: false },
   { module: "Explainability", detail: "Additive factor shares — SHAP pending", real: false },
 ];
+
+/** Measured on the held-out RDD2022 India val split (1,542 images, 1,340
+ * labelled instances) with `python -m ai.training.train_road_damage
+ * --evaluate`. These are real numbers on real Indian road images, not a
+ * claim — reproduced from runs/road_damage_india/evaluation.json. Training
+ * reached epoch 36 of a planned 60 before a host-RAM OOM stopped it; mAP was
+ * still climbing, so these are a floor, not the ceiling. */
+const ROAD_DAMAGE_EVAL = {
+  overall: { mAP50: 0.278, mAP50_95: 0.114, precision: 0.568, recall: 0.285 },
+  perClass: [
+    { name: "Alligator crack", instances: 394, mAP50: 0.52, mAP50_95: 0.233 },
+    { name: "Pothole", instances: 634, mAP50: 0.376, mAP50_95: 0.135 },
+    { name: "Longitudinal crack", instances: 295, mAP50: 0.207, mAP50_95: 0.085 },
+    { name: "Transverse crack", instances: 17, mAP50: 0.008, mAP50_95: 0.002 },
+  ],
+};
 
 export default function SettingsPage() {
   const { account, signOut } = useAuth();
@@ -84,6 +100,71 @@ export default function SettingsPage() {
       </Card>
 
       <Card delay={0.1}>
+        <SectionTitle hint="measured on the held-out Indian val split">
+          Road-damage detector — real accuracy
+        </SectionTitle>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">mAP@50</p>
+            <p className="mt-0.5 text-lg font-bold tabular-nums text-sky-400">
+              {(ROAD_DAMAGE_EVAL.overall.mAP50 * 100).toFixed(1)}%
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">mAP@50-95</p>
+            <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
+              {(ROAD_DAMAGE_EVAL.overall.mAP50_95 * 100).toFixed(1)}%
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">Precision</p>
+            <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
+              {(ROAD_DAMAGE_EVAL.overall.precision * 100).toFixed(1)}%
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">Recall</p>
+            <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
+              {(ROAD_DAMAGE_EVAL.overall.recall * 100).toFixed(1)}%
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[380px] text-left text-xs">
+            <thead>
+              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                <th className="pb-2 font-medium">Damage class</th>
+                <th className="pb-2 pr-3 text-right font-medium">Val instances</th>
+                <th className="pb-2 pr-3 text-right font-medium">mAP@50</th>
+                <th className="pb-2 text-right font-medium">mAP@50-95</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ROAD_DAMAGE_EVAL.perClass.map((row) => (
+                <tr key={row.name} className="border-t border-slate-800/70">
+                  <td className="py-1.5 text-slate-200">{row.name}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{row.instances}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-200">{(row.mAP50 * 100).toFixed(1)}%</td>
+                  <td className="py-1.5 text-right tabular-nums text-slate-400">{(row.mAP50_95 * 100).toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="mt-4 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-600">
+          Fine-tuned from <span className="font-mono text-slate-500">yolo11s</span> on the
+          RDD2022 India split, evaluated on 1,542 held-out images. Alligator cracks and
+          potholes — the damage that actually threatens a two-wheeler — detect well; transverse
+          cracks barely register because the val split has only 17 of them to learn from.
+          Training reached 36 of a planned 60 epochs before a host-RAM limit stopped it and
+          mAP was still climbing, so these are a floor. COCO-pretrained weights have no pothole
+          class at all, so this is the difference between guessing and detecting.
+        </p>
+      </Card>
+
+      <Card delay={0.15}>
         <SectionTitle>Connection</SectionTitle>
         <dl className="grid grid-cols-[7rem_1fr] gap-y-2 text-xs">
           <dt className="text-slate-500">API</dt>
