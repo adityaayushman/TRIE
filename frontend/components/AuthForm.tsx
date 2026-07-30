@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 
 /** Shared by /login and /register — the two differ only in the fields shown
@@ -38,13 +39,38 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-5">
-      <div className="w-full max-w-sm">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-5">
+      {/* themed backdrop matching the hero */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(45rem 35rem at 50% -10%, rgba(56,189,248,0.12), transparent 60%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(148,163,184,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.6) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+          maskImage: "radial-gradient(ellipse at 50% 40%, black, transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 40%, black, transparent 75%)",
+        }}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-sm"
+      >
         <Link href="/" className="block text-center text-sm font-bold tracking-tight text-slate-50">
           Smart Road Guardian <span className="text-sky-400">AI X</span>
         </Link>
 
-        <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-7">
+        <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-900/70 p-7 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl">
           <h1 className="text-lg font-semibold text-slate-100">
             {isRegister ? "Create an account" : "Sign in"}
           </h1>
@@ -133,7 +159,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             Or browse the dashboard without an account →
           </Link>
         </p>
-      </div>
+      </motion.div>
     </main>
   );
 }
