@@ -1,9 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Component, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Grid } from "@react-three/drei";
 import * as THREE from "three";
+
+/** If WebGL is unavailable or the scene throws, render nothing rather than
+ * white-screening the landing — the hero still shows its text and the ambient
+ * backdrop behind it. */
+class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 /** The landing hero's 3D scene: a night road-grid receding to the horizon, with
  * flowing traffic light-trails and a few pulsing "black spot" nodes — the
@@ -134,13 +147,15 @@ export function HeroScene() {
   if (!mounted) return null;
 
   return (
-    <Canvas
-      dpr={[1, 1.5]}
-      camera={{ position: [0, 4, 18], fov: 55 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      frameloop="always"
-    >
-      <Scene />
-    </Canvas>
+    <SceneBoundary>
+      <Canvas
+        dpr={[1, 1.5]}
+        camera={{ position: [0, 4, 18], fov: 55 }}
+        gl={{ antialias: true, powerPreference: "high-performance" }}
+        frameloop="always"
+      >
+        <Scene />
+      </Canvas>
+    </SceneBoundary>
   );
 }
