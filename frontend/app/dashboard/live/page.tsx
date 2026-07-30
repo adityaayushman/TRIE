@@ -6,7 +6,7 @@ import { useRiskStream } from "@/lib/useRiskStream";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { RiskDashboard } from "@/components/RiskDashboard";
 import { TelemetryControls } from "@/components/TelemetryControls";
-import { EmptyState } from "@/components/ui";
+import { EmptyState, PageHeader } from "@/components/ui";
 import Link from "next/link";
 
 export default function LivePage() {
@@ -15,15 +15,12 @@ export default function LivePage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-100">Live Risk</h1>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Real-time fusion, causal attribution and forecast over the websocket.
-          </p>
-        </div>
-        <ConnectionBadge status={status} />
-      </div>
+      <PageHeader
+        icon="live"
+        title="Live Risk"
+        subtitle="Real-time fusion, causal attribution and forecast over the websocket."
+        right={<ConnectionBadge status={status} />}
+      />
 
       {account ? (
         <TelemetryControls onAssessed={refresh} />

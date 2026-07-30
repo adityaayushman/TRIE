@@ -1,17 +1,16 @@
 "use client";
 
 import { TrafficAnalyticsPanel } from "@/components/TrafficAnalyticsPanel";
-import { Card, SectionTitle } from "@/components/ui";
+import { Card, PageHeader, SectionTitle } from "@/components/ui";
 
 export default function TrafficAnalyticsPage() {
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-100">Traffic Analytics</h1>
-        <p className="mt-0.5 text-xs text-slate-500">
-          Congestion, density and flow, derived from real perception on recorded footage.
-        </p>
-      </div>
+      <PageHeader
+        icon="traffic"
+        title="Traffic Analytics"
+        subtitle="Congestion, density and flow, derived from real perception on recorded footage."
+      />
 
       <Card>
         <SectionTitle hint="same engine, aggregated">What this is</SectionTitle>

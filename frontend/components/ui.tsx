@@ -2,6 +2,40 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { ReactNode } from "react";
+import { ICONS, IconName } from "./icons";
+
+/** The unified dashboard page header: an icon chip, a gradient title, a
+ * subtitle, and an optional right-hand slot (e.g. the connection badge). Every
+ * dashboard page uses this, so headers read as one system. */
+export function PageHeader({
+  icon,
+  title,
+  subtitle,
+  right,
+}: {
+  icon: IconName;
+  title: string;
+  subtitle?: string;
+  right?: ReactNode;
+}) {
+  const Icon = ICONS[icon];
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
+          <Icon size={18} />
+        </span>
+        <div>
+          <h1 className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+            {title}
+          </h1>
+          {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+        </div>
+      </div>
+      {right && <div className="shrink-0 pt-1">{right}</div>}
+    </div>
+  );
+}
 
 /** Shared primitives. Every panel composes these rather than repeating raw
  * utility strings, so spacing, surface and type scale stay consistent as

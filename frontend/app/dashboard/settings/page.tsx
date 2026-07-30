@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { API_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { Card, SectionTitle } from "@/components/ui";
+import { Card, PageHeader, SectionTitle } from "@/components/ui";
 
 /** Honest system status. Every row is what the code actually does today —
  * this is the same status table as docs/ARCHITECTURE.md, rendered, so a
@@ -41,7 +41,7 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-3xl space-y-5">
-      <h1 className="text-lg font-semibold text-slate-100">Settings</h1>
+      <PageHeader icon="settings" title="Settings" subtitle="System status, measured accuracy, and connection." />
 
       <Card>
         <SectionTitle>Account</SectionTitle>
