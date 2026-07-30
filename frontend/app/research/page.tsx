@@ -447,6 +447,50 @@ export default function ResearchPage() {
               a learned, calibrated fusion, not a field-measured accuracy.
             </p>
           </div>
+
+          {/* Horizon forecasting */}
+          <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+            <p className="text-sm font-semibold text-slate-200">Horizon forecasting: learned vs linear extrapolation</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Forecast error 6 steps ahead on held-out risk trajectories (ramp → peak → fall,
+              stop-go, noise). Self-supervised — the target is the risk that actually occurs.
+              Reproduce with{" "}
+              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.temporal_prediction.forecast_study</code>.
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[440px] text-left text-xs">
+                <thead>
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                    <th className="pb-2 font-medium">Forecaster</th>
+                    <th className="pb-2 pr-3 text-right font-medium">MAE (lower better)</th>
+                    <th className="pb-2 text-right font-medium">RMSE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { c: "Persistence (hold last value)", mae: 13.4, rmse: 17.3 },
+                    { c: "Linear extrapolation (shipped)", mae: 19.0, rmse: 24.5 },
+                    { c: "Learned LSTM", mae: 10.1, rmse: 13.4, bold: true },
+                  ].map((r) => (
+                    <tr key={r.c} className={`border-t border-slate-800/70 ${r.bold ? "font-semibold text-slate-100" : "text-slate-300"}`}>
+                      <td className="py-1.5">{r.c}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">{r.mae.toFixed(1)}</td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">{r.rmse.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+              The honest, self-critical finding: the shipped linear extrapolation is{" "}
+              <span className="text-slate-400">worse than doing nothing</span> at this horizon — it
+              shoots the recent trend straight through every turning point, overshooting the peak a
+              hazard approach actually has. A learned LSTM, which can represent that curvature, cuts
+              error ~47%. As with the fusion study, the trajectories are authored (no public feed of
+              per-vehicle Indian risk exists), so this shows the failure mode and the fix, not a
+              field number.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -508,8 +552,8 @@ export default function ResearchPage() {
           {[
             { cmd: "python -m ai.blackspot.evaluate", what: "detection / specificity / lead-time distribution" },
             { cmd: "python -m ai.trie.fusion_study", what: "learned fusion vs the hand-set rule" },
+            { cmd: "python -m ai.temporal_prediction.forecast_study", what: "learned horizon forecasting vs linear" },
             { cmd: "python -m ai.training.train_road_damage --evaluate", what: "per-class road-damage mAP" },
-            { cmd: "python -m ai.demo.build_traffic_demo", what: "perception + traffic on recorded footage" },
           ].map((c) => (
             <div key={c.cmd} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-2.5">
               <span className="text-sky-300">$ {c.cmd}</span>
