@@ -1,4 +1,19 @@
 import Link from "next/link";
+import { HeroScene } from "@/components/HeroScene";
+
+/** Dashed lane-marking divider — the road motif carried between sections. */
+function LaneDivider() {
+  return (
+    <div
+      aria-hidden
+      className="mx-auto h-px max-w-6xl"
+      style={{
+        background:
+          "repeating-linear-gradient(90deg, rgba(56,189,248,0.35) 0 26px, transparent 26px 52px)",
+      }}
+    />
+  );
+}
 
 /** Marketing landing page.
  *
@@ -34,81 +49,92 @@ const PILLARS = [
 export default function Landing() {
   return (
     <main className="min-h-screen bg-slate-950">
-      <header className="border-b border-slate-800/80">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-sm font-bold tracking-tight text-slate-50">
-            Smart Road Guardian <span className="text-sky-400">AI X</span>
+      {/* Hero — a live 3D road scene behind the pitch */}
+      <section className="relative min-h-[94vh] overflow-hidden">
+        {/* 3D layer */}
+        <div className="absolute inset-0">
+          <HeroScene />
+        </div>
+        {/* legibility + depth gradients over the canvas */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(2,6,23,0.55)_0%,rgba(2,6,23,0.15)_35%,rgba(2,6,23,0.85)_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
+
+        {/* glass nav */}
+        <header className="relative z-20">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+            <span className="text-sm font-bold tracking-tight text-slate-50">
+              Smart Road Guardian <span className="text-sky-400">AI X</span>
+            </span>
+            <nav className="flex items-center gap-1.5">
+              <Link href="/research" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+                Research
+              </Link>
+              <Link href="/dashboard" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+                Live demo
+              </Link>
+              <Link href="/login" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-lg bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-400"
+              >
+                Get started
+              </Link>
+            </nav>
+          </div>
+        </header>
+
+        {/* hero content */}
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-5 pt-16 text-center sm:pt-24">
+          <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-sky-300 backdrop-blur">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400" />
+            Predict · Explain · Prevent
           </span>
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/research"
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
-            >
-              Research
-            </Link>
+          <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl">
+            Road safety that acts
+            <br />
+            <span className="bg-gradient-to-r from-sky-300 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
+              before
+            </span>{" "}
+            the crash
+          </h1>
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-300/90 sm:text-lg">
+            An explainable transportation-risk platform built for Indian roads — where lanes are
+            often unmarked, two-wheelers outnumber cars, and the people most likely to die are
+            the ones a conventional ADAS never looks at.
+          </p>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
             <Link
               href="/dashboard"
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
+              className="rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-400"
             >
-              Live demo
+              Open the live dashboard
             </Link>
             <Link
-              href="/login"
-              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
+              href="/research"
+              className="rounded-xl border border-slate-600/70 bg-slate-900/40 px-6 py-3 text-sm font-semibold text-slate-200 backdrop-blur transition hover:border-slate-500 hover:text-white"
             >
-              Sign in
+              Read the research
             </Link>
-            <Link
-              href="/register"
-              className="rounded-lg bg-sky-600 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-sky-500"
-            >
-              Get started
-            </Link>
-          </nav>
+          </div>
+          <p className="mt-5 text-xs text-slate-400/80">
+            No account needed to look around — one is only required to submit telemetry.
+          </p>
         </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-5 pb-20 pt-20 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
-          Predict. Explain. Prevent.
-        </p>
-        <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-slate-50 sm:text-5xl">
-          Road safety that acts{" "}
-          <span className="text-sky-400">before</span> the crash
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-400">
-          An explainable transportation risk platform built for Indian roads — where lanes are
-          often unmarked, two-wheelers outnumber cars, and the people most likely to die are
-          the ones a conventional ADAS never looks at.
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <Link
-            href="/dashboard"
-            className="rounded-lg bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500"
-          >
-            Open the live dashboard
-          </Link>
-          <a
-            href="https://github.com/adityaayushman/TRIE"
-            className="rounded-lg border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-slate-600 hover:text-slate-100"
-          >
-            View the source
-          </a>
-        </div>
-        <p className="mt-4 text-xs text-slate-600">
-          No account needed to look around — one is only required to submit telemetry.
-        </p>
       </section>
 
-      <section className="border-y border-slate-800/80 bg-slate-900/40">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px px-5 lg:grid-cols-4">
+      <LaneDivider />
+
+      <section className="bg-gradient-to-b from-slate-900/40 to-slate-950">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 divide-x divide-y divide-slate-800/70 border-x border-b border-slate-800/70 lg:grid-cols-4 lg:divide-y-0">
           {STATS.map((stat) => (
-            <div key={stat.label} className="px-4 py-8 text-center">
-              <p className="text-2xl font-bold tabular-nums text-slate-50 sm:text-3xl">
+            <div key={stat.label} className="group px-5 py-9 text-center transition-colors hover:bg-slate-900/50">
+              <p className="bg-gradient-to-b from-white to-slate-400 bg-clip-text text-3xl font-bold tabular-nums text-transparent sm:text-4xl">
                 {stat.value}
               </p>
-              <p className="mt-1.5 text-xs leading-snug text-slate-500">{stat.label}</p>
-              <p className="mt-1 text-[0.65rem] uppercase tracking-wide text-slate-700">
+              <p className="mt-2 text-xs leading-snug text-slate-500">{stat.label}</p>
+              <p className="mt-1.5 text-[0.6rem] font-medium uppercase tracking-wide text-slate-700">
                 {stat.source}
               </p>
             </div>
@@ -116,22 +142,31 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="text-center text-2xl font-bold tracking-tight text-slate-50">
+      <section className="mx-auto max-w-6xl px-5 py-24">
+        <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
+          The approach
+        </p>
+        <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-bold tracking-tight text-white">
           Built for the road it actually runs on
         </h2>
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
-          {PILLARS.map((pillar) => (
+        <div className="mt-12 grid gap-5 lg:grid-cols-3">
+          {PILLARS.map((pillar, i) => (
             <div
               key={pillar.title}
-              className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6"
+              className="group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/80 to-slate-900/40 p-7 transition-all hover:-translate-y-1 hover:border-sky-500/40"
             >
-              <h3 className="text-sm font-semibold text-slate-100">{pillar.title}</h3>
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-sky-500/5 blur-2xl transition-colors group-hover:bg-sky-500/10" />
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 font-mono text-sm font-semibold text-sky-300">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-base font-semibold text-slate-50">{pillar.title}</h3>
               <p className="mt-2.5 text-xs leading-relaxed text-slate-400">{pillar.body}</p>
             </div>
           ))}
         </div>
       </section>
+
+      <LaneDivider />
 
       <section className="border-t border-slate-800/80 bg-slate-900/40">
         <div className="mx-auto max-w-4xl px-5 py-20 text-center">
