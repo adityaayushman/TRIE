@@ -51,16 +51,28 @@ export interface Telemetry {
   longitude?: number;
 }
 
-/** Run one assessment. The response is also broadcast to every connected
- * websocket client, so the dashboard updates from the stream rather than
- * from this return value. */
+// Must match lib/auth.tsx's TOKEN_KEY — where the signed-in JWT is stored.
+const TOKEN_KEY = "trie.token";
+
+/** Run one assessment. POST /risk/assess is authenticated (it writes to a
+ * shared database), so the signed-in bearer token from localStorage is sent —
+ * without it the backend correctly returns 401. The response is also broadcast
+ * to every connected websocket client, so the dashboard updates from the stream
+ * rather than from this return value. */
 export async function postAssessment(telemetry: Telemetry): Promise<RiskAssessment> {
+  const token = typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const response = await fetch(`${API_URL}/risk/assess`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(telemetry),
   });
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error("Session expired or not signed in — sign in again to run an assessment.");
+    }
     throw new Error(`POST /risk/assess failed: ${response.status}`);
   }
   return response.json();
