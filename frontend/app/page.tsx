@@ -41,6 +41,12 @@ export default function Landing() {
           </span>
           <nav className="flex items-center gap-2">
             <Link
+              href="/research"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
+            >
+              Research
+            </Link>
+            <Link
               href="/dashboard"
               className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-400 transition hover:text-slate-200"
             >
@@ -170,6 +176,12 @@ export default function Landing() {
             discovery leads under every rate tested. Validating against MoRTH&apos;s published
             black-spot list is the next step.
           </p>
+          <Link
+            href="/research"
+            className="mt-6 inline-block text-xs font-medium text-sky-400 transition hover:text-sky-300"
+          >
+            Read the full methodology, prior-work comparison and benchmarks →
+          </Link>
         </div>
       </section>
 
@@ -179,6 +191,9 @@ export default function Landing() {
             Smart Road Guardian AI X — an explainable transportation intelligence platform.
           </p>
           <div className="flex gap-4 text-xs text-slate-500">
+            <Link href="/research" className="transition hover:text-slate-300">
+              Research
+            </Link>
             <Link href="/dashboard" className="transition hover:text-slate-300">
               Dashboard
             </Link>
