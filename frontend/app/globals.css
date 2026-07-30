@@ -3,5 +3,8 @@
 @tailwind utilities;
 
 body {
-  @apply bg-slate-950 text-slate-100;
+  @apply text-slate-100;
+  /* Near-black base; the animated AmbientBackground sits above this and the
+     pages are transparent over it. */
+  background-color: #05070c;
 }
