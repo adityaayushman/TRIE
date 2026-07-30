@@ -19,26 +19,44 @@ first request after a quiet spell takes ~50s to wake it and the dashboard
 briefly shows "cannot reach the backend" before recovering. The free
 PostgreSQL instance expires ~30 days after creation and needs recreating.
 
-The dashboard's *Run an Assessment* control writes to that public database:
-there is no auth, so anyone with the URL can add events. Acceptable for a
-demo; not something to leave running unattended.
+Reading the dashboard is open to everyone; the *Run an Assessment* control
+writes to a shared database, so it requires a (free) account — register or
+sign in from the dashboard. Every GET route stays anonymous so a reviewer can
+inspect everything without registering.
 
-Every module is wired together end-to-end. Perception (YOLOv11), driver
-monitoring (MediaPipe), and road damage detection (classical CV) run real
-algorithms on real frames; TRIE fusion, temporal prediction, causal reasoning
-and explainability are honest rule-based placeholders pending a learned model.
-See "Status" in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the detail.
+Every module is wired together end-to-end, and the honest split between what is
+a real model and what is a rule is stated on the live **Settings** page and the
+**[/research](https://trie-dashboard.vercel.app/research)** page, not hidden:
+
+- **Real models on real input:** road-damage detection (YOLOv11s fine-tuned on
+  RDD2022 India, **mAP50 33%** measured on held-out Indian images), perception
+  (YOLOv11), driver monitoring (MediaPipe), traffic intelligence, and a
+  time-of-day environmental-risk factor grounded in published MoRTH data.
+- **Transparent rules, with learned replacements prototyped and benchmarked:**
+  TRIE fusion (a learned model beats the hand-set rule 0.78→0.82 AUC in a
+  controlled study, and an H-statistic confirms it recovered the right
+  interactions), temporal forecast (a learned LSTM cuts error ~47% vs the
+  shipped linear extrapolation), plus a sensor-suite-aware **uncertainty band**
+  on every score. Each study is one `python -m …` command away — see
+  [Reproduce the research](#reproduce-the-research).
 
 ## Layout
 
 ```
-ai/          Perception, driver/road/traffic intelligence, TRIE risk fusion,
-             temporal prediction, causal reasoning, explainable AI.
-             ai/pipeline.py orchestrates all of it end-to-end;
-             ai/ingestion/ feeds it frames; ai/cli.py runs it.
-backend/     FastAPI service: persists risk events (PostgreSQL) and
-             broadcasts them to dashboards over a websocket.
-frontend/    Next.js + TypeScript + TailwindCSS + Framer Motion dashboard.
+ai/          Perception, driver/road/traffic intelligence, TRIE risk fusion
+             (+ uncertainty band), temporal prediction, causal reasoning,
+             explainable AI, and environmental context (ai/environment/).
+             ai/pipeline.py orchestrates it end-to-end; ai/ingestion/ feeds it
+             frames; ai/cli.py runs it. ai/training/ fine-tunes the road-damage
+             detector (RDD2022); ai/blackspot/ discovers + evaluates black
+             spots; the learned-model studies live beside what they compare to
+             (ai/trie/fusion_study.py, ai/trie/interaction_analysis.py,
+             ai/temporal_prediction/forecast_study.py); ai/demo/ builds the
+             recorded-footage and black-spot demo data.
+backend/     FastAPI service: JWT auth, persists risk events (PostgreSQL),
+             broadcasts them over a websocket, serves the demo assets.
+frontend/    Next.js + TypeScript + TailwindCSS + Framer Motion — a multi-route
+             dashboard plus the /research methodology page.
 edge/        NVIDIA Jetson / TensorRT / ONNX deployment for the ai/ layer.
 docs/        Architecture reference.
 ```
@@ -113,20 +131,33 @@ Point it at a backend with `NEXT_PUBLIC_API_URL` (default
 time, so when building an image this must be a build arg, not a runtime env
 var — see `frontend/Dockerfile`.
 
-Three tabs:
+A multi-route SaaS dashboard (landing page, auth, sidebar):
 
-- **Live Risk** — the gauge, the contributing-factor breakdown (bars sum to
-  the gauge), what was *not observed*, the causal chain, the temporal
-  forecast, and road surface. Seeds from `GET /api/v1/risk/events`, then
-  follows the `/api/v1/alerts/ws` websocket, reconnecting with backoff. *Run
-  an Assessment* posts telemetry and the whole page updates from the
-  broadcast.
-- **Risk History** — the per-vehicle risk trend, with the engine's own
-  30/55/80 thresholds as reference lines. Per-vehicle because
-  `ai/temporal_prediction/` keys its trend by `vehicle_id`.
-- **Black Spots** — nominations from `GET /api/v1/risk/blackspots`, ranked by
-  Wilson lower bound, routed to Engineering / Enforcement / Education, with
-  the evidence thresholds exposed as controls.
+- **Overview** — live counts derived from real telemetry; zero means an empty
+  database, not a mock.
+- **Live Risk** — the gauge with its **uncertainty band**, the
+  contributing-factor breakdown (bars sum to the gauge), what was *not
+  observed*, the time-of-day environmental context, the causal chain, temporal
+  forecast, and road surface. Seeds from `GET /api/v1/risk/events`, then follows
+  the `/api/v1/alerts/ws` websocket. *Run an Assessment* posts telemetry and the
+  page updates from the broadcast.
+- **Vehicle Intelligence** — the real YOLOv11 detector run over recorded street
+  footage: a monitoring wall of feeds with live bounding-box overlays, clearly
+  labelled recorded (the deployed API has no camera).
+- **Traffic Analytics** — congestion/density from the same recorded footage.
+- **Risk History** — the per-vehicle risk trend against the engine's own
+  30/55/80 thresholds. Per-vehicle because `ai/temporal_prediction/` keys by
+  `vehicle_id`.
+- **Black Spots** — a self-contained **map** plus ranked nominations from
+  `GET /api/v1/risk/blackspots` (Wilson lower bound, routed to Engineering /
+  Enforcement / Education), with a Live / illustrative-sample toggle.
+- **Settings** — the honest model-status table, and the road-damage detector's
+  measured per-class accuracy.
+
+The separate **[/research](https://trie-dashboard.vercel.app/research)** page is
+the methodology write-up: each contribution as prior-work → this-system →
+evidence, a benchmarks section, honest limitations, and reproducibility
+commands.
 
 ### Tests
 
@@ -148,7 +179,35 @@ pytest -m model         # the real YOLO/MediaPipe tests: needs the ai/ stack
 `tests/test_no_camera.py` runs in subprocesses with torch/ultralytics/
 mediapipe/opencv blocked from `sys.meta_path`, reproducing the deployed
 backend's environment — it is what stops the ~2GB dependency stack creeping
-back into the image unnoticed.
+back into the image unnoticed. `tests/test_research_studies.py` guards the
+headline number of each study below, so the figures the site presents cannot
+silently drift.
+
+## Reproduce the research
+
+Every figure on the [/research](https://trie-dashboard.vercel.app/research) page
+regenerates from the real engines — no screenshots of a claim. Each needs
+`ai/requirements.txt` (adds scikit-learn; torch is already in it):
+
+```bash
+python -m ai.blackspot.evaluate            # black-spot discovery: detection,
+                                           # false-positive rate, lead-time dist.
+python -m ai.blackspot.report              # lead-time vs iRAD's crash threshold
+python -m ai.trie.fusion_study             # learned fusion vs the hand-set rule
+python -m ai.trie.interaction_analysis     # Friedman's H — did it learn the
+                                           # right interactions? (3/3, top-3)
+python -m ai.temporal_prediction.forecast_study   # LSTM vs linear extrapolation
+python -m ai.training.train_road_damage --evaluate  # per-class road-damage mAP
+python -m ai.demo.build_traffic_demo       # perception + traffic on the clips
+python -m ai.demo.build_blackspot_demo     # the illustrative black-spot map data
+```
+
+The studies against a compounding ground truth (fusion, forecast, interactions)
+are **controlled evaluations on authored data**, stated as such on the page: no
+public dataset labels these telemetry factors against real Indian crash
+outcomes, so they demonstrate the architecture and method, not a field number.
+The road-damage mAP and the MoRTH-grounded environmental factor are the parts
+that rest on real data.
 
 ## Deploying
 
@@ -162,44 +221,61 @@ web service, healthchecked at `/api/v1/health`. Migrations run on every
 container start (see [`backend/Dockerfile`](backend/Dockerfile)). Pushes to
 `main` auto-deploy.
 
-**Frontend.** Any Vercel deploy of `frontend/`. The one setting that matters:
+**Frontend.** Deploy `frontend/` with the Vercel CLI, which uploads the real
+local tree and aliases the production domain:
 
-```
-NEXT_PUBLIC_API_URL=https://<your-backend>/api/v1
+```bash
+cd frontend
+NEXT_PUBLIC_API_URL=https://<your-backend>/api/v1 \
+  vercel deploy --prod --build-env NEXT_PUBLIC_API_URL=https://<your-backend>/api/v1
 ```
 
-Two traps worth knowing, both of which cost a deploy cycle here:
+Three traps worth knowing, each of which cost a deploy cycle here:
 
 - **`NEXT_PUBLIC_*` is inlined at _build_ time.** Setting it as a runtime env
   var does nothing — the value must be present when `next build` runs, as a
   build environment variable or in the build command.
+- **Git auto-deploy needs the project's Root Directory set to `frontend`.**
+  The Next.js app lives in a subdirectory; without that setting a push to
+  `main` builds from the repo root and fails with "couldn't find a `pages` or
+  `app` directory". The CLI command above sidesteps it.
 - **The backend image must not install `ai/requirements.txt`.** It has no
   camera, so it runs the telemetry-only pipeline and needs none of
   torch/ultralytics/mediapipe/opencv. Installing them produced a ~2GB image
   that could not start on a 512MB instance — and bought nothing, since the
   output is identical (see `ai/no_camera.py`).
 
-## Next steps
+## Done since the first cut
 
-1. **Fine-tune perception on the [India Driving Dataset](https://idd.insaan.iiit.ac.in/)**
-   and report mAP against it. The current weights are COCO-pretrained — a
-   Western, lane-disciplined, car-dominated distribution with no auto-rickshaw
-   class at all. `PerceptionEngine(model_path=...)` exists so that swap is a
-   constructor argument, not a rewrite. This is the single biggest gap between
-   "runs a real model" and "a defensible accuracy claim on Indian roads".
-2. **Replace the rule-based reasoning layer with learned models** — TRIE
-   fusion (weights → gradient-boosted trees or an MLP on labelled near-miss
-   telemetry), temporal prediction (linear extrapolation → LSTM), causal
-   reasoning (rule table → causal DAG), explainability (additive shares →
-   SHAP). Keep the `ai/common/types.py` contracts stable and the rest of the
-   pipeline keeps working.
-3. **Validate black-spot discovery against the official iRAD list.** The
-   simulation (`python -m ai.blackspot.report`) measures lead time against a
-   swept crash-conversion assumption; the real result is precision/recall
-   against MoRTH's published black spots, replaying telemetry from before
-   each qualified.
-4. Export a trained model via `edge/export_onnx.py` and follow
-   `edge/README.md` to deploy it on a Jetson device.
+Several original "next steps" are now shipped, each honestly scoped on
+[/research](https://trie-dashboard.vercel.app/research):
+
+- **Road-damage detection is a real, fine-tuned model** — YOLOv11s on RDD2022
+  India, mAP50 33% measured on 1,542 held-out Indian images (was classical CV).
+- **The rule-based layers have learned replacements, prototyped and benchmarked**
+  — fusion (learned model 0.78→0.82 AUC over the rule, interactions verified by
+  H-statistic), temporal forecast (LSTM cuts error ~47%), plus a
+  sensor-suite-aware uncertainty band and a MoRTH-grounded environmental factor.
+  They are studies, not yet swapped into the live pipeline — see below.
+- **Black-spot discovery has a quantified evaluation** — 100% detection, 0%
+  false-positives, lead-time distribution vs iRAD (`ai.blackspot.evaluate`).
+
+## Still open
+
+1. **Ship the learned fusion/forecast into the live pipeline.** They are
+   benchmarked as studies against a *controlled* ground truth; the blocker to
+   deploying them (and to a real field validation of black spots) is the same —
+   no public dataset labels these telemetry factors against real Indian crash
+   outcomes. `ai/common/types.py` contracts are stable so the swap stays local.
+2. **Fine-tune _perception_ (not just road damage) on the [IDD](https://idd.insaan.iiit.ac.in/).**
+   Vehicle/VRU weights are still COCO-pretrained — Western, car-dominated, no
+   auto-rickshaw class. `PerceptionEngine(model_path=...)` makes the swap a
+   constructor argument.
+3. **Field-validate black spots against MoRTH's published list** — precision/
+   recall replaying real telemetry from before each stretch qualified. Needs
+   near-miss telemetry for real locations, which is not publicly available.
+4. Export a trained model via `edge/export_onnx.py` and follow `edge/README.md`
+   to deploy it on a Jetson.
 
 ## Known gaps
 
@@ -213,9 +289,9 @@ Two traps worth knowing, both of which cost a deploy cycle here:
   (LRU-capped at 10,000 vehicles), so a restart or a multi-process deployment
   loses trend continuity. Fine for one backend process; a real fleet
   deployment wants that history in a shared store (Redis, or the DB) instead.
-- The API has **no authentication or rate limiting**, and `POST /risk/assess`
-  writes to the database. Fine for a demo behind an obscure URL; a real
-  deployment needs both.
+- The API has **JWT auth on writes** (register/login, bcrypt, 7-day tokens) but
+  **no rate limiting**, and every read route is intentionally anonymous. Fine
+  for a demo; a real deployment wants rate limiting and per-account quotas too.
 - The forecast, road-hazard detail and unobserved-factor list ride the
   websocket but are **not persisted**, so a dashboard seeded from
   `GET /risk/events` shows them as em dashes until the first live broadcast.
