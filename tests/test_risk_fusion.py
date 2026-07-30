@@ -20,6 +20,7 @@ from ai.common.types import (
     VehicleDynamics,
 )
 from ai.trie.risk_fusion import _BASE_WEIGHTS, RiskFusionEngine
+from ai.vru_intelligence.vulnerability import assess as vuln_assess
 
 
 def perception(
@@ -55,6 +56,7 @@ def fuse(
     traffic: TrafficState | None = None,
     vehicle: VehicleDynamics | None = None,
     scene: PerceptionResult | None = None,
+    vulnerability=None,
 ):
     return RiskFusionEngine().fuse(
         driver=driver or DriverState(attention_score=1.0, face_detected=True),
@@ -62,6 +64,7 @@ def fuse(
         traffic=traffic or TrafficState(congestion_level=0.0),
         vehicle=vehicle or VehicleDynamics(speed_kmh=0.0),
         perception=scene if scene is not None else perception(lane_detected=True),
+        vulnerability=vulnerability,
     )
 
 
@@ -222,6 +225,85 @@ class TestFactorMechanics:
             road=RoadState(surface_quality_score=0.5),
             vehicle=VehicleDynamics(speed_kmh=80),
             scene=perception(two_wheelers=2, vru_box=0.1, lane_offset_m=0.5, lane_detected=True),
+        )
+        assert sum(result.contributing_factors.values()) * 100 == pytest.approx(
+            result.risk_score, abs=0.1
+        )
+
+
+class TestVulnerabilityAmplification:
+    """The per-VRU vulnerability layer (ai/vru_intelligence) plugged into the
+    fusion: when a helmet/triple-riding detector saw the scene, a bare-headed or
+    overloaded rider raises the same physical exposure to a higher risk — and it
+    must do so without touching any scene that has no such detection.
+    """
+
+    def _riders_scene(self):
+        # Two two-wheelers, close enough to register meaningful exposure.
+        return perception(two_wheelers=2, vru_box=0.12, lane_detected=True)
+
+    def test_absent_vulnerability_is_identical_to_before(self):
+        """The non-regression guarantee: omitting the detector (the telemetry-
+        only deployment) must score exactly as the engine did before this
+        feature, and carry no vulnerability attribution."""
+        scene = self._riders_scene()
+        baseline = fuse(vehicle=VehicleDynamics(speed_kmh=60), scene=scene)
+        with_none = fuse(vehicle=VehicleDynamics(speed_kmh=60), scene=scene, vulnerability=None)
+        assert with_none.risk_score == baseline.risk_score
+        assert with_none.vru_vulnerability is None
+
+    def test_helmeted_scene_does_not_change_the_score(self):
+        """A fully-helmeted, non-overloaded scene multiplies exposure by 1.0, so
+        the score is unchanged and no attribution noise is emitted."""
+        scene = self._riders_scene()
+        baseline = fuse(vehicle=VehicleDynamics(speed_kmh=60), scene=scene)
+        protected = fuse(
+            vehicle=VehicleDynamics(speed_kmh=60),
+            scene=scene,
+            vulnerability=vuln_assess(with_helmet=2, without_helmet=0, triple_riding=0),
+        )
+        assert protected.risk_score == baseline.risk_score
+        assert protected.vru_vulnerability is None
+
+    def test_no_helmet_raises_the_score_and_is_attributed(self):
+        """Bare-headed riders in the same scene must read as higher risk, with
+        the reason surfaced for the explanation."""
+        scene = self._riders_scene()
+        baseline = fuse(vehicle=VehicleDynamics(speed_kmh=60), scene=scene)
+        exposed = fuse(
+            vehicle=VehicleDynamics(speed_kmh=60),
+            scene=scene,
+            vulnerability=vuln_assess(with_helmet=0, without_helmet=2, triple_riding=0),
+        )
+        assert exposed.risk_score > baseline.risk_score
+        assert exposed.vru_vulnerability is not None
+        assert exposed.vru_vulnerability["dominant_factor"] == "no_helmet"
+        assert exposed.vru_vulnerability["multiplier"] > 1.0
+
+    def test_amplification_still_saturates_at_one(self):
+        """The exposure term stays bounded. In a scene whose base exposure
+        already saturates at 1.0, amplification clamps straight back to 1.0 — so
+        a bare-headed, overloaded scene scores identically to a helmeted one and
+        cannot push risk above what a maxed exposure already gives."""
+        scene = perception(two_wheelers=6, pedestrians=6, vru_box=0.3, lane_detected=True)
+        maxed = fuse(vehicle=VehicleDynamics(speed_kmh=60), scene=scene)
+        exposed = fuse(
+            vehicle=VehicleDynamics(speed_kmh=60),
+            scene=scene,
+            vulnerability=vuln_assess(with_helmet=0, without_helmet=6, triple_riding=3),
+        )
+        assert exposed.risk_score == maxed.risk_score
+        assert exposed.contributing_factors["vru_exposure"] == pytest.approx(
+            maxed.contributing_factors["vru_exposure"]
+        )
+
+    def test_additivity_holds_under_amplification(self):
+        """Amplifying one magnitude must not break the sum-of-parts property the
+        whole explainability story rests on."""
+        result = fuse(
+            vehicle=VehicleDynamics(speed_kmh=80),
+            scene=self._riders_scene(),
+            vulnerability=vuln_assess(with_helmet=0, without_helmet=2, triple_riding=1),
         )
         assert sum(result.contributing_factors.values()) * 100 == pytest.approx(
             result.risk_score, abs=0.1

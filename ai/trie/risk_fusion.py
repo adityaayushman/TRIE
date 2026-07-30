@@ -41,6 +41,7 @@ from ai.common.types import (
     TrafficState,
     VehicleDynamics,
 )
+from ai.vru_intelligence.vulnerability import VulnerabilityAssessment, amplify_exposure
 
 # The perception/telemetry factors, ordered by share of Indian road deaths the
 # factor speaks to, not by how easy it is to measure.
@@ -134,14 +135,23 @@ class RiskFusionEngine:
         vehicle: VehicleDynamics,
         perception: PerceptionResult,
         environment: EnvironmentState | None = None,
+        vulnerability: VulnerabilityAssessment | None = None,
     ) -> RiskAssessment:
         # Always observable: they need no sensor beyond telemetry and the road
         # camera the platform already requires.
+        exposure = vru_exposure(perception)
+        # If a helmet/triple-riding detector saw the scene, the *same* physical
+        # proximity of a bare-headed or overloaded rider is a higher fatality
+        # exposure than a helmeted one (ai/vru_intelligence). Amplify the
+        # magnitude here, before weighting, so the vru_exposure term's
+        # additive contribution honestly reflects it and nothing else shifts.
+        if vulnerability is not None:
+            exposure = amplify_exposure(exposure, vulnerability)
         magnitudes = {
             "speed": min(vehicle.speed_kmh / _SPEED_REFERENCE_KMH, 1.0),
             "road_quality": 1.0 - road.surface_quality_score,
             "traffic_congestion": traffic.congestion_level,
-            "vru_exposure": vru_exposure(perception),
+            "vru_exposure": exposure,
         }
 
         if driver.face_detected:
@@ -183,11 +193,24 @@ class RiskFusionEngine:
         else:
             level = RiskLevel.LOW
 
+        # Surface the vulnerability attribution only when it actually changed
+        # the score (a helmeted, non-overloaded scene multiplies by 1.0 and
+        # carries no explanatory weight, so it stays None rather than noise).
+        vru_vulnerability = None
+        if vulnerability is not None and vulnerability.multiplier > 1.0:
+            vru_vulnerability = {
+                "multiplier": vulnerability.multiplier,
+                "dominant_factor": vulnerability.dominant_factor,
+                "without_helmet": vulnerability.without_helmet,
+                "triple_riding": vulnerability.triple_riding,
+            }
+
         return RiskAssessment(
             risk_score=risk_score,
             risk_level=level,
             contributing_factors=factors,
             unobserved_factors=sorted(set(_BASE_WEIGHTS) - set(magnitudes)),
+            vru_vulnerability=vru_vulnerability,
             risk_lower=risk_lower,
             risk_upper=risk_upper,
         )
