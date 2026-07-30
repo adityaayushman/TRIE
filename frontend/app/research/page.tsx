@@ -314,6 +314,94 @@ export default function ResearchPage() {
         </div>
       </section>
 
+      {/* Comparison to the state of the art */}
+      <section className="mx-auto max-w-5xl px-5 py-14">
+        <Kicker>How it compares</Kicker>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-50">
+          Against the state of the art
+        </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-400">
+          The two dominant paradigms are conventional ADAS / collision-warning (in-vehicle,
+          occupant-centric) and India&apos;s official iRAD / e-DAR black-spot programme
+          (infrastructure-side, crash-record-driven). The edge here is at the system level —
+          against both, on the dimensions that decide whether a VRU on an Indian road lives.
+        </p>
+
+        <div className="mt-8 overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-xs">
+            <thead>
+              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-500">
+                <th className="pb-3 pr-4 font-medium">Dimension</th>
+                <th className="pb-3 pr-4 font-medium">Conventional ADAS</th>
+                <th className="pb-3 pr-4 font-medium">iRAD / e-DAR (official)</th>
+                <th className="rounded-t-lg bg-sky-500/10 px-4 pb-3 pt-2 font-semibold text-sky-300">This system</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                {
+                  d: "Finding danger",
+                  adas: "Reactive — warns as a crash becomes imminent",
+                  official: "Reactive — 5 fatal/grievous crashes or 10 deaths in 3 yrs",
+                  ours: "Predictive — from near-misses, 1–7.5 day lead, before a crash record exists",
+                },
+                {
+                  d: "Who it protects",
+                  adas: "The vehicle occupant",
+                  official: "— (aggregate crash records)",
+                  ours: "VRU-first — two-wheelers & pedestrians (66.8% of deaths) weighted for exposure",
+                },
+                {
+                  d: "Missing sensors",
+                  adas: "Assumes a fixed suite; a gap reads as 'safe'",
+                  official: "—",
+                  ours: "Unobserved factors dropped & weight redistributed — never assumed safe",
+                },
+                {
+                  d: "Uncertainty",
+                  adas: "A single point score",
+                  official: "—",
+                  ours: "A calibrated, sensor-aware confidence band on every score",
+                },
+                {
+                  d: "Environmental context",
+                  adas: "Rarely modelled",
+                  official: "—",
+                  ours: "MoRTH-grounded time-of-day risk, live and free from the clock",
+                },
+                {
+                  d: "Explainability",
+                  adas: "Opaque score",
+                  official: "Tabular counts",
+                  ours: "Exact additive shares + interactions verified by H-statistic",
+                },
+                {
+                  d: "Reproducibility",
+                  adas: "Proprietary",
+                  official: "Manual state submissions, updated to 2022",
+                  ours: "Open source — every number is one `python -m …` away",
+                },
+              ].map((row) => (
+                <tr key={row.d} className="border-t border-slate-800/70 align-top">
+                  <td className="py-2.5 pr-4 font-medium text-slate-200">{row.d}</td>
+                  <td className="py-2.5 pr-4 text-slate-500">{row.adas}</td>
+                  <td className="py-2.5 pr-4 text-slate-500">{row.official}</td>
+                  <td className="bg-sky-500/[0.06] px-4 py-2.5 text-slate-200">{row.ours}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p className="mt-5 max-w-3xl rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-[0.75rem] leading-relaxed text-amber-200/80">
+          <span className="font-semibold">Where it is NOT ahead, stated plainly:</span> the
+          road-damage detector (mAP50 33%) is a competitive component, not a benchmark leader, and
+          road-user perception is a COCO-pretrained baseline pending an India-Driving-Dataset
+          fine-tune. The claim is not "a better object detector" — it is a better *system* for the
+          road India actually has. Beating perception leaderboards is neither claimed nor needed.
+        </p>
+      </section>
+
       {/* Benchmarks */}
       <section className="border-y border-slate-800/80 bg-slate-900/30">
         <div className="mx-auto max-w-5xl px-5 py-14">
