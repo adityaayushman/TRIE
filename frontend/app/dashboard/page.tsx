@@ -6,7 +6,7 @@ import { useRiskStream } from "@/lib/useRiskStream";
 import { hasLiveDetail, riskLevelOf } from "@/lib/types";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { RiskTimeline } from "@/components/RiskTimeline";
-import { Card, SectionTitle } from "@/components/ui";
+import { Card, PageHeader, SectionTitle } from "@/components/ui";
 
 /** Overview / command centre. Every figure is derived from real data the API
  * returns — recent events and the live snapshot — not seeded constants. When
@@ -71,27 +71,12 @@ export default function OverviewPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-              <rect x="2" y="2" width="5" height="5" rx="1" strokeWidth="1.4" />
-              <rect x="9" y="2" width="5" height="5" rx="1" strokeWidth="1.4" />
-              <rect x="2" y="9" width="5" height="5" rx="1" strokeWidth="1.4" />
-              <rect x="9" y="9" width="5" height="5" rx="1" strokeWidth="1.4" />
-            </svg>
-          </span>
-          <div>
-            <h1 className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
-              Overview
-            </h1>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Live figures from recent telemetry. Empty means an empty database, not a mock.
-            </p>
-          </div>
-        </div>
-        <ConnectionBadge status={status} />
-      </div>
+      <PageHeader
+        icon="overview"
+        title="Overview"
+        subtitle="Live figures from recent telemetry. Empty means an empty database, not a mock."
+        right={<ConnectionBadge status={status} />}
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Assessments" value={stats.assessments} hint="in recent history" />

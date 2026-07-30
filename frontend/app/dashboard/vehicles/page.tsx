@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DemoManifestEntry, fetchDemoManifest } from "@/lib/demo";
 import { BOX_COLOR, CameraTile, LiveCounts } from "@/components/CameraTile";
-import { Card, EmptyState, Legend, SectionTitle, Stat } from "@/components/ui";
+import { Card, EmptyState, Legend, PageHeader, SectionTitle, Stat } from "@/components/ui";
 
 const LEGEND_ITEMS = [
   { color: BOX_COLOR.vehicle, label: "Vehicle" },
@@ -39,20 +39,19 @@ export default function VehicleIntelligencePage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-100">Vehicle Intelligence</h1>
-          <p className="mt-0.5 text-xs text-slate-500">
-            The real YOLOv11 perception engine, run on recorded street footage.
-          </p>
-        </div>
-        {clips && clips.length > 0 && (
-          <span className="flex items-center gap-2 text-[0.7rem] font-medium uppercase tracking-wide text-emerald-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-            {clips.length} feeds monitoring
-          </span>
-        )}
-      </div>
+      <PageHeader
+        icon="vehicles"
+        title="Vehicle Intelligence"
+        subtitle="The real YOLOv11 perception engine, run on recorded street footage."
+        right={
+          clips && clips.length > 0 ? (
+            <span className="flex items-center gap-2 text-[0.7rem] font-medium uppercase tracking-wide text-emerald-400">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              {clips.length} feeds monitoring
+            </span>
+          ) : undefined
+        }
+      />
 
       <Card className="bg-gradient-to-br from-sky-950/40 via-slate-900/80 to-slate-900/60">
         <SectionTitle hint="combined across every feed below, updating as they play">
