@@ -125,8 +125,8 @@ const LIMITATIONS = [
     detail: "The TRIE fusion is a transparent weighted model, not a learned one. A learned replacement is the clearest next step — but the rules are auditable, which a black box is not.",
   },
   {
-    label: "Black-spot lead-time is simulated",
-    detail: "The 7-day-vs-iRAD result is simulated against iRAD's own published rule, not yet validated against MoRTH's actual published black-spot list. That retrospective validation is the highest-value next experiment.",
+    label: "Black-spot evaluation is controlled, not field data",
+    detail: "Detection, specificity and lead-time are measured across 40 seeds — but on authored dangerous/safe locations, since near-miss telemetry for real MoRTH black spots is not publicly available. A field retrospective is the highest-value experiment that data would unlock; it is named, not hidden.",
   },
   {
     label: "Road-damage detector is a component, not SOTA",
@@ -237,15 +237,14 @@ export default function ResearchPage() {
             approach="The same 500m unit is nominated from near-misses, not crashes: exposure-normalised (every vehicle pass is the denominator) and ranked by a Wilson score lower bound, so a stretch can be flagged before anyone dies and a barely-observed cell cannot outrank a well-attested one."
             evidence={
               <>
-                Simulated against iRAD&apos;s own rule using the real discovery engine, median of 15 runs:{" "}
-                <span className="text-slate-200">7 days to discovery</span> versus{" "}
-                <span className="text-slate-200">170 days</span> for iRAD under a generous
-                1-in-20 near-miss-to-crash rate, and <span className="text-slate-200">never</span>{" "}
-                (within the 3-year window) at 1-in-1000. Reproducible with{" "}
-                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.report</code>.
+                Across 40 seeds at two traffic volumes: <span className="text-slate-200">100% detection</span> of
+                the dangerous stretch, <span className="text-slate-200">0% false-positives</span> on a busy-but-safe
+                one, and a median lead time of <span className="text-slate-200">1–7.5 days</span> against iRAD&apos;s
+                170–888 days (or never). Full distribution in the Benchmarks section; reproducible with{" "}
+                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
               </>
             }
-            caveat="Validated against iRAD's rule, not yet against MoRTH's published black-spot list. That retrospective test is the next experiment."
+            caveat="This is a controlled evaluation: the dangerous/safe locations are authored from the factors the fusion models. A field validation against MoRTH's published black spots needs near-miss telemetry for real Indian locations, which is not publicly available — that remains the open experiment, not a step being skipped."
           />
 
           <Contribution
@@ -292,15 +291,58 @@ export default function ResearchPage() {
           <Kicker>Evidence in one place</Kicker>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-50">Benchmarks</h2>
 
-          {/* Lead-time comparison */}
+          {/* Quantified discovery evaluation */}
           <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
-            <p className="text-sm font-semibold text-slate-200">Black-spot discovery: time to flag a dangerous stretch</p>
-            <p className="mt-1 text-xs text-slate-500">Lower is better. Simulated against iRAD&apos;s published rule.</p>
+            <p className="text-sm font-semibold text-slate-200">Black-spot discovery: a quantified evaluation, not one anecdote</p>
+            <p className="mt-1 text-xs text-slate-500">
+              40 seeds, two traffic volumes, a genuinely dangerous stretch against a busy-but-safe one.
+              Reproduce with{" "}
+              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
+            </p>
+            <div className="mt-5 overflow-x-auto">
+              <table className="w-full min-w-[460px] text-left text-xs">
+                <thead>
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                    <th className="pb-2 font-medium">Setting</th>
+                    <th className="pb-2 pr-3 text-right font-medium">Detection</th>
+                    <th className="pb-2 pr-3 text-right font-medium">False-positive</th>
+                    <th className="pb-2 text-right font-medium">Lead time (days)</th>
+                  </tr>
+                </thead>
+                <tbody className="text-slate-300">
+                  {[
+                    { s: "Busy junction (45 passes/day)", det: "100%", fp: "0%", lead: "median 1 (max 2)" },
+                    { s: "Quiet road (10 passes/day)", det: "100%", fp: "0%", lead: "median 7.5 (IQR 4.8–9.2)" },
+                  ].map((r) => (
+                    <tr key={r.s} className="border-t border-slate-800/70">
+                      <td className="py-1.5">{r.s}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums text-emerald-400">{r.det}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums text-emerald-400">{r.fp}</td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-200">{r.lead}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+              The 0% false-positive on a <span className="text-slate-400">busy-but-safe</span> road is the
+              load-bearing result: it shows the engine flags danger, not merely traffic volume — the failure
+              mode raw counts fall into. Detection is 100% across all 80 runs; the lead time is reported as a
+              distribution, not a single figure.
+            </p>
+          </div>
+
+          {/* Lead-time comparison */}
+          <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+            <p className="text-sm font-semibold text-slate-200">Time to flag a dangerous stretch, vs iRAD</p>
+            <p className="mt-1 text-xs text-slate-500">Lower is better. Quiet-road median against iRAD&apos;s crash-count rule.</p>
             <div className="mt-5 space-y-3">
               {[
-                { label: "This system (near-miss discovery)", days: 7, display: "7 days", tone: "sky", pct: 4 },
-                { label: "iRAD, 1-in-20 crash conversion", days: 170, display: "170 days", tone: "slate", pct: 55 },
-                { label: "iRAD, 1-in-1000 conversion", days: 1096, display: "never (within 3 yrs)", tone: "slate", pct: 100 },
+                { label: "This system (near-miss discovery)", display: "7.5 days", tone: "sky", pct: 3 },
+                { label: "iRAD, 1-in-20 crash conversion", display: "170 days", tone: "slate", pct: 19 },
+                { label: "iRAD, 1-in-100 conversion", display: "450 days", tone: "slate", pct: 50 },
+                { label: "iRAD, 1-in-300 conversion", display: "888 days", tone: "slate", pct: 81 },
+                { label: "iRAD, 1-in-1000 conversion", display: "never (within 3 yrs)", tone: "slate", pct: 100 },
               ].map((row) => (
                 <div key={row.label} className="grid grid-cols-[1fr_auto] items-center gap-3">
                   <div>
@@ -419,6 +461,7 @@ export default function ResearchPage() {
         </p>
         <div className="mt-6 space-y-2.5 font-mono text-xs">
           {[
+            { cmd: "python -m ai.blackspot.evaluate", what: "detection / specificity / lead-time distribution" },
             { cmd: "python -m ai.blackspot.report", what: "black-spot lead-time vs iRAD" },
             { cmd: "python -m ai.training.train_road_damage --evaluate", what: "per-class road-damage mAP" },
             { cmd: "python -m ai.demo.build_traffic_demo", what: "perception + traffic on recorded footage" },
