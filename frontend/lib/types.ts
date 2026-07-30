@@ -45,6 +45,9 @@ export interface DetectedObject {
 export interface RiskAssessment extends RiskSnapshot {
   risk_lower: number;
   risk_upper: number;
+  environment_label: string;
+  environment_hour: number | null;
+  light_risk: number;
   future_risk_score: number;
   time_to_risk_s: number | null;
   collision_probability: number;

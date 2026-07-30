@@ -80,7 +80,11 @@ class TestTelemetryOnlyPipeline:
         result = telemetry_only_pipeline().run(
             road_frame=None, cabin_frame=None, vehicle=VehicleDynamics(speed_kmh=95)
         )
-        assert set(result.risk.unobserved_factors) == {"driver_distraction", "lane_drift"}
+        # The two camera-derived factors are always unobserved with no camera.
+        # low_light joins them here only because this bare pipeline call passes
+        # no timestamp; the API supplies one, so live it is observed (see
+        # ai/environment and the assess route).
+        assert {"driver_distraction", "lane_drift"} <= set(result.risk.unobserved_factors)
         assert "driver_distraction" not in result.risk.contributing_factors
         assert "lane_drift" not in result.risk.contributing_factors
 

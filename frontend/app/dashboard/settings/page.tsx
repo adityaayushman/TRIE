@@ -12,6 +12,7 @@ const MODEL_STATUS = [
   { module: "Road damage (potholes, cracks)", detail: "YOLOv11s, fine-tuned on RDD2022 India — mAP50 0.33 (measured, see below)", real: true },
   { module: "Perception (vehicles, VRUs)", detail: "YOLOv11, COCO-pretrained", real: true },
   { module: "Traffic intelligence (congestion, density)", detail: "Derived from perception detections, run on recorded footage", real: true },
+  { module: "Environmental context (time of day)", detail: "Lighting risk from the clock, grounded in MoRTH's temporal crash data — live, no camera needed", real: true },
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
   { module: "Risk fusion (TRIE)", detail: "Weighted rule model — learned model pending", real: false },
   { module: "Uncertainty (confidence band)", detail: "Sensor-suite-aware band from unobserved-factor weight", real: true },

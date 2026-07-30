@@ -74,6 +74,8 @@ _INTERVENTION_BY_FACTOR = {
     "vru_exposure": Intervention.ENGINEERING,
     "speed": Intervention.ENFORCEMENT,
     "driver_distraction": Intervention.EDUCATION,
+    # Poor lighting on a stretch is a street-lighting gap — public works.
+    "low_light": Intervention.ENGINEERING,
 }
 
 _FACTOR_LABELS = {
@@ -83,6 +85,7 @@ _FACTOR_LABELS = {
     "lane_drift": "Lane Drift",
     "road_quality": "Poor Road Surface",
     "traffic_congestion": "Heavy Traffic",
+    "low_light": "Low Light / Night",
 }
 
 

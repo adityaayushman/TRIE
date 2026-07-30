@@ -33,6 +33,7 @@ from __future__ import annotations
 from ai.common.types import (
     DetectedObject,
     DriverState,
+    EnvironmentState,
     PerceptionResult,
     RiskAssessment,
     RiskLevel,
@@ -41,16 +42,27 @@ from ai.common.types import (
     VehicleDynamics,
 )
 
-# Relative contribution of each factor when all are observable. Ordered by
-# share of Indian road deaths the factor speaks to, not by how easy it is to
-# measure.
-_BASE_WEIGHTS = {
+# The perception/telemetry factors, ordered by share of Indian road deaths the
+# factor speaks to, not by how easy it is to measure.
+_PERCEPTION_WEIGHTS = {
     "driver_distraction": 0.28,
     "speed": 0.22,
     "vru_exposure": 0.20,
     "road_quality": 0.13,
     "lane_drift": 0.09,
     "traffic_congestion": 0.08,
+}
+
+# Environmental context (lighting / time of day; see ai/environment) is a
+# seventh factor. It is folded in so the six factors above keep their *exact*
+# original relative weights whenever it is unobserved: each is scaled by
+# (1 - LOW_LIGHT_WEIGHT), so redistributing over the six alone renormalises
+# straight back to the published values. An assessment with no timestamp
+# therefore scores identically to before this factor existed.
+LOW_LIGHT_WEIGHT = 0.10
+_BASE_WEIGHTS = {
+    **{factor: weight * (1 - LOW_LIGHT_WEIGHT) for factor, weight in _PERCEPTION_WEIGHTS.items()},
+    "low_light": LOW_LIGHT_WEIGHT,
 }
 
 # Speed reference. 120km/h is the highest Indian expressway limit, so at or
@@ -121,6 +133,7 @@ class RiskFusionEngine:
         traffic: TrafficState,
         vehicle: VehicleDynamics,
         perception: PerceptionResult,
+        environment: EnvironmentState | None = None,
     ) -> RiskAssessment:
         # Always observable: they need no sensor beyond telemetry and the road
         # camera the platform already requires.
@@ -137,6 +150,11 @@ class RiskFusionEngine:
             magnitudes["lane_drift"] = min(
                 abs(perception.lane_offset_m) / _LANE_DRIFT_LIMIT_M, 1.0
             )
+        # Environmental context is observable whenever a timestamp is known —
+        # free on the telemetry-only deployment. Omitted here (default None), it
+        # is treated as any unobserved factor: dropped, weight redistributed.
+        if environment is not None:
+            magnitudes["low_light"] = max(0.0, min(1.0, environment.light_risk))
 
         weights = _redistribute(set(magnitudes))
         factors = {

@@ -150,6 +150,11 @@ const REFERENCES = [
     note: "The reactive black-spot rule: a ~500m stretch flagged after 5 fatal/grievous crashes or 10 fatalities in 3 years.",
   },
   {
+    cite: "MoRTH, Transport Research Wing (2022).",
+    work: "Road Accidents in India 2022 — accidents by time of occurrence.",
+    note: "The 18:00–21:00 window holds 20.4% of accidents, the highest three-hour band — the basis for the time-of-day lighting-risk factor.",
+  },
+  {
     cite: "Arya, Maeda, Kumar Ghosh, Toshniwal, Sekimoto, et al. (2022).",
     work: "RDD2022: A multi-national road damage dataset for automatic road-damage detection.",
     note: "The Indian split and D00/D10/D20/D40 damage taxonomy used to fine-tune the detector.",
@@ -275,14 +280,36 @@ export default function ResearchPage() {
             evidence={
               <>
                 The live gauge shows the band directly. On this telemetry-only deployment, with
-                the camera-derived factors unmeasured, a nominal 28% score carries a band of
-                roughly <span className="text-slate-200">17–54%</span> — a visible, honest
-                &quot;we cannot see enough to be sure&quot; where a bare point estimate would fake
-                precision. Reproduced in <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
+                the two camera-derived factors unmeasured, a mid-20s score carries a band roughly{" "}
+                <span className="text-slate-200">30 points</span> wide (e.g. 17–50%) — a visible,
+                honest &quot;we cannot see enough to be sure&quot; where a bare point estimate would
+                fake precision. Reproduced in <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
               </>
             }
             caveat="The band reflects sensor coverage, not label-calibrated probability. A learned fusion sharpens this further — the Benchmarks study shows one beating the hand-set rule (AUC 0.78 → 0.82) on a controlled ground truth, pending real labelled telemetry to ship it."
           />
+        </div>
+
+        {/* Environmental context — the one real-data-grounded factor */}
+        <div className="mt-5 rounded-2xl border border-emerald-900/40 bg-emerald-950/10 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-semibold text-slate-100">
+              Environmental context — grounded in published data, live without a camera
+            </h3>
+            <span className="text-[0.65rem] font-medium uppercase tracking-wide text-emerald-400">live</span>
+          </div>
+          <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-400">
+            The one factor here that rests on <span className="text-slate-200">real published
+            data</span>, not an authored ground truth. MoRTH&apos;s Road Accidents in India 2022
+            reports the <span className="text-slate-200">18:00–21:00</span> window alone holds{" "}
+            <span className="text-slate-200">20.4%</span> of all road accidents — the single highest
+            three-hour band, stable across five years — and night hours carry a higher fatality rate
+            per crash. Time of day is free from the assessment clock, so unlike the camera factors
+            it needs no hardware: every live assessment already folds in a lighting-risk term
+            (dark and the evening peak raise it, midday lowers it), visible on the Live Risk gauge.
+            A seventh factor added so the six keep their exact original weights when it is absent —
+            the deployment simply gained a real input it had been ignoring.
+          </p>
         </div>
       </section>
 

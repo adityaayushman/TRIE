@@ -100,6 +100,19 @@ class TrafficState:
 
 
 @dataclass
+class EnvironmentState:
+    """Environmental context — lighting / time-of-day. See ai/environment.
+
+    Free from the assessment timestamp (no camera or external feed needed), so
+    a real input the telemetry-only pipeline can use. `light_risk` is the
+    calibrated 0-1 lighting risk; `label` and `hour` are for display.
+    """
+    light_risk: float = 0.0
+    hour: float | None = None
+    label: str = ""
+
+
+@dataclass
 class VehicleDynamics:
     speed_kmh: float = 0.0
     acceleration_ms2: float = 0.0

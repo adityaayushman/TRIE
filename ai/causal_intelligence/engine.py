@@ -17,6 +17,7 @@ _FACTOR_LABELS = {
     "lane_drift": "Lane Drift",
     "road_quality": "Poor Road Surface",
     "traffic_congestion": "Heavy Traffic",
+    "low_light": "Low Light / Night",
 }
 
 _PREDICTED_EVENT_BY_CAUSE = {
@@ -27,6 +28,7 @@ _PREDICTED_EVENT_BY_CAUSE = {
     "lane_drift": "Side-Swipe Collision",
     "road_quality": "Loss of Traction",
     "traffic_congestion": "Rear-End Collision",
+    "low_light": "Low-Visibility Collision",
 }
 
 
