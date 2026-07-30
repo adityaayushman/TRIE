@@ -134,6 +134,15 @@ class RiskAssessment:
     which they have.
     """
 
+    vru_vulnerability: dict[str, float | str] | None = None
+    """Why the vulnerable road users in scene were scored as they were, when a
+    helmet/triple-riding detector was available (ai/vru_intelligence). None on a
+    telemetry-only deployment. Keys: `multiplier` (>=1.0, applied to the
+    vru_exposure term), `dominant_factor` ('no_helmet'|'triple_riding'|
+    'protected'), `without_helmet`, `triple_riding`. Kept as a plain dict so
+    this leaf type stays free of a perception dependency and serialises directly.
+    """
+
     risk_lower: float = 0.0
     risk_upper: float = 0.0
     """Uncertainty band on `risk_score`, 0-100, driven by *unobserved* factors.
