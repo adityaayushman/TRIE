@@ -4,7 +4,9 @@
 
 An Explainable Multimodal Edge AI Transportation Intelligence Platform for
 real-time accident prevention and causal risk analysis. Full spec and
-system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Presenting or
+evaluating it? Start with the [presentation kit](docs/PRESENTATION.md) — thesis,
+every result, and a five-minute demo script in one page.
 
 ## Live
 
