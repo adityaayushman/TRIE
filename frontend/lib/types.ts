@@ -43,6 +43,8 @@ export interface DetectedObject {
 /** Live payload broadcast over /alerts/ws.
  * Matches backend/app/schemas/risk.py RiskAssessmentResponse. */
 export interface RiskAssessment extends RiskSnapshot {
+  risk_lower: number;
+  risk_upper: number;
   future_risk_score: number;
   time_to_risk_s: number | null;
   collision_probability: number;

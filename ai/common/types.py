@@ -121,6 +121,19 @@ class RiskAssessment:
     which they have.
     """
 
+    risk_lower: float = 0.0
+    risk_upper: float = 0.0
+    """Uncertainty band on `risk_score`, 0-100, driven by *unobserved* factors.
+
+    The point score redistributes an unobserved factor's weight, which quietly
+    assumes it would have scored like the observed average. It might not. The
+    band makes that explicit: `risk_lower` is the score if every unmeasured
+    factor were in fact benign (magnitude 0), `risk_upper` if every one were at
+    its worst (magnitude 1). With a full sensor suite the band collapses to the
+    point; with only speed observed it is wide — an honest 'we cannot see enough
+    to be sure', where a bare point estimate would fake precision.
+    """
+
 
 @dataclass
 class TemporalForecast:

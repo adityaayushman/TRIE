@@ -92,6 +92,8 @@ async def assess_risk(
     response = RiskAssessmentResponse(
         vehicle_id=request.vehicle_id,
         risk_score=result.risk.risk_score,
+        risk_lower=result.risk.risk_lower,
+        risk_upper=result.risk.risk_upper,
         risk_level=result.risk.risk_level.value,
         contributing_factors=result.risk.contributing_factors,
         future_risk_score=result.forecast.future_risk_score,

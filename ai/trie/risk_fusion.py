@@ -144,6 +144,18 @@ class RiskFusionEngine:
         }
         risk_score = round(sum(factors.values()) * 100, 1)
 
+        # Uncertainty band, driven entirely by which factors went unmeasured.
+        # `raw` scores the observed factors at their *base* weight (no
+        # redistribution), i.e. what the risk would be if every unobserved
+        # factor were benign — the floor. The unobserved base weight, all of it
+        # at magnitude 1, is the most those factors could add — the ceiling.
+        # _BASE_WEIGHTS sums to 1, so the unobserved share is 1 - observed.
+        raw = sum(magnitude * _BASE_WEIGHTS[factor] for factor, magnitude in magnitudes.items())
+        observed_weight = sum(_BASE_WEIGHTS[factor] for factor in magnitudes)
+        unobserved_weight = max(0.0, 1.0 - observed_weight)
+        risk_lower = round(raw * 100, 1)
+        risk_upper = round(min(1.0, raw + unobserved_weight) * 100, 1)
+
         if risk_score >= 80:
             level = RiskLevel.CRITICAL
         elif risk_score >= 55:
@@ -158,4 +170,6 @@ class RiskFusionEngine:
             risk_level=level,
             contributing_factors=factors,
             unobserved_factors=sorted(set(_BASE_WEIGHTS) - set(magnitudes)),
+            risk_lower=risk_lower,
+            risk_upper=risk_upper,
         )

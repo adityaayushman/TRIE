@@ -14,6 +14,7 @@ const MODEL_STATUS = [
   { module: "Traffic intelligence (congestion, density)", detail: "Derived from perception detections, run on recorded footage", real: true },
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
   { module: "Risk fusion (TRIE)", detail: "Weighted rule model — learned model pending", real: false },
+  { module: "Uncertainty (confidence band)", detail: "Sensor-suite-aware band from unobserved-factor weight", real: true },
   { module: "Temporal forecast", detail: "Linear extrapolation — LSTM pending", real: false },
   { module: "Explainability", detail: "Additive factor shares — SHAP pending", real: false },
 ];

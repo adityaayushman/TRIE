@@ -133,8 +133,8 @@ const LIMITATIONS = [
     detail: "mAP50 33.0%, and training stopped at epoch 55/60 while still improving. The CRDDC'2022 challenge scored on F1, so numbers aren't directly comparable; this is a working detector, not a claim to beat the leaderboard.",
   },
   {
-    label: "Risk scores are point estimates",
-    detail: "No calibrated uncertainty yet. Adding confidence bands — especially reflecting unobserved factors — is a planned, reviewer-relevant upgrade.",
+    label: "Fusion weights are hand-set, not learned",
+    detail: "The base factor weights are chosen from the MoRTH fatality split, not fit to labelled crash data. A learned fusion is the clearest rigor upgrade; the uncertainty band (below) already reports how much the current model is guessing on any given assessment.",
   },
 ];
 
@@ -268,19 +268,20 @@ export default function ResearchPage() {
 
           <Contribution
             index="03"
-            title="Explainability that adapts to the road"
-            claim="Every score decomposes into named, auditable factors — and a factor with no sensor is dropped, never scored as safe."
-            prior="Risk is typically a single opaque number, and missing inputs are implicitly treated as benign (no lane-departure signal reads as 'in lane'), which silently understates risk on exactly the roads that lack markings."
-            approach="The fusion is a transparent additive model: the score decomposes into per-factor shares (a causal chain, not a black box), and an unobserved factor — lane drift where there are no lane markings, distraction where there is no cabin camera — is removed and its weight redistributed across what is observed, rather than assumed absent."
+            title="Explainability and calibrated uncertainty"
+            claim="Every score decomposes into named factors and carries a confidence band that widens exactly as much as the sensors are missing."
+            prior="Risk is typically a single opaque number. Missing inputs are treated as benign (no lane-departure signal reads as 'in lane'), and the number is reported with the same false confidence whether every sensor fired or only one did."
+            approach="The fusion is a transparent additive model — the score decomposes into per-factor shares, and an unobserved factor is dropped with its weight redistributed rather than assumed absent. Crucially, that redistribution's assumption is then measured: the risk is reported as a band whose floor is 'every unmeasured factor is benign' and whose ceiling is 'every one is at its worst'. Full sensor suite → the band collapses to the point; speed-only → it is wide, on purpose."
             evidence={
               <>
-                The dashboard renders the contributing-factor breakdown, the primary cause, the
-                predicted event, and the list of factors explicitly marked{" "}
-                <span className="text-slate-200">not observed</span> for every assessment. The
-                same status is documented, not hidden, in the Settings model table.
+                The live gauge shows the band directly. On this telemetry-only deployment, with
+                the camera-derived factors unmeasured, a nominal 28% score carries a band of
+                roughly <span className="text-slate-200">17–54%</span> — a visible, honest
+                &quot;we cannot see enough to be sure&quot; where a bare point estimate would fake
+                precision. Reproduced in <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
               </>
             }
-            caveat="The fusion weights are a rule-based model today, not learned. Auditable by design, but a learned replacement is the clearest rigor upgrade."
+            caveat="The band reflects sensor coverage, not label-calibrated probability — it says how much is unmeasured, which a learned, crash-data-calibrated fusion would sharpen further."
           />
         </div>
       </section>
