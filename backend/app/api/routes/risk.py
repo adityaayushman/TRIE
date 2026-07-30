@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai.blackspot import BlackSpotEngine, RiskObservation
 from ai.blackspot.geo import DEFAULT_CELL_SIZE_M
-from ai.common.types import RiskLevel, VehicleDynamics
+from ai.common.types import EnvironmentState, RiskLevel, VehicleDynamics
+from ai.environment.time_of_day import describe_hour, light_risk_for_hour
 from ai.no_camera import telemetry_only_pipeline
 from ai.pipeline import TransportationRiskPipeline
 from app.auth.dependencies import current_user
@@ -64,6 +65,15 @@ async def assess_risk(
         acceleration_ms2=request.acceleration_ms2,
         heading_deg=request.heading_deg,
     )
+    # Environmental context is free from the clock — no camera needed — so the
+    # telemetry-only deployment uses it. India runs on IST (UTC+5:30); a
+    # location-aware version would derive local time from the GPS fix.
+    ist_hour = (datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)).hour
+    environment = EnvironmentState(
+        light_risk=light_risk_for_hour(ist_hour),
+        hour=ist_hour,
+        label=describe_hour(ist_hour),
+    )
     # No frames: the engines behind this pipeline report an unobserved camera
     # rather than inspecting an image. See get_pipeline().
     result = pipeline.run(
@@ -71,6 +81,7 @@ async def assess_risk(
         cabin_frame=None,
         vehicle=vehicle,
         vehicle_id=request.vehicle_id,
+        environment=environment,
     )
 
     event = RiskEvent(
@@ -107,6 +118,9 @@ async def assess_risk(
         latitude=request.latitude,
         longitude=request.longitude,
         unobserved_factors=result.risk.unobserved_factors,
+        environment_label=environment.label,
+        environment_hour=environment.hour,
+        light_risk=environment.light_risk,
         potholes=[
             DetectedObjectRead(label=p.label, confidence=p.confidence, bbox=p.bbox)
             for p in result.road.potholes

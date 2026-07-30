@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 
 from ai.causal_intelligence.engine import CausalIntelligenceEngine
-from ai.common.types import PipelineResult, VehicleDynamics
+from ai.common.types import EnvironmentState, PipelineResult, VehicleDynamics
 from ai.driver_intelligence.engine import DriverIntelligenceEngine
 from ai.explainable_ai.engine import ExplainableAIEngine
 from ai.perception.engine import PerceptionEngine
@@ -58,6 +58,7 @@ class TransportationRiskPipeline:
         vehicle: VehicleDynamics | None = None,
         timestamp_s: float | None = None,
         vehicle_id: str = DEFAULT_VEHICLE_ID,
+        environment: EnvironmentState | None = None,
     ) -> PipelineResult:
         """Assess one moment.
 
@@ -88,6 +89,7 @@ class TransportationRiskPipeline:
             traffic=traffic,
             vehicle=vehicle,
             perception=perception,
+            environment=environment,
         )
         forecast = self.temporal_prediction.predict(risk, vehicle_id=vehicle_id)
         causal = self.causal_intelligence.explain(risk)

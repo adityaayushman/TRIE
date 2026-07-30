@@ -35,6 +35,16 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
               {assessment.latitude.toFixed(4)}, {assessment.longitude.toFixed(4)}
             </p>
           )}
+          {live && live.environment_label && (
+            <p
+              className="flex items-center gap-1.5 text-[0.7rem] text-slate-500"
+              title="Time-of-day lighting risk, from the assessment clock (IST) — a real input, no camera needed. See ai/environment."
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: `rgba(148,163,184,${0.3 + live.light_risk * 0.7})` }} />
+              {live.environment_hour !== null && `${String(live.environment_hour).padStart(2, "0")}:00 IST · `}
+              {live.environment_label} · lighting risk {(live.light_risk * 100).toFixed(0)}%
+            </p>
+          )}
         </Card>
 
         <Card delay={0.05} className="flex flex-col gap-5">

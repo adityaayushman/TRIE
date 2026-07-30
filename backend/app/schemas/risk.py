@@ -82,6 +82,14 @@ class RiskAssessmentResponse(BaseModel):
     # which UI cannot parse out of a sentence.
     unobserved_factors: list[str] = []
 
+    # Environmental context (lighting / time of day) used in the score, derived
+    # from the assessment clock — a real input the telemetry-only deployment has
+    # for free. See ai/environment. `light_risk` in 0-1, `environment_label`
+    # e.g. "night" / "evening peak" / "daylight".
+    environment_label: str = ""
+    environment_hour: int | None = None
+    light_risk: float = 0.0
+
     # Real-time road surface detail from ai/road_intelligence/ — previously
     # computed by the pipeline and then discarded, with only the scalar
     # `contributing_factors["road_quality"]` reaching the client. Live over
