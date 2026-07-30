@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 
 /** Sections backed by either a real endpoint or a real model's output.
@@ -79,12 +80,21 @@ function NavLink({ href, label, active, icon }: { href: string; label: string; a
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition ${
-        active ? "bg-slate-800 text-slate-100" : "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
+      className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+        active ? "text-white" : "text-slate-500 hover:text-slate-300"
       }`}
     >
-      <Icon className={active ? "text-sky-400" : "text-slate-600"} />
-      {label}
+      {active && (
+        <motion.span
+          layoutId="dash-nav-active"
+          transition={{ type: "spring", stiffness: 500, damping: 40 }}
+          className="absolute inset-0 rounded-lg border border-sky-500/25 bg-gradient-to-r from-sky-500/20 to-sky-500/5"
+        />
+      )}
+      <span className={`relative z-10 ${active ? "text-sky-300" : "text-slate-600"}`}>
+        <Icon />
+      </span>
+      <span className="relative z-10">{label}</span>
     </Link>
   );
 }
@@ -98,8 +108,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     exact ? pathname === href : pathname.startsWith(href);
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur">
+    <div className="relative min-h-screen bg-slate-950">
+      {/* ambient themed backdrop — cheap CSS, no 3D, so tabs stay snappy */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(60rem 40rem at 80% -10%, rgba(56,189,248,0.06), transparent 60%), radial-gradient(50rem 40rem at -10% 20%, rgba(56,189,248,0.05), transparent 55%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.15]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(148,163,184,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.5) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse at 50% 0%, black, transparent 70%)",
+          WebkitMaskImage: "radial-gradient(ellipse at 50% 0%, black, transparent 70%)",
+        }}
+      />
+      <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 px-5 py-3">
           <div className="flex items-center gap-3">
             <button
@@ -147,11 +177,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1400px]">
+      <div className="relative z-10 mx-auto flex max-w-[1400px]">
         <aside
           className={`${
             open ? "block" : "hidden"
-          } w-full shrink-0 border-r border-slate-800/80 p-3 lg:block lg:w-56`}
+          } w-full shrink-0 border-r border-slate-800/70 p-3 lg:sticky lg:top-[57px] lg:block lg:h-[calc(100vh-57px)] lg:w-56`}
         >
           <nav className="space-y-0.5">
             {SECTIONS.map((section) => (
