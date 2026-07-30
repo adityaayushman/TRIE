@@ -1,4 +1,5 @@
 import { API_URL } from "./api";
+import { BlackSpot } from "./types";
 
 export interface DemoDetection {
   label: string;
@@ -60,6 +61,16 @@ export async function fetchDemoManifest(): Promise<DemoManifestEntry[]> {
 export async function fetchDemoClip(url: string): Promise<DemoClipData> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`clip data fetch failed: ${response.status}`);
+  return response.json();
+}
+
+/** Illustrative black spots: the real BlackSpotEngine run on a seeded
+ * multi-location scenario (ai/demo/build_blackspot_demo.py), so the map has
+ * genuine engine output to plot. Labelled as a sample in the UI — the live
+ * API only ever sees single-location demo telemetry. */
+export async function fetchSampleBlackSpots(): Promise<BlackSpot[]> {
+  const response = await fetch(`${DEMO_BASE_URL}/demo/blackspots/sample.json`);
+  if (!response.ok) throw new Error(`sample black spots fetch failed: ${response.status}`);
   return response.json();
 }
 
