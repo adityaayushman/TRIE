@@ -9,7 +9,7 @@ import { Card, SectionTitle } from "@/components/ui";
  * this is the same status table as docs/ARCHITECTURE.md, rendered, so a
  * reviewer sees the real picture rather than the aspirational one. */
 const MODEL_STATUS = [
-  { module: "Road damage (potholes, cracks)", detail: "YOLOv11s, fine-tuned on RDD2022 India — mAP50 0.28 (measured, see below)", real: true },
+  { module: "Road damage (potholes, cracks)", detail: "YOLOv11s, fine-tuned on RDD2022 India — mAP50 0.33 (measured, see below)", real: true },
   { module: "Perception (vehicles, VRUs)", detail: "YOLOv11, COCO-pretrained", real: true },
   { module: "Traffic intelligence (congestion, density)", detail: "Derived from perception detections, run on recorded footage", real: true },
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
@@ -22,15 +22,15 @@ const MODEL_STATUS = [
  * labelled instances) with `python -m ai.training.train_road_damage
  * --evaluate`. These are real numbers on real Indian road images, not a
  * claim — reproduced from runs/road_damage_india/evaluation.json. Training
- * reached epoch 36 of a planned 60 before a host-RAM OOM stopped it; mAP was
+ * reached epoch 55 of a planned 60 before a host-RAM OOM stopped it; mAP was
  * still climbing, so these are a floor, not the ceiling. */
 const ROAD_DAMAGE_EVAL = {
-  overall: { mAP50: 0.278, mAP50_95: 0.114, precision: 0.568, recall: 0.285 },
+  overall: { mAP50: 0.33, mAP50_95: 0.142, precision: 0.617, recall: 0.311 },
   perClass: [
-    { name: "Alligator crack", instances: 394, mAP50: 0.52, mAP50_95: 0.233 },
-    { name: "Pothole", instances: 634, mAP50: 0.376, mAP50_95: 0.135 },
-    { name: "Longitudinal crack", instances: 295, mAP50: 0.207, mAP50_95: 0.085 },
-    { name: "Transverse crack", instances: 17, mAP50: 0.008, mAP50_95: 0.002 },
+    { name: "Alligator crack", instances: 394, mAP50: 0.577, mAP50_95: 0.273 },
+    { name: "Pothole", instances: 634, mAP50: 0.443, mAP50_95: 0.165 },
+    { name: "Longitudinal crack", instances: 295, mAP50: 0.28, mAP50_95: 0.125 },
+    { name: "Transverse crack", instances: 17, mAP50: 0.019, mAP50_95: 0.004 },
   ],
 };
 
@@ -158,7 +158,7 @@ export default function SettingsPage() {
           RDD2022 India split, evaluated on 1,542 held-out images. Alligator cracks and
           potholes — the damage that actually threatens a two-wheeler — detect well; transverse
           cracks barely register because the val split has only 17 of them to learn from.
-          Training reached 36 of a planned 60 epochs before a host-RAM limit stopped it and
+          Training reached 55 of a planned 60 epochs before a host-RAM limit stopped it and
           mAP was still climbing, so these are a floor. COCO-pretrained weights have no pothole
           class at all, so this is the difference between guessing and detecting.
         </p>
