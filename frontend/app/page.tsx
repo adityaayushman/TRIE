@@ -48,7 +48,7 @@ const PILLARS = [
 
 export default function Landing() {
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="min-h-screen">
       {/* Hero — a live 3D road scene behind the pitch */}
       <section className="relative min-h-[94vh] overflow-hidden">
         {/* 3D layer */}

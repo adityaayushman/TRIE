@@ -108,28 +108,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     exact ? pathname === href : pathname.startsWith(href);
 
   return (
-    <div className="relative min-h-screen bg-slate-950">
-      {/* ambient themed backdrop — cheap CSS, no 3D, so tabs stay snappy */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(60rem 40rem at 80% -10%, rgba(56,189,248,0.06), transparent 60%), radial-gradient(50rem 40rem at -10% 20%, rgba(56,189,248,0.05), transparent 55%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0 opacity-[0.15]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(148,163,184,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.5) 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse at 50% 0%, black, transparent 70%)",
-          WebkitMaskImage: "radial-gradient(ellipse at 50% 0%, black, transparent 70%)",
-        }}
-      />
-      <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl">
+    <div className="relative min-h-screen">
+      {/* the animated near-black backdrop is provided site-wide by
+          AmbientBackground in the root layout; this page is transparent over it */}
+      <header className="sticky top-0 z-20 border-b border-slate-800/70 bg-[#05070c]/70 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 px-5 py-3">
           <div className="flex items-center gap-3">
             <button

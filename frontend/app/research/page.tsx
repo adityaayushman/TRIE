@@ -168,15 +168,7 @@ const REFERENCES = [
 
 export default function ResearchPage() {
   return (
-    <main className="relative min-h-screen bg-slate-950">
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          backgroundImage:
-            "radial-gradient(55rem 40rem at 85% -5%, rgba(56,189,248,0.06), transparent 60%), radial-gradient(45rem 35rem at 0% 10%, rgba(56,189,248,0.05), transparent 55%)",
-        }}
-      />
+    <main className="relative min-h-screen">
       <div className="relative z-10">
       <Header />
 
