@@ -133,8 +133,8 @@ const LIMITATIONS = [
     detail: "mAP50 33.0%, and training stopped at epoch 55/60 while still improving. The CRDDC'2022 challenge scored on F1, so numbers aren't directly comparable; this is a working detector, not a claim to beat the leaderboard.",
   },
   {
-    label: "Fusion weights are hand-set, not learned",
-    detail: "The base factor weights are chosen from the MoRTH fatality split, not fit to labelled crash data. A learned fusion is the clearest rigor upgrade; the uncertainty band (below) already reports how much the current model is guessing on any given assessment.",
+    label: "The shipped fusion is the rule, not the learned model",
+    detail: "The Benchmarks study shows a learned, calibrated fusion beats the hand-set rule on a controlled ground truth — but it is trained on authored data, so it demonstrates the architecture, not a field model. Swapping it into the live pipeline waits on labelled telemetry that does not publicly exist; until then the transparent rule ships and the learned model is evidence, not production.",
   },
 ];
 
@@ -281,7 +281,7 @@ export default function ResearchPage() {
                 precision. Reproduced in <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
               </>
             }
-            caveat="The band reflects sensor coverage, not label-calibrated probability — it says how much is unmeasured, which a learned, crash-data-calibrated fusion would sharpen further."
+            caveat="The band reflects sensor coverage, not label-calibrated probability. A learned fusion sharpens this further — the Benchmarks study shows one beating the hand-set rule (AUC 0.78 → 0.82) on a controlled ground truth, pending real labelled telemetry to ship it."
           />
         </div>
       </section>
@@ -403,6 +403,50 @@ export default function ResearchPage() {
               <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_road_damage --evaluate</code>.
             </p>
           </div>
+
+          {/* Learned fusion vs the hand-set rule */}
+          <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+            <p className="text-sm font-semibold text-slate-200">Learned fusion vs the hand-set rule</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Is the additive rule leaving signal on the table? A controlled study against a ground
+              truth where crash risk compounds (fast <span className="text-slate-400">and</span> bad
+              surface <span className="text-slate-400">and</span> vulnerable road users) — the
+              interaction an additive model cannot represent. Reproduce with{" "}
+              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.fusion_study</code>.
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[440px] text-left text-xs">
+                <thead>
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                    <th className="pb-2 font-medium">Model</th>
+                    <th className="pb-2 pr-3 text-right font-medium">ROC-AUC</th>
+                    <th className="pb-2 text-right font-medium">Brier (lower better)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { c: "Hand-set rule (shipped)", auc: 0.781, brier: 0.180 },
+                    { c: "Learned linear", auc: 0.815, brier: 0.164 },
+                    { c: "Learned non-linear (GBM)", auc: 0.819, brier: 0.162, bold: true },
+                  ].map((r) => (
+                    <tr key={r.c} className={`border-t border-slate-800/70 ${r.bold ? "font-semibold text-slate-100" : "text-slate-300"}`}>
+                      <td className="py-1.5">{r.c}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums">{r.auc.toFixed(3)}</td>
+                      <td className="py-1.5 text-right tabular-nums text-slate-400">{r.brier.toFixed(3)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+              Learning the weights beats the hand-set rule (AUC 0.78 → 0.82); a non-linear model
+              edges ahead further by capturing the compounding, all while staying calibrated. Stable
+              across seeds. The honest scope matches the black-spot evaluation: the ground truth is
+              authored, because no public dataset labels these six factors against real crash
+              outcomes — so this shows the architecture <span className="text-slate-400">admits</span>{" "}
+              a learned, calibrated fusion, not a field-measured accuracy.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -463,7 +507,7 @@ export default function ResearchPage() {
         <div className="mt-6 space-y-2.5 font-mono text-xs">
           {[
             { cmd: "python -m ai.blackspot.evaluate", what: "detection / specificity / lead-time distribution" },
-            { cmd: "python -m ai.blackspot.report", what: "black-spot lead-time vs iRAD" },
+            { cmd: "python -m ai.trie.fusion_study", what: "learned fusion vs the hand-set rule" },
             { cmd: "python -m ai.training.train_road_damage --evaluate", what: "per-class road-damage mAP" },
             { cmd: "python -m ai.demo.build_traffic_demo", what: "perception + traffic on recorded footage" },
           ].map((c) => (
