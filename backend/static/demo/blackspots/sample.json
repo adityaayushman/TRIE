@@ -1,0 +1,109 @@
+[
+  {
+    "latitude": 28.461286,
+    "longitude": 77.026094,
+    "near_miss_count": 204,
+    "exposure": 2704,
+    "incident_rate": 0.0754,
+    "confidence": 0.0661,
+    "dominant_cause": "Vulnerable Road Users Nearby",
+    "cause_breakdown": {
+      "vru_exposure": 0.333,
+      "speed": 0.287,
+      "road_quality": 0.2,
+      "driver_distraction": 0.138,
+      "traffic_congestion": 0.041,
+      "lane_drift": 0.0
+    },
+    "intervention": "engineering",
+    "radius_m": 21.6,
+    "qualifies_under_irad": true,
+    "first_seen": "2026-01-01T00:00:00+00:00",
+    "last_seen": "2026-03-01T00:18:00+00:00"
+  },
+  {
+    "latitude": 28.488268,
+    "longitude": 77.061119,
+    "near_miss_count": 144,
+    "exposure": 2703,
+    "incident_rate": 0.0533,
+    "confidence": 0.0454,
+    "dominant_cause": "High Speed",
+    "cause_breakdown": {
+      "speed": 0.417,
+      "vru_exposure": 0.322,
+      "road_quality": 0.12,
+      "traffic_congestion": 0.071,
+      "driver_distraction": 0.07
+    },
+    "intervention": "enforcement",
+    "radius_m": 21.5,
+    "qualifies_under_irad": true,
+    "first_seen": "2026-01-01T00:00:00+00:00",
+    "last_seen": "2026-03-01T00:18:00+00:00"
+  },
+  {
+    "latitude": 28.501751,
+    "longitude": 77.045375,
+    "near_miss_count": 99,
+    "exposure": 2741,
+    "incident_rate": 0.0361,
+    "confidence": 0.0298,
+    "dominant_cause": "Driver Distraction",
+    "cause_breakdown": {
+      "driver_distraction": 0.341,
+      "vru_exposure": 0.32,
+      "speed": 0.232,
+      "road_quality": 0.061,
+      "traffic_congestion": 0.041,
+      "lane_drift": 0.006
+    },
+    "intervention": "education",
+    "radius_m": 21.4,
+    "qualifies_under_irad": true,
+    "first_seen": "2026-01-01T00:00:00+00:00",
+    "last_seen": "2026-03-01T00:23:30+00:00"
+  },
+  {
+    "latitude": 28.46577,
+    "longitude": 77.070277,
+    "near_miss_count": 59,
+    "exposure": 2742,
+    "incident_rate": 0.0215,
+    "confidence": 0.0167,
+    "dominant_cause": "Vulnerable Road Users Nearby",
+    "cause_breakdown": {
+      "vru_exposure": 0.345,
+      "speed": 0.229,
+      "driver_distraction": 0.153,
+      "road_quality": 0.136,
+      "traffic_congestion": 0.136
+    },
+    "intervention": "engineering",
+    "radius_m": 19.0,
+    "qualifies_under_irad": true,
+    "first_seen": "2026-01-01T00:00:00+00:00",
+    "last_seen": "2026-03-01T00:21:30+00:00"
+  },
+  {
+    "latitude": 28.47025,
+    "longitude": 77.037762,
+    "near_miss_count": 27,
+    "exposure": 2673,
+    "incident_rate": 0.0101,
+    "confidence": 0.007,
+    "dominant_cause": "Vulnerable Road Users Nearby",
+    "cause_breakdown": {
+      "vru_exposure": 0.384,
+      "speed": 0.293,
+      "driver_distraction": 0.155,
+      "road_quality": 0.122,
+      "traffic_congestion": 0.047
+    },
+    "intervention": "engineering",
+    "radius_m": 19.5,
+    "qualifies_under_irad": true,
+    "first_seen": "2026-01-01T00:00:00+00:00",
+    "last_seen": "2026-03-01T00:23:30+00:00"
+  }
+]

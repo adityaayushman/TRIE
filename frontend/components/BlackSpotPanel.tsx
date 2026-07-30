@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchBlackSpots } from "@/lib/api";
+import { fetchSampleBlackSpots } from "@/lib/demo";
 import { BlackSpot, RiskLevel } from "@/lib/types";
+import { BlackSpotMap } from "./BlackSpotMap";
 import { Badge, Card, EmptyState, SectionTitle, Stat } from "./ui";
 
 const NEAR_MISS_LEVELS: RiskLevel[] = ["moderate", "high", "critical"];
@@ -16,6 +18,8 @@ const INTERVENTION_COPY: Record<BlackSpot["intervention"], string> = {
   education: "Driver behaviour",
 };
 
+type Source = "sample" | "live";
+
 function factorLabel(key: string): string {
   return key
     .split("_")
@@ -23,13 +27,31 @@ function factorLabel(key: string): string {
     .join(" ");
 }
 
-function BlackSpotCard({ spot, rank }: { spot: BlackSpot; rank: number }) {
+function BlackSpotCard({
+  spot,
+  rank,
+  selected,
+  onSelect,
+  cardRef,
+}: {
+  spot: BlackSpot;
+  rank: number;
+  selected: boolean;
+  onSelect: () => void;
+  cardRef?: (el: HTMLLIElement | null) => void;
+}) {
   const topCauses = Object.entries(spot.cause_breakdown)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
 
   return (
-    <li className="rounded-xl border border-slate-800 bg-slate-950/50 p-5">
+    <li
+      ref={cardRef}
+      onClick={onSelect}
+      className={`cursor-pointer rounded-xl border bg-slate-950/50 p-5 transition ${
+        selected ? "border-sky-600/70 ring-1 ring-sky-600/40" : "border-slate-800 hover:border-slate-700"
+      }`}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
@@ -83,6 +105,7 @@ function BlackSpotCard({ spot, rank }: { spot: BlackSpot; rank: number }) {
 }
 
 export function BlackSpotPanel() {
+  const [source, setSource] = useState<Source>("sample");
   const [spots, setSpots] = useState<BlackSpot[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [minExposure, setMinExposure] = useState(30);
@@ -94,27 +117,57 @@ export function BlackSpotPanel() {
    * visible rather than hidden behind a default. */
   const [nearMissLevel, setNearMissLevel] = useState<RiskLevel>("moderate");
   const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
+  const cardRefs = useRef<(HTMLLIElement | null)[]>([]);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setSelected(null);
     try {
-      setSpots(await fetchBlackSpots({ minExposure, minNearMisses, nearMissLevel }));
+      const next =
+        source === "sample"
+          ? await fetchSampleBlackSpots()
+          : await fetchBlackSpots({ minExposure, minNearMisses, nearMissLevel });
+      setSpots(next);
       setError(null);
     } catch (cause) {
       setError((cause as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [minExposure, minNearMisses, nearMissLevel]);
+  }, [source, minExposure, minNearMisses, nearMissLevel]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
+  const selectFromMap = useCallback((index: number | null) => {
+    setSelected(index);
+    if (index !== null) {
+      cardRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, []);
+
   return (
     <div className="space-y-5">
       <Card>
-        <SectionTitle hint="predictive, from near-misses">Black-Spot Discovery</SectionTitle>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <SectionTitle hint="predictive, from near-misses">Black-Spot Discovery</SectionTitle>
+          <div className="flex rounded-lg border border-slate-800 p-0.5 text-[0.7rem]">
+            {(["sample", "live"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSource(s)}
+                className={`rounded-md px-2.5 py-1 font-medium transition ${
+                  source === s ? "bg-slate-800 text-slate-100" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {s === "sample" ? "Illustrative sample" : "Live telemetry"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <p className="max-w-3xl text-xs leading-relaxed text-slate-400">
           India&apos;s iRAD/e-DAR flags a 500m stretch only after{" "}
           <span className="text-slate-300">five fatal or grievous crashes, or ten deaths,
@@ -123,54 +176,49 @@ export function BlackSpotPanel() {
           and ranked by a Wilson lower bound, so a stretch can be flagged before anyone dies.
         </p>
 
-        <div className="mt-5 flex flex-wrap items-end gap-5 border-t border-slate-800 pt-4">
-          <label className="text-xs text-slate-500">
-            <span className="block mb-1">Min exposure: <span className="text-slate-300 tabular-nums">{minExposure}</span></span>
-            <input
-              type="range"
-              min={1}
-              max={100}
-              value={minExposure}
-              onChange={(e) => setMinExposure(Number(e.target.value))}
-              className="w-40 accent-sky-500"
-            />
-          </label>
-          <label className="text-xs text-slate-500">
-            <span className="block mb-1">Min near-misses: <span className="text-slate-300 tabular-nums">{minNearMisses}</span></span>
-            <input
-              type="range"
-              min={1}
-              max={20}
-              value={minNearMisses}
-              onChange={(e) => setMinNearMisses(Number(e.target.value))}
-              className="w-40 accent-sky-500"
-            />
-          </label>
-          <label className="text-xs text-slate-500">
-            <span className="mb-1 block">Near-miss level</span>
-            <select
-              value={nearMissLevel}
-              onChange={(e) => setNearMissLevel(e.target.value as RiskLevel)}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-600"
-            >
-              {NEAR_MISS_LEVELS.map((level) => (
-                <option key={level} value={level}>
-                  {level}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-600">
-          Min exposure is what excludes a barely-seen cell — the Wilson bound alone cannot,
-          since 1 near-miss in 1 pass scores higher than 40 in 200. Near-miss level defaults
-          to <span className="text-slate-500">moderate</span> here rather than the engine&apos;s
-          own <span className="text-slate-500">high</span>: with no camera attached, speed is
-          the only live factor and risk tops out near 35%, so at{" "}
-          <span className="text-slate-500">high</span> nothing this API records could ever
-          qualify. Real perception at the edge reaches the full range.
-        </p>
+        {source === "sample" ? (
+          <p className="mt-4 rounded-lg border border-sky-900/40 bg-sky-950/20 px-3 py-2 text-[0.7rem] leading-relaxed text-slate-400">
+            <span className="font-semibold text-sky-300">Illustrative sample.</span> The real{" "}
+            <code className="rounded bg-slate-800 px-1 py-0.5 text-[0.65rem] text-slate-300">BlackSpotEngine</code>{" "}
+            run on a seeded multi-location NCR scenario (the live API only ever receives demo
+            telemetry at one point). The engine is real; the near-miss telemetry it aggregates
+            is authored — the same honesty as the recorded-footage feeds. Switch to{" "}
+            <span className="text-slate-300">Live telemetry</span> for what the deployed API
+            actually holds.
+          </p>
+        ) : (
+          <>
+            <div className="mt-5 flex flex-wrap items-end gap-5 border-t border-slate-800 pt-4">
+              <label className="text-xs text-slate-500">
+                <span className="block mb-1">Min exposure: <span className="text-slate-300 tabular-nums">{minExposure}</span></span>
+                <input type="range" min={1} max={100} value={minExposure} onChange={(e) => setMinExposure(Number(e.target.value))} className="w-40 accent-sky-500" />
+              </label>
+              <label className="text-xs text-slate-500">
+                <span className="block mb-1">Min near-misses: <span className="text-slate-300 tabular-nums">{minNearMisses}</span></span>
+                <input type="range" min={1} max={20} value={minNearMisses} onChange={(e) => setMinNearMisses(Number(e.target.value))} className="w-40 accent-sky-500" />
+              </label>
+              <label className="text-xs text-slate-500">
+                <span className="mb-1 block">Near-miss level</span>
+                <select
+                  value={nearMissLevel}
+                  onChange={(e) => setNearMissLevel(e.target.value as RiskLevel)}
+                  className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-600"
+                >
+                  {NEAR_MISS_LEVELS.map((level) => (
+                    <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-600">
+              Min exposure is what excludes a barely-seen cell — the Wilson bound alone cannot,
+              since 1 near-miss in 1 pass scores higher than 40 in 200. With no camera attached,
+              speed is the only live factor and risk tops out near 35%, so the level defaults to{" "}
+              <span className="text-slate-500">moderate</span>; at{" "}
+              <span className="text-slate-500">high</span> nothing this API records could qualify.
+            </p>
+          </>
+        )}
       </Card>
 
       {error ? (
@@ -180,14 +228,32 @@ export function BlackSpotPanel() {
       ) : spots.length === 0 ? (
         <EmptyState
           title="No stretch clears the evidence thresholds yet"
-          body={`Nominating a black spot needs at least ${minExposure} vehicle passes and ${minNearMisses} near-misses through the same 500m cell. A public demo has little geo-tagged telemetry — lower the thresholds, or run assessments at one location from the Live tab, to see the engine nominate.`}
+          body={`Nominating a black spot needs at least ${minExposure} vehicle passes and ${minNearMisses} near-misses through the same 500m cell. A public demo has little geo-tagged telemetry — lower the thresholds, switch to the illustrative sample, or run assessments at one location from the Live tab.`}
         />
       ) : (
-        <ul className="space-y-3">
-          {spots.map((spot, index) => (
-            <BlackSpotCard key={`${spot.latitude},${spot.longitude}`} spot={spot} rank={index + 1} />
-          ))}
-        </ul>
+        <>
+          <Card>
+            <SectionTitle hint={`${spots.length} stretch${spots.length === 1 ? "" : "es"} nominated`}>
+              Where they are
+            </SectionTitle>
+            <BlackSpotMap spots={spots} selected={selected} onSelect={selectFromMap} />
+          </Card>
+
+          <ul className="space-y-3">
+            {spots.map((spot, index) => (
+              <BlackSpotCard
+                key={`${spot.latitude},${spot.longitude}`}
+                spot={spot}
+                rank={index + 1}
+                selected={selected === index}
+                onSelect={() => setSelected(selected === index ? null : index)}
+                cardRef={(el) => {
+                  cardRefs.current[index] = el;
+                }}
+              />
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
