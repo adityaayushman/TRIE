@@ -153,6 +153,28 @@ def train(
     print(f"\nweights -> {RUNS / 'road_damage_india' / 'weights' / 'best.pt'}")
 
 
+def resume() -> None:
+    """Continue an interrupted run from its own `last.pt` checkpoint.
+
+    The first 60-epoch attempt OOMed at epoch 36 inside OpenCV's affine
+    augmentation — not a training fault but host-RAM exhaustion, made worse by
+    heavy concurrent work (video encoding, repeated web builds) competing for
+    the same ~16GB. Ultralytics writes `last.pt` every epoch with the full
+    optimiser and epoch state, so `resume=True` picks the schedule back up at
+    epoch 37 exactly where it stopped — same LR curve, same batch — rather than
+    restarting and throwing away 36 epochs of progress. Keep the machine
+    otherwise quiet while this runs; that free RAM is the whole ballgame.
+    """
+    from ultralytics import YOLO
+
+    last = RUNS / "road_damage_india" / "weights" / "last.pt"
+    if not last.exists():
+        raise SystemExit(f"{last} not found — nothing to resume; run --train first.")
+
+    YOLO(str(last)).train(resume=True)
+    print(f"\nweights -> {RUNS / 'road_damage_india' / 'weights' / 'best.pt'}")
+
+
 def evaluate(weights: Path | None = None) -> dict:
     """Report mAP per class on the held-out Indian split."""
     from ultralytics import YOLO
@@ -191,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m ai.training.train_road_damage", description=__doc__)
     parser.add_argument("--prepare", action="store_true", help="unzip + convert to YOLO format")
     parser.add_argument("--train", action="store_true", help="fine-tune YOLOv11")
+    parser.add_argument("--resume", action="store_true", help="continue an interrupted run from last.pt")
     parser.add_argument("--evaluate", action="store_true", help="mAP on the val split")
     parser.add_argument("--country", default="India")
     parser.add_argument("--model", default=DEFAULT_MODEL)
@@ -205,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--imgsz", type=int, default=DEFAULT_IMAGE_SIZE)
     args = parser.parse_args(argv)
 
-    if not (args.prepare or args.train or args.evaluate):
+    if not (args.prepare or args.train or args.resume or args.evaluate):
         parser.print_help()
         return 1
 
@@ -219,6 +242,8 @@ def main(argv: list[str] | None = None) -> int:
             batch=args.batch,
             workers=args.workers,
         )
+    if args.resume:
+        resume()
     if args.evaluate:
         evaluate()
     return 0
