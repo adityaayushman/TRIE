@@ -12,6 +12,12 @@ import { Card, SectionTitle } from "@/components/ui";
  * returns — recent events and the live snapshot — not seeded constants. When
  * the database is empty the cards read zero, which is the truth, rather than a
  * fabricated fleet count. */
+const STAT_TONES = {
+  neutral: { glow: "rgba(56,189,248,0.14)", bar: "#38bdf8", value: "from-white to-sky-200" },
+  danger: { glow: "rgba(239,68,68,0.16)", bar: "#f87171", value: "from-white to-red-300" },
+  good: { glow: "rgba(52,211,153,0.14)", bar: "#34d399", value: "from-white to-emerald-200" },
+} as const;
+
 function StatCard({
   label,
   value,
@@ -20,16 +26,25 @@ function StatCard({
 }: {
   label: string;
   value: string | number;
-  tone?: "neutral" | "danger" | "good";
+  tone?: keyof typeof STAT_TONES;
   hint?: string;
 }) {
-  const valueColor =
-    tone === "danger" ? "text-red-400" : tone === "good" ? "text-emerald-400" : "text-slate-100";
+  const t = STAT_TONES[tone];
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-5">
-      <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-2 text-2xl font-bold tabular-nums ${valueColor}`}>{value}</p>
-      {hint && <p className="mt-1 text-[0.65rem] text-slate-600">{hint}</p>}
+    <div
+      className="group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-950/60 p-5 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)] transition-all hover:-translate-y-0.5 hover:border-slate-700"
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+        style={{ background: t.glow, opacity: 0.7 }}
+      />
+      <span aria-hidden className="absolute left-0 top-4 h-8 w-0.5 rounded-full" style={{ backgroundColor: t.bar }} />
+      <p className="relative text-[0.65rem] font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={`relative mt-2 bg-gradient-to-br ${t.value} bg-clip-text text-3xl font-bold tabular-nums text-transparent`}>
+        {value}
+      </p>
+      {hint && <p className="relative mt-1 text-[0.65rem] text-slate-600">{hint}</p>}
     </div>
   );
 }
@@ -57,11 +72,23 @@ export default function OverviewPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-100">Overview</h1>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Live figures from recent telemetry. Empty means an empty database, not a mock.
-          </p>
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+              <rect x="2" y="2" width="5" height="5" rx="1" strokeWidth="1.4" />
+              <rect x="9" y="2" width="5" height="5" rx="1" strokeWidth="1.4" />
+              <rect x="2" y="9" width="5" height="5" rx="1" strokeWidth="1.4" />
+              <rect x="9" y="9" width="5" height="5" rx="1" strokeWidth="1.4" />
+            </svg>
+          </span>
+          <div>
+            <h1 className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+              Overview
+            </h1>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Live figures from recent telemetry. Empty means an empty database, not a mock.
+            </p>
+          </div>
         </div>
         <ConnectionBadge status={status} />
       </div>
