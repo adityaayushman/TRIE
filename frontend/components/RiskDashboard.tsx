@@ -21,7 +21,12 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
     <div className="space-y-5">
       <div className="grid gap-5 lg:grid-cols-[minmax(260px,1fr)_2fr]">
         <Card className="flex flex-col items-center justify-center gap-3">
-          <RiskGauge score={assessment.risk_score} level={assessment.risk_level} />
+          <RiskGauge
+            score={assessment.risk_score}
+            level={assessment.risk_level}
+            lower={live?.risk_lower}
+            upper={live?.risk_upper}
+          />
           <p className="text-center text-xs text-slate-500">
             Vehicle <span className="font-mono text-slate-300">{assessment.vehicle_id}</span>
           </p>
@@ -55,6 +60,13 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
                     </li>
                   ))}
                 </ul>
+                <p className="mt-2.5 text-[0.7rem] leading-relaxed text-slate-500">
+                  These have no sensor here, so the true risk is only known to lie between{" "}
+                  <span className="tabular-nums text-slate-300">{live.risk_lower.toFixed(0)}%</span> and{" "}
+                  <span className="tabular-nums text-slate-300">{live.risk_upper.toFixed(0)}%</span> — the
+                  band on the gauge. The point score assumes they behave like what is measured; the band
+                  is what an honest &quot;we can&apos;t fully see&quot; looks like.
+                </p>
               </div>
             )}
           </section>

@@ -55,6 +55,13 @@ class DetectedObjectRead(BaseModel):
 class RiskAssessmentResponse(BaseModel):
     vehicle_id: str
     risk_score: float
+    # Uncertainty band on risk_score (0-100), widened by every factor with no
+    # sensor behind it. Equal to risk_score when the full suite is observed;
+    # wide when — as on this telemetry-only deployment — the camera-derived
+    # factors are unmeasured. Lets a client show honest confidence rather than
+    # a falsely precise number. See ai/trie/risk_fusion.py.
+    risk_lower: float = 0.0
+    risk_upper: float = 0.0
     risk_level: str
     contributing_factors: dict[str, float]
     future_risk_score: float
