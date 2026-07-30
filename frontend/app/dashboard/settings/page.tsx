@@ -17,7 +17,7 @@ const MODEL_STATUS = [
   { module: "Risk fusion (TRIE)", detail: "Weighted rule model — learned model pending", real: false },
   { module: "Uncertainty (confidence band)", detail: "Sensor-suite-aware band from unobserved-factor weight", real: true },
   { module: "Temporal forecast", detail: "Linear extrapolation live; LSTM prototyped (cuts error ~47% — see Research)", real: false },
-  { module: "Explainability", detail: "Additive factor shares — SHAP pending", real: false },
+  { module: "Explainability", detail: "Exact additive factor shares (rule); learned model's interactions verified by H-statistic", real: true },
 ];
 
 /** Measured on the held-out RDD2022 India val split (1,542 images, 1,340

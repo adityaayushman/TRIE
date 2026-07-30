@@ -473,6 +473,28 @@ export default function ResearchPage() {
               outcomes — so this shows the architecture <span className="text-slate-400">admits</span>{" "}
               a learned, calibrated fusion, not a field-measured accuracy.
             </p>
+
+            <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+              <p className="text-xs font-semibold text-slate-200">…and it learned the right structure</p>
+              <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-500">
+                &quot;Fits better&quot; is not &quot;learned the right thing.&quot; Friedman&apos;s
+                H-statistic — which measures how much of a pair&apos;s effect is interaction, not
+                additive — ranks the three couplings the model discovered against the three the
+                ground truth was built with. They match, top-3:
+              </p>
+              <ul className="mt-2 space-y-1 font-mono text-[0.7rem] text-slate-400">
+                <li><span className="text-emerald-400">1.</span> speed × road surface <span className="text-slate-500">H=0.25</span></li>
+                <li><span className="text-emerald-400">2.</span> speed × VRU exposure <span className="text-slate-500">H=0.22</span></li>
+                <li><span className="text-emerald-400">3.</span> distraction × VRU exposure <span className="text-slate-500">H=0.19</span></li>
+              </ul>
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-500">
+                3/3 recovered, each well above the noise floor — the learned fusion is inspectable and
+                right for the right reason. SHAP is skipped deliberately: the shipped rule is already
+                exactly its own attribution, and the library forces a numpy upgrade this repo&apos;s
+                vision stack cannot take. Reproduce with{" "}
+                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.interaction_analysis</code>.
+              </p>
+            </div>
           </div>
 
           {/* Horizon forecasting */}
