@@ -10,6 +10,23 @@ export const BOX_COLOR: Record<string, string> = {
   pedestrian: "#f87171",
 };
 
+/** Helmet-detector rider classes get their own palette, keyed by the danger they
+ * carry: a bare head reads red, a helmet green, an overloaded bike amber. */
+const RIDER_COLOR: Record<string, string> = {
+  without_helmet: "#ef4444",
+  with_helmet: "#34d399",
+  triple_riding: "#f59e0b",
+};
+const RIDER_LABEL: Record<string, string> = {
+  without_helmet: "no helmet",
+  with_helmet: "helmet",
+  triple_riding: "triple",
+};
+const FACTOR_TEXT: Record<string, string> = {
+  no_helmet: "no helmet",
+  triple_riding: "triple riding",
+};
+
 // Past this many boxes in one frame, per-box text labels turn into visual
 // noise faster than they inform -- outlines alone still show the count.
 const MAX_LABELLED_BOXES = 6;
@@ -81,6 +98,38 @@ function drawFrame(canvas: HTMLCanvasElement, video: HTMLVideoElement, frame: De
     ctx.fill();
     ctx.fillStyle = "#cbd5e1";
     ctx.fillText(more, width - textWidth - 10, height - 11);
+  }
+
+  // Rider vulnerability pass — only when the helmet detector has annotated this
+  // clip. Drawn on top of the two-wheeler boxes, dashed, so it reads as a second
+  // layer of judgement about the *same* rider rather than a duplicate detection.
+  const riders = (frame.riders ?? []).filter((r) => r.label in RIDER_COLOR);
+  if (riders.length > 0) {
+    ctx.font = "700 11px ui-sans-serif, system-ui";
+    ctx.setLineDash([5, 3]);
+    ctx.lineWidth = 2.5;
+    riders.forEach((r) => {
+      const color = RIDER_COLOR[r.label];
+      const [x1, y1, x2, y2] = r.bbox;
+      const bx = x1 * width;
+      const by = y1 * height;
+      ctx.strokeStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 6;
+      roundedRect(ctx, bx, by, (x2 - x1) * width, (y2 - y1) * height, 5);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      const label = RIDER_LABEL[r.label];
+      const tw = ctx.measureText(label).width;
+      const ly = Math.max(0, by - 16);
+      ctx.fillStyle = color;
+      roundedRect(ctx, bx, ly, tw + 8, 15, 3);
+      ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(label, bx + 4, ly + 11);
+    });
+    ctx.setLineDash([]);
   }
 }
 
@@ -155,6 +204,8 @@ export function CameraTile({
   const twoWheelerCount = live ? live.two_wheelers.length : 0;
   const pedestrianCount = live ? live.pedestrians.length : 0;
   const congestion = live?.traffic.congestion_level ?? 0;
+  const vuln = live?.vulnerability;
+  const showVuln = !!vuln && vuln.multiplier > 1;
 
   return (
     <div className="group overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950 shadow-[0_8px_24px_-14px_rgba(0,0,0,0.6)] transition-colors hover:border-slate-700">
@@ -177,6 +228,15 @@ export function CameraTile({
         <div className="absolute right-2 top-2 rounded-md bg-black/70 px-2 py-1 text-[0.65rem] font-medium tabular-nums text-slate-200">
           {(congestion * 100).toFixed(0)}% congestion
         </div>
+        {showVuln && vuln && (
+          <div className="absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-1.5 rounded-md bg-red-950/80 px-2 py-1 text-[0.65rem] font-semibold text-red-200 ring-1 ring-red-500/40 backdrop-blur">
+            <span aria-hidden>⚠</span>
+            <span className="tabular-nums">×{vuln.multiplier.toFixed(2)} risk</span>
+            <span className="uppercase tracking-wide text-red-300/90">
+              {FACTOR_TEXT[vuln.dominant_factor] ?? vuln.dominant_factor}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2 px-3 py-2.5">
