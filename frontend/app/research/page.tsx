@@ -190,6 +190,37 @@ export default function ResearchPage() {
         </p>
       </section>
 
+      {/* Plain-language explainer for a non-specialist visitor */}
+      <section className="mx-auto max-w-5xl px-5 pb-14">
+        <div className="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-sky-950/20 p-6 sm:p-7">
+          <div className="absolute -right-8 -top-10 h-32 w-32 rounded-full bg-sky-500/10 blur-3xl" />
+          <p className="relative flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-sky-300">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-500/20 text-[0.7rem]">
+              ?
+            </span>
+            In plain terms
+          </p>
+          <p className="relative mt-3 text-sm leading-relaxed text-slate-300">
+            Not an engineer? Here is the whole idea in a breath. Most road-safety technology waits
+            for crashes to happen, watches only the driver inside the car, and hands you a single
+            mysterious number. This project flips all three: it{" "}
+            <span className="font-semibold text-white">warns before</span> the crash, it protects
+            the people <span className="font-semibold text-white">outside</span> the car — the
+            motorbike riders and pedestrians who are two of every three road deaths in India — and
+            it always <span className="font-semibold text-white">shows its reasoning</span>.
+            Everything below is the evidence, but you do not need the jargon to follow the point.
+          </p>
+          <p className="relative mt-4 border-t border-sky-500/15 pt-4 text-xs leading-relaxed text-slate-500">
+            A few terms you will meet: a <span className="text-slate-300">black spot</span> is a
+            dangerous stretch of road; a <span className="text-slate-300">vulnerable road user (VRU)</span>{" "}
+            is someone with no metal around them — a rider or a pedestrian;{" "}
+            <span className="text-slate-300">ADAS</span> is the driver-assist tech already in modern
+            cars; and <span className="text-slate-300">iRAD</span> is India&apos;s official crash
+            database that only labels a road dangerous after people have died on it.
+          </p>
+        </div>
+      </section>
+
       {/* The problem */}
       <section className="border-y border-slate-800/80 bg-slate-900/30">
         <div className="mx-auto max-w-5xl px-5 py-14">

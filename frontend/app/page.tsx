@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { HeroScene } from "@/components/HeroScene";
 import { Reveal } from "@/components/Reveal";
+import { ICONS, IconName } from "@/components/icons";
 
 /** Dashed lane-marking divider — the road motif carried between sections. */
 function LaneDivider() {
@@ -44,6 +45,72 @@ const PILLARS = [
   {
     title: "Danger is found before it kills",
     body: "India's iRAD flags a 500m stretch only after five fatal crashes or ten deaths in three years. People must die before a location earns the label. This nominates the same stretch from near-misses instead.",
+  },
+];
+
+/** Plain-language, no-jargon walkthrough for a first-time visitor: what the
+ * system does, in four concrete steps anyone can follow. */
+const HOW_STEPS: { icon: IconName; title: string; body: string }[] = [
+  {
+    icon: "live",
+    title: "It watches the road",
+    body: "The system looks at a road the way a careful person would — counting cars, motorbikes and people on foot, noticing a broken surface, poor light, and how close everyone is to everyone else.",
+  },
+  {
+    icon: "overview",
+    title: "It scores the danger — and explains it",
+    body: "Everything it sees becomes one live danger score, from 0 to 100. Unlike a black box, it shows you exactly which factors pushed the score up, so the number is something you can trust and act on.",
+  },
+  {
+    icon: "vehicles",
+    title: "It protects the most exposed",
+    body: "It tilts the danger toward the people most likely to die — the motorbike riders and pedestrians who are two of every three road deaths in India — not just the driver sitting safely inside a car.",
+  },
+  {
+    icon: "blackspots",
+    title: "It warns before the crash",
+    body: "When the same stretch of road keeps producing near-misses, it flags that place as a black spot — a dangerous stretch — before anyone is actually hurt there, instead of waiting for a crash record.",
+  },
+];
+
+/** A plain map of what a visitor can actually open and look at, so the dashboard
+ * is not a wall of unlabelled tabs. Each links straight to the live page. */
+const EXPLORE: { icon: IconName; href: string; title: string; body: string }[] = [
+  {
+    icon: "live",
+    href: "/dashboard/live",
+    title: "Live Risk",
+    body: "Watch the danger score update in real time, with the reasons broken out factor by factor.",
+  },
+  {
+    icon: "vehicles",
+    href: "/dashboard/vehicles",
+    title: "Vehicle Intelligence",
+    body: "The real detection model running on actual street footage, boxing every vehicle, rider and pedestrian.",
+  },
+  {
+    icon: "traffic",
+    href: "/dashboard/traffic",
+    title: "Traffic Analytics",
+    body: "Congestion and density measured from what the model sees — where a lane full of motorbikes counts as crowded.",
+  },
+  {
+    icon: "blackspots",
+    href: "/dashboard/blackspots",
+    title: "Black Spots",
+    body: "Dangerous stretches nominated from near-misses and mapped, before any crash record exists.",
+  },
+  {
+    icon: "history",
+    href: "/dashboard/history",
+    title: "Risk History",
+    body: "How each vehicle's danger score has trended over time against the system's own thresholds.",
+  },
+  {
+    icon: "overview",
+    href: "/dashboard",
+    title: "Overview",
+    body: "The command centre — every live figure in one place, or honest zeros when the database is empty.",
   },
 ];
 
@@ -177,6 +244,88 @@ export default function Landing() {
               </div>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      <LaneDivider />
+
+      {/* Plain-language walkthrough for a first-time visitor */}
+      <section className="mx-auto max-w-6xl px-5 py-24">
+        <Reveal>
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
+            New here? Start with this
+          </p>
+          <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-bold tracking-tight text-white">
+            How it works, in plain terms
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-slate-400">
+            No background needed. Four steps take you from an ordinary road camera to a warning
+            that arrives <span className="text-slate-200">before</span> the crash.
+          </p>
+        </Reveal>
+        <div className="mt-14 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {HOW_STEPS.map((step, i) => {
+            const Icon = ICONS[step.icon];
+            return (
+              <Reveal key={step.title} delay={i * 0.1}>
+                <div className="group relative flex h-full flex-col">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300 transition group-hover:border-sky-400/60 group-hover:bg-sky-500/20">
+                      <Icon size={20} />
+                    </span>
+                    <span className="font-mono text-2xl font-bold text-slate-700 transition group-hover:text-slate-600">
+                      0{i + 1}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-50">{step.title}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-400">{step.body}</p>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      <LaneDivider />
+
+      {/* A plain map of the live pages, so the dashboard is not a wall of tabs */}
+      <section className="mx-auto max-w-6xl px-5 py-24">
+        <Reveal>
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
+            What you can explore
+          </p>
+          <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-bold tracking-tight text-white">
+            Everything is live and open to look at
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-slate-400">
+            No account needed to explore — one is only required to submit your own telemetry. Each
+            page below runs on real engine output. Open any of them.
+          </p>
+        </Reveal>
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {EXPLORE.map((item, i) => {
+            const Icon = ICONS[item.icon];
+            return (
+              <Reveal key={item.title} delay={(i % 3) * 0.08}>
+                <Link
+                  href={item.href}
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/80 to-slate-900/40 p-6 transition-all hover:-translate-y-1 hover:border-sky-500/40"
+                >
+                  <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-sky-500/5 blur-2xl transition-colors group-hover:bg-sky-500/10" />
+                  <div className="flex items-center justify-between">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
+                      <Icon size={18} />
+                    </span>
+                    <span className="text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-sky-400">
+                      →
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold text-slate-50">{item.title}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{item.body}</p>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
 
