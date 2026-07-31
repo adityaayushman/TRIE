@@ -13,12 +13,35 @@ export interface DemoTrafficState {
   density_per_km: number;
 }
 
+/** Per-frame VRU vulnerability, written by ai/vru_intelligence/annotate_footage
+ * when a trained helmet detector has seen the clip. `multiplier` (>= 1.0) is the
+ * factor the scene's exposure is raised by; `dominant_factor` says why. Absent
+ * on clips that predate the detector, so every consumer treats it as optional. */
+export interface DemoFrameVulnerability {
+  multiplier: number;
+  dominant_factor: "no_helmet" | "triple_riding" | "protected" | "no_riders";
+  with_helmet: number;
+  without_helmet: number;
+  triple_riding: number;
+}
+
 export interface DemoFrame {
   t: number;
   vehicles: DemoDetection[];
   pedestrians: DemoDetection[];
   two_wheelers: DemoDetection[];
   traffic: DemoTrafficState;
+  /** Helmet-detector rider boxes; labels: with_helmet | without_helmet | triple_riding | plate. */
+  riders?: DemoDetection[];
+  vulnerability?: DemoFrameVulnerability;
+}
+
+export interface DemoClipVulnerability {
+  peak_multiplier: number;
+  dominant_factor: string;
+  riders_seen: number;
+  without_helmet_total: number;
+  triple_riding_total: number;
 }
 
 export interface DemoClipData {
@@ -29,6 +52,7 @@ export interface DemoClipData {
   peak_vehicle_count: number;
   avg_congestion_level: number;
   frames: DemoFrame[];
+  vulnerability?: DemoClipVulnerability;
 }
 
 export interface DemoManifestEntry {
@@ -39,6 +63,9 @@ export interface DemoManifestEntry {
   duration_s: number;
   peak_vehicle_count: number;
   avg_congestion_level: number;
+  /** Present once the clip has been through the helmet detector. */
+  peak_vulnerability?: number;
+  vulnerability_factor?: string;
 }
 
 // The recorded clips + precomputed detections are a few MB of binary/JSON --
