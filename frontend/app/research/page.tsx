@@ -343,6 +343,79 @@ export default function ResearchPage() {
             the deployment simply gained a real input it had been ignoring.
           </p>
         </div>
+
+        {/* Per-rider vulnerability — the fine-tuned helmet/triple-riding detector */}
+        <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-950/15 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-semibold text-slate-100">
+              Per-rider vulnerability — from detection to survival odds
+            </h3>
+            <span className="text-[0.65rem] font-medium uppercase tracking-wide text-sky-400">
+              new · live
+            </span>
+          </div>
+          <div className="mt-3 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+            <div className="space-y-3 text-xs leading-relaxed text-slate-400">
+              <p>
+                Contribution 02 says <span className="text-slate-200">who</span> is exposed. This
+                says <span className="text-slate-200">how badly</span>. A fine-tuned YOLOv11 detector
+                reads each two-wheeler rider as helmeted, bare-headed, or part of an overloaded
+                (triple-riding) bike, and those counts become a scene{" "}
+                <span className="text-slate-200">vulnerability multiplier</span> that amplifies the
+                fusion&apos;s vru_exposure term. The grounding is external, not invented: the WHO puts
+                correct helmet use at roughly a <span className="text-slate-200">42% reduction</span>{" "}
+                in rider death, so a bare head carries about{" "}
+                <span className="text-slate-200">1 / (1 − 0.42) ≈ 1.72×</span> the fatality exposure of
+                a helmeted one; overloading is a bounded ~1.4× aggravator, and the product is capped
+                at 1.85×.
+              </p>
+              <p>
+                It is wired into the same additive, explainable fusion — the multiplier scales one
+                magnitude before weighting, so the score stays a sum of named parts and reports the
+                reason (&ldquo;risk ×1.72: riders without helmets&rdquo;). It runs now on the Vehicle
+                Intelligence footage: each rider is boxed green for a helmet or red for a bare head,
+                and the worst frame of every demo clip peaks at ×1.72.
+              </p>
+              <p className="text-slate-500">
+                Honest limits: training was stopped at epoch 15/25 (the marginal-gain tail), and the
+                validation set holds only 27 with-helmet instances, so that class&apos;s AP is the
+                noisiest of the four. The demo clips contain no triple-riding — yet the detector
+                scores it highest on held-out validation (right), so the capability is real even
+                where this footage does not exercise it.
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
+              <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-slate-500">
+                Held-out validation · 383 images · mAP@50
+              </p>
+              <div className="mt-3 space-y-2.5">
+                {[
+                  { label: "triple riding", v: 91.0 },
+                  { label: "number plate", v: 83.2 },
+                  { label: "no helmet", v: 75.6 },
+                  { label: "with helmet", v: 62.9 },
+                ].map((m) => (
+                  <div key={m.label}>
+                    <div className="flex justify-between text-[0.7rem] text-slate-300">
+                      <span>{m.label}</span>
+                      <span className="tabular-nums">{m.v.toFixed(1)}%</span>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                      <div className="h-full rounded-full bg-sky-400" style={{ width: `${m.v}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 border-t border-slate-800 pt-2 text-[0.65rem] leading-relaxed text-slate-500">
+                Overall mAP@50 <span className="tabular-nums text-slate-300">78.2%</span> · mAP@50-95{" "}
+                <span className="tabular-nums text-slate-300">56.2%</span>. Reproducible with{" "}
+                <code className="rounded bg-slate-800 px-1 py-0.5 text-[0.6rem] text-slate-300">
+                  python -m ai.training.train_helmet --evaluate
+                </code>
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Comparison to the state of the art */}
