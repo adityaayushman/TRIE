@@ -64,7 +64,7 @@ const HOW_STEPS: { icon: IconName; title: string; body: string }[] = [
   {
     icon: "vehicles",
     title: "It protects the most exposed",
-    body: "It tilts the danger toward the people most likely to die — the motorbike riders and pedestrians who are two of every three road deaths in India — not just the driver sitting safely inside a car.",
+    body: "It tilts the danger toward the people most likely to die — the motorbike riders and pedestrians who are two of every three road deaths in India — and even reads which riders have no helmet, because a bare head turns a crash into a fatal one far more often.",
   },
   {
     icon: "blackspots",
@@ -86,7 +86,7 @@ const EXPLORE: { icon: IconName; href: string; title: string; body: string }[] =
     icon: "vehicles",
     href: "/dashboard/vehicles",
     title: "Vehicle Intelligence",
-    body: "The real detection model running on actual street footage, boxing every vehicle, rider and pedestrian.",
+    body: "The real detection model on actual street footage, boxing every vehicle, rider and pedestrian — and flagging the riders with no helmet as higher-risk.",
   },
   {
     icon: "traffic",
