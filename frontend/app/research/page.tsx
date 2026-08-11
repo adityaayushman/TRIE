@@ -377,11 +377,12 @@ export default function ResearchPage() {
                 and the worst frame of every demo clip peaks at ×1.72.
               </p>
               <p className="text-slate-500">
-                Honest limits: training was stopped at epoch 15/25 (the marginal-gain tail), and the
-                validation set holds only 27 with-helmet instances, so that class&apos;s AP is the
-                noisiest of the four. The demo clips contain no triple-riding — yet the detector
-                scores it highest on held-out validation (right), so the capability is real even
-                where this footage does not exercise it.
+                Honest limits: the full 25-epoch run confirmed epoch 15 as the peak — the later
+                epochs did not improve validation mAP, so the reported checkpoint is a genuine best,
+                not an early stop. The validation set holds only 27 with-helmet instances, so that
+                class&apos;s AP is the noisiest of the four. The demo clips contain no triple-riding —
+                yet the detector scores it highest on held-out validation (right), so the capability
+                is real even where this footage does not exercise it.
               </p>
             </div>
             <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
@@ -634,9 +635,9 @@ export default function ResearchPage() {
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Rider-vulnerability detector: measured mAP on held-out images</p>
             <p className="mt-1 text-xs text-slate-500">
-              YOLOv11s fine-tuned for helmet / no-helmet / triple-riding / plate, 383 val images,
-              stopped at epoch 15/25. A component metric that feeds the vulnerability multiplier, not
-              a leaderboard claim.
+              YOLOv11s fine-tuned for helmet / no-helmet / triple-riding / plate, 383 val images;
+              trained 25 epochs, best checkpoint at epoch 15. A component metric that feeds the
+              vulnerability multiplier, not a leaderboard claim.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[420px] text-left text-xs">
