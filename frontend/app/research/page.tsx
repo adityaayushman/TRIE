@@ -456,6 +456,12 @@ export default function ResearchPage() {
                   ours: "VRU-first — two-wheelers & pedestrians (66.8% of deaths) weighted for exposure",
                 },
                 {
+                  d: "Rider vulnerability",
+                  adas: "A rider is a generic obstacle — no helmet or overload awareness",
+                  official: "—",
+                  ours: "Fine-tuned helmet / triple-riding detector (mAP@50 78%) → a WHO-grounded fatality multiplier per scene",
+                },
+                {
                   d: "Missing sensors",
                   adas: "Assumes a fixed suite; a gap reads as 'safe'",
                   official: "—",
@@ -621,6 +627,49 @@ export default function ResearchPage() {
               them. COCO-pretrained weights have no pothole class at all, so this is the
               difference between guessing and detecting. Reproduce with{" "}
               <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_road_damage --evaluate</code>.
+            </p>
+          </div>
+
+          {/* Helmet / triple-riding per-class */}
+          <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+            <p className="text-sm font-semibold text-slate-200">Rider-vulnerability detector: measured mAP on held-out images</p>
+            <p className="mt-1 text-xs text-slate-500">
+              YOLOv11s fine-tuned for helmet / no-helmet / triple-riding / plate, 383 val images,
+              stopped at epoch 15/25. A component metric that feeds the vulnerability multiplier, not
+              a leaderboard claim.
+            </p>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[420px] text-left text-xs">
+                <thead>
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                    <th className="pb-2 font-medium">Class</th>
+                    <th className="pb-2 pr-3 text-right font-medium">Val instances</th>
+                    <th className="pb-2 text-right font-medium">mAP@50</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { c: "Triple-riding", n: "89", m: 91.0 },
+                    { c: "Number plate", n: "—", m: 83.2 },
+                    { c: "No helmet", n: "209", m: 75.6 },
+                    { c: "With helmet", n: "27", m: 62.9 },
+                    { c: "Overall", n: "—", m: 78.2, bold: true },
+                  ].map((r) => (
+                    <tr key={r.c} className={`border-t border-slate-800/70 ${r.bold ? "font-semibold text-slate-100" : "text-slate-300"}`}>
+                      <td className="py-1.5">{r.c}</td>
+                      <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{r.n}</td>
+                      <td className="py-1.5 text-right tabular-nums">{r.m.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+              Triple-riding and bare-headed riders — the violations that predict a fatal outcome —
+              detect strongly; with-helmet is the noisiest class because the split holds only 27 of
+              them. The demo clips contain no triple-riding, yet the detector scores it highest, so
+              the capability is real beyond what the footage exercises. Reproduce with{" "}
+              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_helmet --evaluate</code>.
             </p>
           </div>
 
