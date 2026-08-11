@@ -1,5 +1,6 @@
 /** Shared line-icon set for the dashboard nav and page headers, so both draw
  * from one source. Keyed by section. */
+import type { JSX } from "react";
 
 export type IconName =
   | "overview"
