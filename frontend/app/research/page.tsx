@@ -134,7 +134,7 @@ const LIMITATIONS = [
   },
   {
     label: "The shipped fusion is the rule, not the learned model",
-    detail: "The Benchmarks study shows a learned, calibrated fusion beats the hand-set rule on a controlled ground truth — but it is trained on authored data, so it demonstrates the architecture, not a field model. Swapping it into the live pipeline waits on labelled telemetry that does not publicly exist; until then the transparent rule ships and the learned model is evidence, not production.",
+    detail: "The Benchmarks study shows a learned, calibrated fusion beats the hand-set rule on a controlled ground truth. The model's factor premise is separately validated on 128k real GB crash records (see Real-world validation — AUC 0.726, every factor in the expected direction and order) — but that is crash severity on UK roads, not an Indian field model. A production learned fusion still waits on labelled Indian telemetry that does not publicly exist; until then the transparent rule ships and the learned model is evidence, not production.",
   },
 ];
 
@@ -158,6 +158,11 @@ const REFERENCES = [
     cite: "Arya, Maeda, Kumar Ghosh, Toshniwal, Sekimoto, et al. (2022).",
     work: "RDD2022: A multi-national road damage dataset for automatic road-damage detection.",
     note: "The Indian split and D00/D10/D20/D40 damage taxonomy used to fine-tune the detector.",
+  },
+  {
+    cite: "Department for Transport (DfT), Great Britain.",
+    work: "Road Safety Data — STATS19 reported road collisions, 2024.",
+    note: "~100.9k collisions / 128.3k casualties used to externally validate the model's factor premise (VRU, light, speed, surface → fatal outcome).",
   },
   {
     cite: "Wilson, E. B. (1927).",
@@ -510,6 +515,84 @@ export default function ResearchPage() {
           road-user perception is a COCO-pretrained baseline pending an India-Driving-Dataset
           fine-tune. The claim is not "a better object detector" — it is a better *system* for the
           road India actually has. Beating perception leaderboards is neither claimed nor needed.
+        </p>
+      </section>
+
+      {/* Real-world external validation on DfT STATS19 */}
+      <section className="mx-auto max-w-5xl px-5 py-14">
+        <Kicker>Real-world validation</Kicker>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-50">
+          Does the premise hold on real crash data?
+        </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-400">
+          Every study below runs on an authored ground truth — the honest ceiling, because no public
+          dataset labels India&apos;s live telemetry factors against real crashes. So this steps
+          outside India for the <span className="text-slate-200">validation</span> while keeping the
+          design Indian: Great Britain&apos;s DfT STATS19 openly publishes every police-reported
+          injury collision with exactly the factors the model weights. On{" "}
+          <span className="text-slate-200">128,272 real 2024 casualties</span>, do the factors it
+          treats as important actually predict who dies?
+        </p>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { big: "51.9%", sub: "of road deaths are vulnerable road users — though they are only 38.7% of casualties. VRUs carry 1.7× the fatality rate of car occupants." },
+            { big: "1.66×", sub: "higher fatality rate in darkness than in daylight — the low-light factor, measured on real crashes." },
+            { big: "6.6×", sub: "rise in fatality rate from 20 mph to 60 mph roads — the speed gradient, monotonic all the way up." },
+            { big: "0.726", sub: "five-fold cross-validated ROC-AUC predicting a fatal outcome from just those four factors.", accent: true },
+          ].map((s) => (
+            <div
+              key={s.big}
+              className={`rounded-2xl border p-5 ${s.accent ? "border-emerald-800/50 bg-emerald-950/20" : "border-slate-800/80 bg-slate-950/40"}`}
+            >
+              <p className={`text-3xl font-bold tabular-nums ${s.accent ? "text-emerald-300" : "text-sky-300"}`}>
+                {s.big}
+              </p>
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-400">{s.sub}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+          <p className="text-sm font-semibold text-slate-200">
+            The fitted importance matches the model&apos;s own weighting
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Standardised logistic-regression coefficients on the real data — every factor in the
+            expected direction, in the model&apos;s rough order.
+          </p>
+          <div className="mt-4 space-y-2.5">
+            {[
+              { label: "Speed limit", v: 0.796 },
+              { label: "Vulnerable road user", v: 0.558 },
+              { label: "Darkness", v: 0.242 },
+              { label: "Poor road surface", v: 0.031 },
+            ].map((r) => (
+              <div key={r.label}>
+                <div className="flex justify-between text-[0.7rem] text-slate-300">
+                  <span>{r.label}</span>
+                  <span className="tabular-nums text-slate-400">+{r.v.toFixed(3)}</span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full rounded-full bg-sky-400" style={{ width: `${Math.round((r.v / 0.8) * 100)}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            Speed and VRU status dominate; poor surface is weakest — the same ordering the fusion
+            encodes (speed 0.22, VRU 0.20, road 0.13). Reproduce with{" "}
+            <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.external_validation</code>.
+          </p>
+        </div>
+
+        <p className="mt-5 max-w-3xl rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-[0.75rem] leading-relaxed text-amber-200/80">
+          <span className="font-semibold">The honest caveat:</span> this is Great Britain, not India,
+          and crash severity is not identical to the model&apos;s real-time risk score. What transfers
+          is the factor structure — the same variables, directions and ordering. Tellingly, the two
+          VRU classes that dominate Indian deaths — pedestrians and motorcyclists — are exactly the
+          high-fatality classes here; GB&apos;s segregated-infrastructure cyclists score low, which is
+          the India-vs-GB difference made visible, not hidden.
         </p>
       </section>
 
