@@ -12,7 +12,7 @@ export const BOX_COLOR: Record<string, string> = {
 
 /** Helmet-detector rider classes get their own palette, keyed by the danger they
  * carry: a bare head reads red, a helmet green, an overloaded bike amber. */
-const RIDER_COLOR: Record<string, string> = {
+export const RIDER_COLOR: Record<string, string> = {
   without_helmet: "#ef4444",
   with_helmet: "#34d399",
   triple_riding: "#f59e0b",

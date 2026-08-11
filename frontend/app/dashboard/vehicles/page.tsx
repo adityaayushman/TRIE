@@ -2,13 +2,19 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DemoManifestEntry, fetchDemoManifest } from "@/lib/demo";
-import { BOX_COLOR, CameraTile, LiveCounts } from "@/components/CameraTile";
+import { BOX_COLOR, CameraTile, LiveCounts, RIDER_COLOR } from "@/components/CameraTile";
 import { Card, EmptyState, Legend, PageHeader, SectionTitle, Stat } from "@/components/ui";
 
 const LEGEND_ITEMS = [
   { color: BOX_COLOR.vehicle, label: "Vehicle" },
   { color: BOX_COLOR.two_wheeler, label: "Two-wheeler" },
   { color: BOX_COLOR.pedestrian, label: "Pedestrian" },
+];
+
+const RIDER_LEGEND = [
+  { color: RIDER_COLOR.with_helmet, label: "Helmet" },
+  { color: RIDER_COLOR.without_helmet, label: "No helmet" },
+  { color: RIDER_COLOR.triple_riding, label: "Triple-riding" },
 ];
 
 export default function VehicleIntelligencePage() {
@@ -36,6 +42,20 @@ export default function VehicleIntelligencePage() {
       avgCongestion: values.reduce((sum, v) => sum + v.congestion, 0) / values.length,
     };
   }, [liveByClip]);
+
+  // Scene-level rider vulnerability, straight from the manifest (no extra
+  // fetch). Null until the helmet detector has annotated at least one clip, so
+  // the card stays absent on a pre-annotation deployment rather than empty.
+  const vuln = useMemo(() => {
+    if (!clips) return null;
+    const flagged = clips.filter((c) => (c.peak_vulnerability ?? 1) > 1);
+    if (flagged.length === 0) return null;
+    return {
+      peak: Math.max(...flagged.map((c) => c.peak_vulnerability ?? 1)),
+      flaggedCount: flagged.length,
+      total: clips.length,
+    };
+  }, [clips]);
 
   return (
     <div className="space-y-5">
@@ -71,6 +91,51 @@ export default function VehicleIntelligencePage() {
           />
         </div>
       </Card>
+
+      {vuln && (
+        <Card
+          delay={0.03}
+          className="border-red-900/40 bg-gradient-to-br from-red-950/20 via-slate-900/80 to-slate-900/60"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="max-w-xl">
+              <SectionTitle hint="fine-tuned helmet detector · mAP@50 78%">
+                Who is most at risk
+              </SectionTitle>
+              <p className="text-xs leading-relaxed text-slate-400">
+                Counting riders is not enough — the system judges how exposed each one is. A second,
+                fine-tuned detector reads every two-wheeler rider as{" "}
+                <span className="text-emerald-300">helmeted</span> or{" "}
+                <span className="text-red-300">bare-headed</span>. WHO data puts a bare head at about{" "}
+                <span className="text-slate-200">1.72×</span> the risk of dying, so a scene with
+                unhelmeted riders has its danger raised by that much. Watch the dashed boxes and the
+                &ldquo;×-risk&rdquo; pill on each feed below — that is this, live.
+              </p>
+              <div className="mt-4 border-t border-slate-800/60 pt-3">
+                <Legend items={RIDER_LEGEND} />
+              </div>
+            </div>
+            <div className="flex gap-6">
+              <div className="text-center">
+                <p className="text-3xl font-bold tabular-nums text-red-300">
+                  ×{vuln.peak.toFixed(2)}
+                </p>
+                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-500">
+                  peak scene risk
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-3xl font-bold tabular-nums text-slate-200">
+                  {vuln.flaggedCount}/{vuln.total}
+                </p>
+                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-500">
+                  feeds flagged
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Card delay={0.05}>
         <div className="flex flex-wrap items-baseline justify-between gap-3">
