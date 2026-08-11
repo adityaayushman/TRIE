@@ -1,10 +1,20 @@
-numpy>=1.26
+# numpy is pinned below 2.x on purpose: opencv, mediapipe and torch in this
+# stack are built against the numpy 1.x ABI, and numpy 2.x breaks them at import.
+numpy>=1.26,<2
 opencv-python-headless>=4.9,<5
 torch>=2.2
 torchvision>=0.17
 ultralytics>=8.2
 mediapipe>=0.10
 transformers>=4.40
-shap>=0.45
+# shap intentionally omitted: it pulls numpy>=2, which breaks the pinned stack
+# above. Interaction attribution uses Friedman's H-statistic instead
+# (ai/trie/interaction_analysis.py), which needs nothing beyond scikit-learn.
 onnx>=1.16
 onnxruntime>=1.18
+# Used by the research studies: learned-fusion + interaction analysis
+# (fusion_study, interaction_analysis) and the STATS19 external validation
+# (external_validation). All support the numpy<2 pin above.
+scikit-learn>=1.4
+pandas>=2.0,<3
+scipy>=1.11
