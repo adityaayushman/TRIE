@@ -6,8 +6,10 @@
 
 > **Status: working skeleton (2026-08).** Every number below is produced by the
 > open-source repository and reproducible with the command noted in the appendix.
-> Citations marked *(verify)* are real works to confirm against the exact
-> author/year/venue before submission; do not submit unverified references.
+> Core references (Appendix B) are verified against author/year/venue/DOI; two
+> minor items (WHO edition, the XAI comparator) remain to finalise. The one
+> substantive research gap — a field validation on real *Indian* data — is named
+> as future work (§6), not glossed over.
 
 ---
 
@@ -88,9 +90,9 @@ records.
 
 | Prior area | Representative work | What it does | What we add |
 |---|---|---|---|
-| **Surrogate safety measures (SSM) / traffic conflict techniques** | SSAM (Gettman et al., FHWA 2008) *(verify)*; TTC/PET indicators; VRU surrogate-indicator reviews (Johnsson, Laureshyn, De Ceunynck 2018) *(verify)* | Use near-misses (TTC, PET) as proactive safety precursors, increasingly for VRUs | We fold surrogate exposure into a **multi-factor, explainable fusion** with sensor-aware uncertainty, not a single conflict indicator; and use it for **segment nomination** |
-| **Hotspot / black-spot identification** | Empirical Bayes (Hauer et al. 2002); AASHTO Highway Safety Manual 2010; comparative evaluations (Cheng & Washington 2005) *(verify)* | Combine a Safety Performance Function with observed crash counts (EB shrinkage) to rank sites, correcting regression-to-the-mean | EB still needs **crash history**; we nominate from **near-misses** with a Wilson lower bound, before crashes accrue — complementary, earlier |
-| **Explainable ML for crash severity** | SHAP/LIME ensemble severity models (multiple, 2021–2026) *(verify)* | Post-hoc attribution (SHAP) over black-box severity classifiers | Our shipped model is **exactly additive by construction** — explanation needs no post-hoc attribution; we add **calibrated uncertainty from observability**, which post-hoc XAI does not provide |
+| **Surrogate safety measures (SSM) / traffic conflict techniques** | SSAM (Gettman et al. 2008, FHWA-HRT-08-051); TTC/PET indicators; VRU surrogate-indicator review (Johnsson, Laureshyn & De Ceunynck 2018, *Transport Reviews*) | Use near-misses (TTC, PET) as proactive safety precursors, increasingly for VRUs | We fold surrogate exposure into a **multi-factor, explainable fusion** with sensor-aware uncertainty, not a single conflict indicator; and use it for **segment nomination** |
+| **Hotspot / black-spot identification** | Empirical Bayes (Hauer et al. 2002, *TRR* 1784); AASHTO Highway Safety Manual (2010); comparative evaluation (Cheng & Washington 2005, *AA&P* 37) | Combine a Safety Performance Function with observed crash counts (EB shrinkage) to rank sites, correcting regression-to-the-mean | EB still needs **crash history**; we nominate from **near-misses** with a Wilson lower bound, before crashes accrue — complementary, earlier |
+| **Explainable ML for crash severity** | SHAP/LIME over ensemble (XGBoost/LightGBM/CatBoost) severity models (2021–2026) | Post-hoc attribution (SHAP) over black-box severity classifiers | Our shipped model is **exactly additive by construction** — explanation needs no post-hoc attribution; we add **calibrated uncertainty from observability**, which post-hoc XAI does not provide |
 | **VRU & helmet safety** | WHO helmet fatality-reduction (~42%); helmet-detection CV | Detect/enforce; quantify helmet benefit | We convert detection into a **scene vulnerability multiplier** wired into the risk score |
 | **Uncertainty quantification** | Bayesian/ensemble UQ in ML | Predictive uncertainty from model/data | Our band is **driven by sensor coverage** (which factors were measurable), an interpretable, deployment-relevant notion |
 
@@ -288,14 +290,18 @@ Every result is one command from the open-source repository:
 | Helmet detector eval | `python -m ai.training.train_helmet --evaluate` |
 | Road-damage detector eval | `python -m ai.training.train_road_damage --evaluate` |
 
-## Appendix B — References (to verify before submission)
+## Appendix B — References
 
-1. Ministry of Road Transport & Highways (MoRTH), *Road Accidents in India* (annual).
-2. Hauer E. et al. (2002), Empirical Bayes estimation of safety; AASHTO *Highway Safety Manual* (2010).
-3. Gettman D. et al. (2008), *Surrogate Safety Assessment Model (SSAM)*, FHWA. *(verify)*
-4. Cheng W., Washington S. (2005), Experimental evaluation of hotspot identification methods, *Accident Analysis & Prevention*. *(verify)*
-5. Johnsson C., Laureshyn A., De Ceunynck T. (2018), In search of surrogate safety indicators for VRUs, *Transport Reviews*. *(verify)*
-6. World Health Organization, *Helmets: a road safety manual*; *Global Status Report on Road Safety*.
-7. Arya D. et al. (2022), *RDD2022: A multi-national road damage dataset*.
-8. Department for Transport (GB), *STATS19 Road Safety Data*, 2024.
-9. Representative SHAP-based crash-severity ML works (2021–2026) for the XAI positioning. *(verify)*
+Citations 2–6 and 8–9 verified (author/year/venue/DOI confirmed). Finalise the
+exact WHO edition (7) and select the specific XAI comparator (10) before submission.
+
+1. Ministry of Road Transport & Highways (MoRTH), Government of India. *Road Accidents in India* (annual reports, 2021–2024).
+2. Hauer, E., Harwood, D. W., Council, F. M., & Griffith, M. S. (2002). "Estimating Safety by the Empirical Bayes Method: A Tutorial." *Transportation Research Record*, 1784, 126–131. doi:10.3141/1784-16.
+3. American Association of State Highway and Transportation Officials (AASHTO) (2010). *Highway Safety Manual*, 1st ed.
+4. Gettman, D., Pu, L., Sayed, T., & Shelby, S. (2008). *Surrogate Safety Assessment Model and Validation: Final Report.* FHWA-HRT-08-051, Federal Highway Administration.
+5. Cheng, W., & Washington, S. P. (2005). "Experimental Evaluation of Hotspot Identification Methods." *Accident Analysis & Prevention*, 37(5), 870–881. doi:10.1016/j.aap.2005.04.015.
+6. Johnsson, C., Laureshyn, A., & De Ceunynck, T. (2018). "In search of surrogate safety indicators for vulnerable road users: a review of surrogate safety indicators." *Transport Reviews*, 38(6), 765–785. doi:10.1080/01441647.2018.1442888.
+7. World Health Organization. *Helmets: A Road Safety Manual* (2006); *Global Status Report on Road Safety* (2018/2023) — confirm edition.
+8. Arya, D., Maeda, H., Ghosh, S. K., Toshniwal, D., & Sekimoto, Y. (2024). "RDD2022: A multi-national image dataset for automatic road damage detection." *Geoscience Data Journal*, 11(4). doi:10.1002/gdj3.260. (Preprint: arXiv:2209.08538, 2022.)
+9. Department for Transport (Great Britain). *Road Safety Data (STATS19)*, 2024.
+10. Explainable ML for crash severity — representative body of work applying SHAP/LIME to ensemble (XGBoost/LightGBM/CatBoost) severity classifiers, 2021–2026; select one comparator for the final submission.
