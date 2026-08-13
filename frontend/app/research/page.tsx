@@ -597,10 +597,14 @@ export default function ResearchPage() {
           </div>
           <p className="px-5 pb-1 pt-1 text-xs leading-relaxed text-slate-500">
             The same real STATS19 crashes, cut two ways at once: fatal-collision rate by speed limit
-            (front) and by daylight vs darkness (the two rows). Height is the fatality rate. The point
-            is the <span className="text-slate-300">interaction</span> — the dark penalty widens as
-            speed rises, from ~1.6× at 20 mph to <span className="text-slate-300">2.3× at 70 mph</span>
-            — the kind of compounding a flat table hides and a rotatable surface makes obvious.
+            (front) and by daylight vs darkness (the two rows). Height is the fatality rate. Both are
+            large, independently-significant effects — speed{" "}
+            <span className="text-slate-300">OR 2.2 per SD</span> and darkness{" "}
+            <span className="text-slate-300">OR 1.7</span>. The raw bars look as if the dark penalty
+            widens with speed, but tested properly that speed×darkness interaction is{" "}
+            <span className="text-slate-300">not significant (p = 0.21)</span> — a caution the eye
+            needs the statistics for. The interaction that <span className="text-slate-300">is</span>{" "}
+            real is speed×VRU (p &lt; 1e-9), in the table below.
           </p>
           <FatalityScene3D />
           <div className="flex flex-wrap items-center gap-4 border-t border-slate-800/70 px-5 py-2.5 text-[0.7rem] text-slate-500">
@@ -608,6 +612,74 @@ export default function ResearchPage() {
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "#6366f1" }} /> Darkness</span>
             <span className="ml-auto">bar height = fatal-collision rate (%) · DfT STATS19 GB 2024</span>
           </div>
+        </div>
+
+        {/* Paper-grade inferential result */}
+        <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+          <p className="text-sm font-semibold text-slate-200">
+            The inferential result — odds ratios, a significance test, calibration
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            A multivariable logistic regression on the 128,269 casualties: the mutually-adjusted
+            estimate a methods section cites, not four univariate rates.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[440px] text-left text-xs">
+              <thead>
+                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <th className="pb-2 font-medium">Factor</th>
+                  <th className="pb-2 pr-3 text-right font-medium">Odds ratio (95% CI)</th>
+                  <th className="pb-2 text-right font-medium">p</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { f: "Vulnerable road user", or: "3.66", ci: "3.27–4.09", p: "<1e-115", sig: true },
+                  { f: "Speed limit (per SD)", or: "2.23", ci: "2.12–2.34", p: "<1e-229", sig: true },
+                  { f: "Darkness", or: "1.73", ci: "1.56–1.92", p: "<1e-24", sig: true },
+                  { f: "Poor road surface", or: "1.02", ci: "0.92–1.15", p: "0.67", sig: false },
+                ].map((r) => (
+                  <tr key={r.f} className="border-t border-slate-800/70">
+                    <td className="py-1.5 text-slate-300">{r.f}</td>
+                    <td className={`py-1.5 pr-3 text-right tabular-nums ${r.sig ? "font-semibold text-slate-100" : "text-slate-500"}`}>
+                      {r.or} <span className="font-normal text-slate-500">({r.ci})</span>
+                    </td>
+                    <td className={`py-1.5 text-right tabular-nums ${r.sig ? "text-emerald-400" : "text-slate-600"}`}>{r.p}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 grid gap-3 border-t border-slate-800 pt-4 text-[0.7rem] leading-relaxed sm:grid-cols-3">
+            <div>
+              <p className="font-semibold text-slate-300">Interaction (LR test)</p>
+              <p className="mt-0.5 text-slate-500">
+                speed×VRU is real — OR 1.34, <span className="text-emerald-400">p &lt; 1e-9</span>; speed×darkness is{" "}
+                <span className="text-slate-400">not significant (p = 0.21)</span>. Jointly χ² = 39.2, p = 3e-9.
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-300">Discrimination</p>
+              <p className="mt-0.5 text-slate-500">
+                ROC-AUC <span className="tabular-nums text-slate-300">0.725</span> (95% CI 0.713–0.737); a
+                gradient-boosted baseline reaches 0.733 — the four factors carry almost all of it.
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-slate-300">Calibration &amp; ablation</p>
+              <p className="mt-0.5 text-slate-500">
+                Well calibrated (ECE <span className="tabular-nums text-slate-300">0.18%</span>). Leave-one-out:
+                dropping speed costs most (AUC −0.13); surface adds nothing (−0.00), matching its null OR.
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] text-slate-500">
+            Reproduce with{" "}
+            <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.statistical_validation</code>.
+            An honest by-product: the test <span className="text-slate-400">demoted</span> the eye&apos;s
+            speed×darkness reading and <span className="text-slate-400">promoted</span> speed×VRU — which is
+            exactly the compounding the VRU-first thesis predicts.
+          </p>
         </div>
 
         <p className="mt-5 max-w-3xl rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-[0.75rem] leading-relaxed text-amber-200/80">
