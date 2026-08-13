@@ -79,7 +79,8 @@ def prepare(data_dir: Path) -> Path:
 
 
 def train(data_dir=DEFAULT_DATA_DIR, model_path=DEFAULT_MODEL, epochs=DEFAULT_EPOCHS,
-          batch=DEFAULT_BATCH, image_size=DEFAULT_IMAGE_SIZE, workers=DEFAULT_WORKERS) -> None:
+          batch=DEFAULT_BATCH, image_size=DEFAULT_IMAGE_SIZE, workers=DEFAULT_WORKERS,
+          fraction=1.0, amp=True) -> None:
     from ultralytics import YOLO
 
     data_yaml = _data_yaml(Path(data_dir))
@@ -92,6 +93,15 @@ def train(data_dir=DEFAULT_DATA_DIR, model_path=DEFAULT_MODEL, epochs=DEFAULT_EP
         imgsz=image_size,
         batch=batch,
         workers=workers,
+        # On a 6GB laptop GPU the AMP self-check loads a second probe model
+        # alongside the trainer and OOMs before training starts; --no-amp skips
+        # that check (FP32), traded against a smaller batch/imgsz so it still fits.
+        amp=amp,
+        # IDD ships 33.6k train images; on a 6GB laptop GPU a full-set run is a
+        # multi-day job. `fraction` trains on a random subset each epoch — a real
+        # fine-tune on ~13k Indian images (comparable to the helmet set), stated
+        # as such. Raise it for a longer, higher-quality run on better hardware.
+        fraction=fraction,
         project=str(RUNS),
         name=RUN_NAME,
         exist_ok=True,
@@ -157,6 +167,9 @@ def main(argv=None) -> int:
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
     parser.add_argument("--batch", type=int, default=DEFAULT_BATCH)
+    parser.add_argument("--imgsz", type=int, default=DEFAULT_IMAGE_SIZE)
+    parser.add_argument("--fraction", type=float, default=1.0)
+    parser.add_argument("--no-amp", dest="amp", action="store_false")
     args = parser.parse_args(argv)
 
     if args.prepare:
@@ -166,7 +179,8 @@ def main(argv=None) -> int:
     elif args.evaluate:
         evaluate(data_dir=args.data_dir)
     elif args.train:
-        train(data_dir=args.data_dir, model_path=args.model, epochs=args.epochs, batch=args.batch)
+        train(data_dir=args.data_dir, model_path=args.model, epochs=args.epochs,
+              batch=args.batch, image_size=args.imgsz, fraction=args.fraction, amp=args.amp)
     else:
         parser.print_help()
     return 0
