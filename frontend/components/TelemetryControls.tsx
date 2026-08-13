@@ -49,7 +49,7 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
           <input
             value={vehicleId}
             onChange={(e) => setVehicleId(e.target.value || "VEH-DEMO")}
-            className="w-32 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-200 outline-none focus:border-sky-600"
+            className="w-32 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-200 outline-hidden focus:border-sky-600"
           />
         </label>
 

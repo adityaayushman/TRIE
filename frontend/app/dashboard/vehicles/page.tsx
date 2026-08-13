@@ -73,7 +73,7 @@ export default function VehicleIntelligencePage() {
         }
       />
 
-      <Card className="bg-gradient-to-br from-sky-950/40 via-slate-900/80 to-slate-900/60">
+      <Card className="bg-linear-to-br from-sky-950/40 via-slate-900/80 to-slate-900/60">
         <SectionTitle hint="combined across every feed below, updating as they play">
           Live now
         </SectionTitle>
@@ -95,7 +95,7 @@ export default function VehicleIntelligencePage() {
       {vuln && (
         <Card
           delay={0.03}
-          className="border-red-900/40 bg-gradient-to-br from-red-950/20 via-slate-900/80 to-slate-900/60"
+          className="border-red-900/40 bg-linear-to-br from-red-950/20 via-slate-900/80 to-slate-900/60"
         >
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="max-w-xl">

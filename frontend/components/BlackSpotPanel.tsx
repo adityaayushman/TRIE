@@ -179,7 +179,7 @@ export function BlackSpotPanel() {
         {source === "sample" ? (
           <p className="mt-4 rounded-lg border border-sky-900/40 bg-sky-950/20 px-3 py-2 text-[0.7rem] leading-relaxed text-slate-400">
             <span className="font-semibold text-sky-300">Illustrative sample.</span> The real{" "}
-            <code className="rounded bg-slate-800 px-1 py-0.5 text-[0.65rem] text-slate-300">BlackSpotEngine</code>{" "}
+            <code className="rounded-sm bg-slate-800 px-1 py-0.5 text-[0.65rem] text-slate-300">BlackSpotEngine</code>{" "}
             run on a seeded multi-location NCR scenario (the live API only ever receives demo
             telemetry at one point). The engine is real; the near-miss telemetry it aggregates
             is authored — the same honesty as the recorded-footage feeds. Switch to{" "}
@@ -202,7 +202,7 @@ export function BlackSpotPanel() {
                 <select
                   value={nearMissLevel}
                   onChange={(e) => setNearMissLevel(e.target.value as RiskLevel)}
-                  className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-600"
+                  className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-hidden focus:border-sky-600"
                 >
                   {NEAR_MISS_LEVELS.map((level) => (
                     <option key={level} value={level}>{level}</option>

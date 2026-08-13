@@ -220,7 +220,7 @@ export function CameraTile({
           playsInline
         />
         <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-black/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-linear-to-b from-black/50 to-transparent" />
         <div className="absolute left-2 top-2 flex items-center gap-1.5 rounded-md bg-black/70 px-2 py-1 text-[0.65rem] font-medium uppercase tracking-wide text-red-400">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
           Rec
@@ -229,7 +229,7 @@ export function CameraTile({
           {(congestion * 100).toFixed(0)}% congestion
         </div>
         {showVuln && vuln && (
-          <div className="absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-1.5 rounded-md bg-red-950/80 px-2 py-1 text-[0.65rem] font-semibold text-red-200 ring-1 ring-red-500/40 backdrop-blur">
+          <div className="absolute left-1/2 top-2 flex -translate-x-1/2 items-center gap-1.5 rounded-md bg-red-950/80 px-2 py-1 text-[0.65rem] font-semibold text-red-200 ring-1 ring-red-500/40 backdrop-blur-sm">
             <span aria-hidden>⚠</span>
             <span className="tabular-nums">×{vuln.multiplier.toFixed(2)} risk</span>
             <span className="uppercase tracking-wide text-red-300/90">
