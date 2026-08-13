@@ -513,7 +513,7 @@ export default function ResearchPage() {
           <span className="font-semibold">Where it is NOT ahead, stated plainly:</span> the
           road-damage detector (mAP50 33%) is a competitive component, not a benchmark leader, and
           road-user perception is a COCO-pretrained baseline pending an India-Driving-Dataset
-          fine-tune. The claim is not "a better object detector" — it is a better *system* for the
+          fine-tune. The claim is not &ldquo;a better object detector&rdquo; — it is a better *system* for the
           road India actually has. Beating perception leaderboards is neither claimed nor needed.
         </p>
       </section>
