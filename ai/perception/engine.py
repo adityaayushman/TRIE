@@ -25,13 +25,19 @@ from ai.perception.lanes import detect_lane_offset
 DEFAULT_MODEL = "yolo11n.pt"
 DEFAULT_CONFIDENCE = 0.25
 
-# COCO ids -> our taxonomy. The split is the point: `vehicles` are things with
-# a cage around the occupant, `two_wheelers` and `pedestrians` are not.
-_VEHICLE_CLASSES = {2: "car", 5: "bus", 7: "truck"}
-_TWO_WHEELER_CLASSES = {1: "bicycle", 3: "motorcycle"}
-_PEDESTRIAN_CLASSES = {0: "person"}
-_TRAFFIC_LIGHT_CLASS = 9
-_SIGN_CLASSES = {11: "stop sign"}
+# Class NAME -> our taxonomy, so the same engine works whether the weights are
+# COCO-pretrained or IDD-fine-tuned (ai/training/train_perception.py) — their ids
+# differ, but the names align. The split is the point: `vehicles` are things with
+# a cage around the occupant, `two_wheelers` and `pedestrians` are not. IDD adds
+# the Indian classes COCO lacks: autorickshaw, rider (the person on a two-wheeler,
+# a VRU), and vehicle fallback. Matched lowercase.
+_VEHICLE_NAMES = {
+    "car", "bus", "truck", "autorickshaw", "caravan", "trailer", "train", "vehicle fallback",
+}
+_TWO_WHEELER_NAMES = {"bicycle", "motorcycle"}
+_PEDESTRIAN_NAMES = {"person", "rider"}
+_TRAFFIC_LIGHT_NAMES = {"traffic light"}
+_SIGN_NAMES = {"stop sign", "traffic sign"}
 
 # Colour gates for classifying a cropped traffic light. Red wraps the hue
 # origin in OpenCV's 0-179 scale, hence two bands.
@@ -130,29 +136,27 @@ class PerceptionEngine:
         light_state: str | None = None
         best_light_confidence = 0.0
 
+        model = self._model_or_load()
+        names = getattr(model, "names", {})
+
         for prediction in predictions:
             for box in prediction.boxes:
                 class_id = int(box.cls)
                 confidence = float(box.conf)
+                name = str(names.get(class_id, class_id)).lower()
                 # xyxyn is already normalised to the frame, so downstream
                 # geometry is resolution-independent.
                 bounds = tuple(float(value) for value in box.xyxyn[0])
 
-                if class_id in _VEHICLE_CLASSES:
-                    vehicles.append(
-                        DetectedObject(_VEHICLE_CLASSES[class_id], confidence, bounds)
-                    )
-                elif class_id in _TWO_WHEELER_CLASSES:
-                    two_wheelers.append(
-                        DetectedObject(_TWO_WHEELER_CLASSES[class_id], confidence, bounds)
-                    )
-                elif class_id in _PEDESTRIAN_CLASSES:
-                    pedestrians.append(
-                        DetectedObject(_PEDESTRIAN_CLASSES[class_id], confidence, bounds)
-                    )
-                elif class_id in _SIGN_CLASSES:
-                    signs.append(DetectedObject(_SIGN_CLASSES[class_id], confidence, bounds))
-                elif class_id == _TRAFFIC_LIGHT_CLASS and confidence > best_light_confidence:
+                if name in _VEHICLE_NAMES:
+                    vehicles.append(DetectedObject(name, confidence, bounds))
+                elif name in _TWO_WHEELER_NAMES:
+                    two_wheelers.append(DetectedObject(name, confidence, bounds))
+                elif name in _PEDESTRIAN_NAMES:
+                    pedestrians.append(DetectedObject(name, confidence, bounds))
+                elif name in _SIGN_NAMES:
+                    signs.append(DetectedObject(name, confidence, bounds))
+                elif name in _TRAFFIC_LIGHT_NAMES and confidence > best_light_confidence:
                     # Several lights may be visible; trust the clearest one.
                     best_light_confidence = confidence
                     light_state = _classify_traffic_light(frame, bounds)
