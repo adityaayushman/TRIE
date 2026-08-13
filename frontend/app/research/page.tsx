@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { FatalityScene3D } from "@/components/FatalityScene3D";
 
 export const metadata: Metadata = {
   title: "Research & Methodology — Smart Road Guardian AI X",
@@ -584,6 +585,29 @@ export default function ResearchPage() {
             encodes (speed 0.22, VRU 0.20, road 0.13). Reproduce with{" "}
             <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.external_validation</code>.
           </p>
+        </div>
+
+        {/* Interactive 3D view of the real joint effect (speed x light) */}
+        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/40">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4">
+            <p className="text-sm font-semibold text-slate-200">
+              The joint effect, in the round — speed × light
+            </p>
+            <span className="text-[0.65rem] uppercase tracking-wide text-slate-500">drag to rotate</span>
+          </div>
+          <p className="px-5 pb-1 pt-1 text-xs leading-relaxed text-slate-500">
+            The same real STATS19 crashes, cut two ways at once: fatal-collision rate by speed limit
+            (front) and by daylight vs darkness (the two rows). Height is the fatality rate. The point
+            is the <span className="text-slate-300">interaction</span> — the dark penalty widens as
+            speed rises, from ~1.6× at 20 mph to <span className="text-slate-300">2.3× at 70 mph</span>
+            — the kind of compounding a flat table hides and a rotatable surface makes obvious.
+          </p>
+          <FatalityScene3D />
+          <div className="flex flex-wrap items-center gap-4 border-t border-slate-800/70 px-5 py-2.5 text-[0.7rem] text-slate-500">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "#f5b942" }} /> Daylight</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "#6366f1" }} /> Darkness</span>
+            <span className="ml-auto">bar height = fatal-collision rate (%) · DfT STATS19 GB 2024</span>
+          </div>
         </div>
 
         <p className="mt-5 max-w-3xl rounded-xl border border-amber-900/40 bg-amber-950/20 px-4 py-3 text-[0.75rem] leading-relaxed text-amber-200/80">
