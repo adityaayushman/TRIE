@@ -18,3 +18,6 @@ onnxruntime>=1.18
 scikit-learn>=1.4
 pandas>=2.0,<3
 scipy>=1.11
+# statsmodels: the inferential validation (statistical_validation) needs proper
+# logistic p-values, CIs and a likelihood-ratio test, which sklearn does not give.
+statsmodels>=0.14

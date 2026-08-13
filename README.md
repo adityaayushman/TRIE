@@ -6,7 +6,9 @@ An Explainable Multimodal Edge AI Transportation Intelligence Platform for
 real-time accident prevention and causal risk analysis. Full spec and
 system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Presenting or
 evaluating it? Start with the [presentation kit](docs/PRESENTATION.md) — thesis,
-every result, and a five-minute demo script in one page.
+every result, and a five-minute demo script in one page. Writing it up? A working
+paper draft (IMRaD, real-data validation, verified citations, honest limitations)
+lives at [paper/smart-road-guardian.md](paper/smart-road-guardian.md).
 
 ## Live
 
@@ -192,6 +194,17 @@ regenerates from the real engines — no screenshots of a claim. Each needs
 `ai/requirements.txt` (adds scikit-learn; torch is already in it):
 
 ```bash
+# Real-data validation — the premise on 128k real crashes (DfT STATS19)
+python -m ai.trie.external_validation      # do the model's factors predict who
+                                           # dies? AUC 0.725, VRUs 52% of deaths
+python -m ai.trie.statistical_validation   # odds ratios + 95% CIs, interaction
+                                           # LR test, calibration (ECE 0.18%),
+                                           # leave-one-out ablation
+# Detectors
+python -m ai.training.train_helmet --evaluate       # helmet/triple-riding mAP (78%)
+python -m ai.vru_intelligence.annotate_footage      # rider vulnerability on the clips
+python -m ai.training.train_road_damage --evaluate  # per-class road-damage mAP
+# Controlled studies (authored ground truth, stated as such)
 python -m ai.blackspot.evaluate            # black-spot discovery: detection,
                                            # false-positive rate, lead-time dist.
 python -m ai.blackspot.report              # lead-time vs iRAD's crash threshold
@@ -199,7 +212,6 @@ python -m ai.trie.fusion_study             # learned fusion vs the hand-set rule
 python -m ai.trie.interaction_analysis     # Friedman's H — did it learn the
                                            # right interactions? (3/3, top-3)
 python -m ai.temporal_prediction.forecast_study   # LSTM vs linear extrapolation
-python -m ai.training.train_road_damage --evaluate  # per-class road-damage mAP
 python -m ai.demo.build_traffic_demo       # perception + traffic on the clips
 python -m ai.demo.build_blackspot_demo     # the illustrative black-spot map data
 ```
@@ -252,6 +264,17 @@ Three traps worth knowing, each of which cost a deploy cycle here:
 Several original "next steps" are now shipped, each honestly scoped on
 [/research](https://trie-dashboard.vercel.app/research):
 
+- **The model's premise is validated on real crash data** — on 128k real DfT
+  STATS19 casualties, the factors it weights predict fatal outcomes with
+  ROC-AUC 0.725 (95% CI 0.713–0.737); multivariable odds ratios (VRU 3.66,
+  speed 2.23/SD, darkness 1.73) with a significant speed×VRU interaction
+  (p<1e-9), calibrated (ECE 0.18%). GB not India, so it validates the factor
+  *structure*, not the deployment — stated as such. See
+  [`paper/smart-road-guardian.md`](paper/smart-road-guardian.md) for the writeup.
+- **Per-rider vulnerability is a live feature** — a fine-tuned YOLOv11 helmet /
+  triple-riding detector (mAP50 78%) turns each rider into a WHO-grounded
+  fatality multiplier wired into the risk fusion, with overlays on the Vehicle
+  Intelligence page.
 - **Road-damage detection is a real, fine-tuned model** — YOLOv11s on RDD2022
   India, mAP50 33% measured on 1,542 held-out Indian images (was classical CV).
 - **The rule-based layers have learned replacements, prototyped and benchmarked**
