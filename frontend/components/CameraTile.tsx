@@ -4,10 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { DemoClipData, DemoFrame, DemoManifestEntry, fetchDemoClip, nearestFrame } from "@/lib/demo";
 import { Badge } from "./ui";
 
+// Categorical palette for the road-user classes, shared by the camera overlays,
+// the Vehicle-Intelligence legend and the Traffic flow chart. Re-stepped to pass
+// the dataviz CVD + normal-vision gates (validate_palette, dark surface): a
+// danger-red pedestrian and a caution-yellow two-wheeler stay distinct even
+// under deuteranopia, where the previous red/amber pair collapsed.
 export const BOX_COLOR: Record<string, string> = {
-  vehicle: "#38bdf8",
-  two_wheeler: "#f59e0b",
-  pedestrian: "#f87171",
+  vehicle: "#3987e5",
+  two_wheeler: "#fbbf24",
+  pedestrian: "#ef4444",
 };
 
 /** Helmet-detector rider classes get their own palette, keyed by the danger they

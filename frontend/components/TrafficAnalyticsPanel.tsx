@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { DemoClipData, DemoManifestEntry, fetchDemoClip, fetchDemoManifest } from "@/lib/demo";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DemoClipData, DemoFrame, DemoManifestEntry, fetchDemoClip, fetchDemoManifest } from "@/lib/demo";
 import { BOX_COLOR } from "./CameraTile";
 import { Card, EmptyState, Legend, SectionTitle, Stat } from "./ui";
 
 const WIDTH = 760;
-const HEIGHT = 240;
-const PAD = { left: 34, right: 14, top: 14, bottom: 24 };
+// Two stacked plots sharing one x-axis (never one plot with two y-scales): road-
+// user counts on top, the 0–100% congestion index in its own strip below. This
+// is the dual-axis fix — counts and a 0–1 index have no common scale.
+const PAD = { left: 38, right: 58, top: 12 };
 const PLOT_W = WIDTH - PAD.left - PAD.right;
-const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
+const COUNTS_TOP = 12;
+const COUNTS_H = 150;
+const CONG_TOP = 196;
+const CONG_H = 58;
+const HEIGHT = 286;
 
+// Congestion is a magnitude in its own strip (a lone series), so one hue; the
+// three count series use the shared, CVD-validated categorical palette.
 const CONGESTION_COLOR = "#a78bfa";
 
 const LEGEND_ITEMS = [
@@ -29,51 +37,150 @@ function smoothPath(points: [number, number][]): string {
   for (let i = 1; i < points.length; i++) {
     const [px, py] = points[i - 1];
     const [cx, cy] = points[i];
-    const midX = (px + cx) / 2;
-    const midY = (py + cy) / 2;
-    d += ` Q${px},${py} ${midX},${midY}`;
+    d += ` Q${px},${py} ${(px + cx) / 2},${(py + cy) / 2}`;
   }
   const [lx, ly] = points[points.length - 1];
   d += ` L${lx},${ly}`;
   return d;
 }
 
-function LineChart({ data }: { data: DemoClipData }) {
+function usersOf(f: DemoFrame) {
+  return f.vehicles.length + f.two_wheelers.length + f.pedestrians.length;
+}
+
+function FlowChart({ data }: { data: DemoClipData }) {
   const frames = data.frames;
-  const maxCount = Math.max(1, ...frames.map((f) => f.vehicles.length + f.two_wheelers.length + f.pedestrians.length));
+  const [hi, setHi] = useState<number | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  const x = (t: number) => PAD.left + (t / data.duration_s) * PLOT_W;
-  const yCount = (count: number) => PAD.top + PLOT_H - (count / maxCount) * PLOT_H;
-  const yCongestion = (level: number) => PAD.top + PLOT_H - level * PLOT_H;
+  const maxCount = Math.max(1, ...frames.map(usersOf));
+  const x = (t: number) => PAD.left + (data.duration_s ? (t / data.duration_s) * PLOT_W : 0);
+  const yCount = (c: number) => COUNTS_TOP + COUNTS_H - (c / maxCount) * COUNTS_H;
+  const yCong = (l: number) => CONG_TOP + CONG_H - Math.max(0, Math.min(1, l)) * CONG_H;
 
-  const vehiclePath = smoothPath(frames.map((f) => [x(f.t), yCount(f.vehicles.length)]));
-  const twoWheelerPath = smoothPath(frames.map((f) => [x(f.t), yCount(f.two_wheelers.length)]));
-  const pedestrianPath = smoothPath(frames.map((f) => [x(f.t), yCount(f.pedestrians.length)]));
-  const congestionPath = smoothPath(frames.map((f) => [x(f.t), yCongestion(f.traffic.congestion_level)]));
+  const series = [
+    { key: "veh", color: BOX_COLOR.vehicle, w: 2.5, get: (f: DemoFrame) => f.vehicles.length },
+    { key: "2w", color: BOX_COLOR.two_wheeler, w: 2, get: (f: DemoFrame) => f.two_wheelers.length },
+    { key: "ped", color: BOX_COLOR.pedestrian, w: 2, get: (f: DemoFrame) => f.pedestrians.length },
+  ];
 
-  const areaPath = frames.length > 1
-    ? `${vehiclePath} L${x(data.duration_s)},${yCount(0)} L${x(0)},${yCount(0)} Z`
-    : "";
+  const areaPath =
+    frames.length > 1
+      ? `${smoothPath(frames.map((f) => [x(f.t), yCount(f.vehicles.length)]))} L${x(data.duration_s)},${yCount(0)} L${x(0)},${yCount(0)} Z`
+      : "";
+  const congPath = smoothPath(frames.map((f) => [x(f.t), yCong(f.traffic.congestion_level)]));
+  const congArea =
+    frames.length > 1
+      ? `${congPath} L${x(data.duration_s)},${yCong(0)} L${x(0)},${yCong(0)} Z`
+      : "";
+
+  const onMove = (e: React.MouseEvent) => {
+    const svg = svgRef.current;
+    if (!svg || frames.length === 0) return;
+    const rect = svg.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * WIDTH;
+    const frac = Math.max(0, Math.min(1, (px - PAD.left) / PLOT_W));
+    setHi(Math.round(frac * (frames.length - 1)));
+  };
+
+  const active = hi !== null ? frames[hi] : null;
+  const gridColor = "#1e293b";
 
   return (
-    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full min-w-[480px]" role="img" aria-label="Vehicle, two-wheeler and pedestrian count, and congestion, over the clip's duration">
-      <defs>
-        <linearGradient id="traffic-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={BOX_COLOR.vehicle} stopOpacity={0.25} />
-          <stop offset="100%" stopColor={BOX_COLOR.vehicle} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
-        <line key={frac} x1={PAD.left} x2={WIDTH - PAD.right} y1={PAD.top + PLOT_H * frac} y2={PAD.top + PLOT_H * frac} stroke="#1e293b" strokeWidth={1} />
-      ))}
-      {areaPath && <path d={areaPath} fill="url(#traffic-area)" stroke="none" />}
-      <path d={pedestrianPath} fill="none" stroke={BOX_COLOR.pedestrian} strokeWidth={1.5} strokeLinejoin="round" opacity={0.85} />
-      <path d={twoWheelerPath} fill="none" stroke={BOX_COLOR.two_wheeler} strokeWidth={1.5} strokeLinejoin="round" opacity={0.85} />
-      <path d={vehiclePath} fill="none" stroke={BOX_COLOR.vehicle} strokeWidth={2.5} strokeLinejoin="round" />
-      <path d={congestionPath} fill="none" stroke={CONGESTION_COLOR} strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round" />
-      <text x={PAD.left} y={HEIGHT - 6} className="fill-slate-600 text-[9px]">0s</text>
-      <text x={WIDTH - PAD.right} y={HEIGHT - 6} textAnchor="end" className="fill-slate-600 text-[9px]">{data.duration_s.toFixed(0)}s</text>
-    </svg>
+    <div className="relative">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+        className="w-full min-w-[480px] touch-none"
+        role="img"
+        aria-label="Road-user counts and congestion index over the clip duration"
+        onMouseMove={onMove}
+        onMouseLeave={() => setHi(null)}
+      >
+        <defs>
+          <linearGradient id="flow-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={BOX_COLOR.vehicle} stopOpacity={0.22} />
+            <stop offset="100%" stopColor={BOX_COLOR.vehicle} stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="cong-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={CONGESTION_COLOR} stopOpacity={0.3} />
+            <stop offset="100%" stopColor={CONGESTION_COLOR} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+
+        {/* counts grid + y labels */}
+        {[0, 0.5, 1].map((f) => {
+          const val = Math.round(maxCount * f);
+          return (
+            <g key={`cg${f}`}>
+              <line x1={PAD.left} x2={PAD.left + PLOT_W} y1={yCount(val)} y2={yCount(val)} stroke={gridColor} strokeWidth={1} />
+              <text x={PAD.left - 7} y={yCount(val) + 3} textAnchor="end" className="fill-slate-600 text-[9px] tabular-nums">{val}</text>
+            </g>
+          );
+        })}
+        <text x={PAD.left - 7} y={COUNTS_TOP - 2} textAnchor="end" className="fill-slate-500 text-[8px] uppercase tracking-wide">road users</text>
+
+        {areaPath && <path d={areaPath} fill="url(#flow-area)" stroke="none" />}
+        {series.map((s) => (
+          <path key={s.key} d={smoothPath(frames.map((f) => [x(f.t), yCount(s.get(f))]))} fill="none" stroke={s.color} strokeWidth={s.w} strokeLinejoin="round" strokeLinecap="round" />
+        ))}
+        {/* direct end-labels (in addition to the legend) */}
+        {frames.length > 0 && series.map((s) => (
+          <text key={`lbl${s.key}`} x={PAD.left + PLOT_W + 5} y={yCount(s.get(frames[frames.length - 1])) + 3} className="text-[8.5px] font-semibold tabular-nums" fill={s.color}>
+            {s.get(frames[frames.length - 1])}
+          </text>
+        ))}
+
+        {/* congestion strip */}
+        <line x1={PAD.left} x2={PAD.left + PLOT_W} y1={yCong(0)} y2={yCong(0)} stroke={gridColor} strokeWidth={1} />
+        {congArea && <path d={congArea} fill="url(#cong-area)" stroke="none" />}
+        <path d={congPath} fill="none" stroke={CONGESTION_COLOR} strokeWidth={2} strokeLinejoin="round" />
+        <text x={PAD.left - 7} y={CONG_TOP + 4} textAnchor="end" className="fill-slate-500 text-[8px] uppercase tracking-wide">100%</text>
+        <text x={PAD.left - 7} y={yCong(0) + 3} textAnchor="end" className="fill-slate-600 text-[9px]">0</text>
+        <text x={PAD.left + PLOT_W + 5} y={yCong(frames.length ? frames[frames.length - 1].traffic.congestion_level : 0) + 3} className="text-[8.5px] font-semibold tabular-nums" fill={CONGESTION_COLOR}>
+          {frames.length ? Math.round(frames[frames.length - 1].traffic.congestion_level * 100) : 0}%
+        </text>
+
+        {/* x axis */}
+        <text x={PAD.left} y={HEIGHT - 4} className="fill-slate-600 text-[9px]">0s</text>
+        <text x={PAD.left + PLOT_W} y={HEIGHT - 4} textAnchor="end" className="fill-slate-600 text-[9px]">{data.duration_s.toFixed(0)}s</text>
+
+        {/* crosshair + markers */}
+        {active && (
+          <g pointerEvents="none">
+            <line x1={x(active.t)} x2={x(active.t)} y1={COUNTS_TOP} y2={yCong(0)} stroke="#64748b" strokeWidth={1} strokeDasharray="3 3" />
+            {series.map((s) => (
+              <circle key={`m${s.key}`} cx={x(active.t)} cy={yCount(s.get(active))} r={3.5} fill={s.color} stroke="#0b1220" strokeWidth={1.5} />
+            ))}
+            <circle cx={x(active.t)} cy={yCong(active.traffic.congestion_level)} r={3.5} fill={CONGESTION_COLOR} stroke="#0b1220" strokeWidth={1.5} />
+          </g>
+        )}
+      </svg>
+
+      {active && (
+        <div className="pointer-events-none absolute right-2 top-1 rounded-lg border border-slate-700 bg-slate-950/95 px-3 py-2 text-[0.7rem] shadow-lg">
+          <p className="mb-1 tabular-nums text-slate-500">{active.t.toFixed(1)}s</p>
+          <div className="space-y-0.5">
+            {[
+              { c: BOX_COLOR.vehicle, l: "Vehicles", v: active.vehicles.length },
+              { c: BOX_COLOR.two_wheeler, l: "Two-wheelers", v: active.two_wheelers.length },
+              { c: BOX_COLOR.pedestrian, l: "Pedestrians", v: active.pedestrians.length },
+            ].map((r) => (
+              <p key={r.l} className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: r.c }} />
+                <span className="text-slate-400">{r.l}</span>
+                <span className="ml-auto pl-3 font-semibold tabular-nums text-slate-100">{r.v}</span>
+              </p>
+            ))}
+            <p className="flex items-center gap-1.5 border-t border-slate-800 pt-0.5">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CONGESTION_COLOR }} />
+              <span className="text-slate-400">Congestion</span>
+              <span className="ml-auto pl-3 font-semibold tabular-nums text-slate-100">{Math.round(active.traffic.congestion_level * 100)}%</span>
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -129,7 +236,7 @@ export function TrafficAnalyticsPanel() {
 
       {data ? (
         <>
-          <LineChart data={data} />
+          <FlowChart data={data} />
           <div className="mt-3">
             <Legend items={LEGEND_ITEMS} />
           </div>
