@@ -8,6 +8,11 @@ export type StreamStatus = "loading" | "live" | "reconnecting" | "error";
 
 const MAX_RECONNECT_DELAY_MS = 15_000;
 const HISTORY_LIMIT = 50;
+// The backend runs on a free tier that sleeps after idle and takes ~50s to
+// wake. Rather than strand the first visitor on a hard error that needs a
+// manual refresh, retry the history fetch a few times with backoff so the
+// dashboard self-heals the moment the server is up.
+const HISTORY_MAX_RETRIES = 8;
 
 export interface RiskStream {
   /** Most recent assessment: seeded from history (RiskEvent, no live-only
@@ -29,11 +34,14 @@ export function useRiskStream(): RiskStream {
   const [status, setStatus] = useState<StreamStatus>("loading");
   const [error, setError] = useState<string | null>(null);
   const cancelledRef = useRef(false);
+  const historyAttemptRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const loadHistory = useCallback(async () => {
     try {
       const history = await fetchRecentEvents(HISTORY_LIMIT);
       if (cancelledRef.current) return;
+      historyAttemptRef.current = 0;
       setEvents(history);
       setError(null);
       // Only seed the snapshot from history if the websocket has not already
@@ -42,8 +50,18 @@ export function useRiskStream(): RiskStream {
       setSnapshot((current) => current ?? history[0] ?? null);
     } catch (cause) {
       if (cancelledRef.current) return;
-      setError((cause as Error).message);
-      setStatus("error");
+      // Likely the free-tier backend waking from idle. Auto-retry with backoff
+      // and hold a non-error "loading" status so the UI reads as connecting,
+      // not broken; only surface a hard error once retries are exhausted.
+      historyAttemptRef.current += 1;
+      if (historyAttemptRef.current <= HISTORY_MAX_RETRIES) {
+        setStatus((s) => (s === "live" ? s : "loading"));
+        const delay = Math.min(2000 * historyAttemptRef.current, 8000);
+        retryTimerRef.current = setTimeout(() => void loadHistory(), delay);
+      } else {
+        setError((cause as Error).message);
+        setStatus("error");
+      }
     }
   }, []);
 
@@ -96,6 +114,7 @@ export function useRiskStream(): RiskStream {
     return () => {
       cancelledRef.current = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
       socket?.close();
     };
   }, [loadHistory]);
