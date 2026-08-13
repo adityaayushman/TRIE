@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-sm">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
         <Link href="/" className="text-sm font-bold tracking-tight text-slate-50">
           Smart Road Guardian <span className="text-sky-400">AI X</span>
@@ -66,7 +66,7 @@ function Contribution({
   caveat?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-900/50 p-6 sm:p-7">
+    <div className="rounded-2xl border border-slate-800/80 bg-linear-to-b from-slate-900/90 to-slate-900/50 p-6 sm:p-7">
       <div className="flex items-baseline gap-3">
         <span className="font-mono text-sm text-sky-400">{index}</span>
         <h3 className="text-lg font-semibold text-slate-50">{title}</h3>
@@ -283,7 +283,7 @@ export default function ResearchPage() {
                 the dangerous stretch, <span className="text-slate-200">0% false-positives</span> on a busy-but-safe
                 one, and a median lead time of <span className="text-slate-200">1–7.5 days</span> against iRAD&apos;s
                 170–888 days (or never). Full distribution in the Benchmarks section; reproducible with{" "}
-                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
+                <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
               </>
             }
             caveat="This is a controlled evaluation: the dangerous/safe locations are authored from the factors the fusion models. A field validation against MoRTH's published black spots needs near-miss telemetry for real Indian locations, which is not publicly available — that remains the open experiment, not a step being skipped."
@@ -299,7 +299,7 @@ export default function ResearchPage() {
               <>
                 Perception keeps two-wheelers a separate class from cars end-to-end (COCO
                 classes are remapped onto a VRU-aware taxonomy in{" "}
-                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/perception</code>),
+                <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/perception</code>),
                 and the fusion applies the exposure weighting the MoRTH fatality split
                 (66.8% VRU) justifies. Visible live on the Traffic Analytics and Vehicle
                 Intelligence pages, where a motorcycle-packed lane reads as congested and
@@ -320,7 +320,7 @@ export default function ResearchPage() {
                 the two camera-derived factors unmeasured, a mid-20s score carries a band roughly{" "}
                 <span className="text-slate-200">30 points</span> wide (e.g. 17–50%) — a visible,
                 honest &quot;we cannot see enough to be sure&quot; where a bare point estimate would
-                fake precision. Reproduced in <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
+                fake precision. Reproduced in <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>.
               </>
             }
             caveat="The band reflects sensor coverage, not label-calibrated probability. A learned fusion sharpens this further — the Benchmarks study shows one beating the hand-set rule (AUC 0.78 → 0.82) on a controlled ground truth, pending real labelled telemetry to ship it."
@@ -415,7 +415,7 @@ export default function ResearchPage() {
               <p className="mt-3 border-t border-slate-800 pt-2 text-[0.65rem] leading-relaxed text-slate-500">
                 Overall mAP@50 <span className="tabular-nums text-slate-300">78.2%</span> · mAP@50-95{" "}
                 <span className="tabular-nums text-slate-300">56.2%</span>. Reproducible with{" "}
-                <code className="rounded bg-slate-800 px-1 py-0.5 text-[0.6rem] text-slate-300">
+                <code className="rounded-sm bg-slate-800 px-1 py-0.5 text-[0.6rem] text-slate-300">
                   python -m ai.training.train_helmet --evaluate
                 </code>
               </p>
@@ -502,7 +502,7 @@ export default function ResearchPage() {
                   <td className="py-2.5 pr-4 font-medium text-slate-200">{row.d}</td>
                   <td className="py-2.5 pr-4 text-slate-500">{row.adas}</td>
                   <td className="py-2.5 pr-4 text-slate-500">{row.official}</td>
-                  <td className="bg-sky-500/[0.06] px-4 py-2.5 text-slate-200">{row.ours}</td>
+                  <td className="bg-sky-500/6 px-4 py-2.5 text-slate-200">{row.ours}</td>
                 </tr>
               ))}
             </tbody>
@@ -582,7 +582,7 @@ export default function ResearchPage() {
           <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
             Speed and VRU status dominate; poor surface is weakest — the same ordering the fusion
             encodes (speed 0.22, VRU 0.20, road 0.13). Reproduce with{" "}
-            <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.external_validation</code>.
+            <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.external_validation</code>.
           </p>
         </div>
 
@@ -608,7 +608,7 @@ export default function ResearchPage() {
             <p className="mt-1 text-xs text-slate-500">
               40 seeds, two traffic volumes, a genuinely dangerous stretch against a busy-but-safe one.
               Reproduce with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
             </p>
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[460px] text-left text-xs">
@@ -710,7 +710,7 @@ export default function ResearchPage() {
               detect well; transverse cracks barely register because the split holds only 17 of
               them. COCO-pretrained weights have no pothole class at all, so this is the
               difference between guessing and detecting. Reproduce with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_road_damage --evaluate</code>.
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_road_damage --evaluate</code>.
             </p>
           </div>
 
@@ -753,7 +753,7 @@ export default function ResearchPage() {
               detect strongly; with-helmet is the noisiest class because the split holds only 27 of
               them. The demo clips contain no triple-riding, yet the detector scores it highest, so
               the capability is real beyond what the footage exercises. Reproduce with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_helmet --evaluate</code>.
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.training.train_helmet --evaluate</code>.
             </p>
           </div>
 
@@ -765,7 +765,7 @@ export default function ResearchPage() {
               truth where crash risk compounds (fast <span className="text-slate-400">and</span> bad
               surface <span className="text-slate-400">and</span> vulnerable road users) — the
               interaction an additive model cannot represent. Reproduce with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.fusion_study</code>.
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.fusion_study</code>.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[440px] text-left text-xs">
@@ -818,7 +818,7 @@ export default function ResearchPage() {
                 right for the right reason. SHAP is skipped deliberately: the shipped rule is already
                 exactly its own attribution, and the library forces a numpy upgrade this repo&apos;s
                 vision stack cannot take. Reproduce with{" "}
-                <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.interaction_analysis</code>.
+                <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.interaction_analysis</code>.
               </p>
             </div>
           </div>
@@ -830,7 +830,7 @@ export default function ResearchPage() {
               Forecast error 6 steps ahead on held-out risk trajectories (ramp → peak → fall,
               stop-go, noise). Self-supervised — the target is the risk that actually occurs.
               Reproduce with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.temporal_prediction.forecast_study</code>.
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.temporal_prediction.forecast_study</code>.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[440px] text-left text-xs">

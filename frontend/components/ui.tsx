@@ -26,7 +26,7 @@ export function PageHeader({
           <Icon size={18} />
         </span>
         <div>
-          <h1 className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
+          <h1 className="bg-linear-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
             {title}
           </h1>
           {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
@@ -58,7 +58,7 @@ export function Card({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay, ease: "easeOut" }}
       whileHover={interactive ? { y: -2, borderColor: "rgba(100,116,139,0.5)" } : undefined}
-      className={`rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-900/60 p-6 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_8px_24px_-12px_rgba(0,0,0,0.5)] backdrop-blur transition-colors ${className}`}
+      className={`rounded-2xl border border-slate-800/80 bg-linear-to-b from-slate-900/90 to-slate-900/60 p-6 shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_8px_24px_-12px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-colors ${className}`}
     >
       {children}
     </motion.section>

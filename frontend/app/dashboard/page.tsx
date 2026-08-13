@@ -32,7 +32,7 @@ function StatCard({
   const t = STAT_TONES[tone];
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-950/60 p-5 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)] transition-all hover:-translate-y-0.5 hover:border-slate-700"
+      className="group relative overflow-hidden rounded-2xl border border-slate-800/80 bg-linear-to-b from-slate-900/90 to-slate-950/60 p-5 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.8)] transition-all hover:-translate-y-0.5 hover:border-slate-700"
     >
       <div
         aria-hidden
@@ -41,7 +41,7 @@ function StatCard({
       />
       <span aria-hidden className="absolute left-0 top-4 h-8 w-0.5 rounded-full" style={{ backgroundColor: t.bar }} />
       <p className="relative text-[0.65rem] font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`relative mt-2 bg-gradient-to-br ${t.value} bg-clip-text text-3xl font-bold tabular-nums text-transparent`}>
+      <p className={`relative mt-2 bg-linear-to-br ${t.value} bg-clip-text text-3xl font-bold tabular-nums text-transparent`}>
         {value}
       </p>
       {hint && <p className="relative mt-1 text-[0.65rem] text-slate-600">{hint}</p>}

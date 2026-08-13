@@ -69,7 +69,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sky-600"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-hidden transition focus:border-sky-600"
               />
             </label>
 
@@ -81,7 +81,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 <input
                   value={organisation}
                   onChange={(e) => setOrganisation(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sky-600"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-hidden transition focus:border-sky-600"
                 />
               </label>
             )}
@@ -99,7 +99,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={isRegister ? "new-password" : "current-password"}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sky-600"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-hidden transition focus:border-sky-600"
               />
               {isRegister && (
                 <span className="mt-1 block text-[0.65rem] text-slate-600">

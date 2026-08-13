@@ -40,7 +40,7 @@ function NavLink({ href, label, active, icon }: { href: string; label: string; a
         <motion.span
           layoutId="dash-nav-active"
           transition={{ type: "spring", stiffness: 500, damping: 40 }}
-          className="absolute inset-0 rounded-lg border border-sky-500/25 bg-gradient-to-r from-sky-500/20 to-sky-500/5"
+          className="absolute inset-0 rounded-lg border border-sky-500/25 bg-linear-to-r from-sky-500/20 to-sky-500/5"
         />
       )}
       <span className={`relative z-10 ${active ? "text-sky-300" : "text-slate-600"}`}>

@@ -125,7 +125,7 @@ export default function Landing() {
         </div>
         {/* legibility + depth gradients over the canvas */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(2,6,23,0.55)_0%,rgba(2,6,23,0.15)_35%,rgba(2,6,23,0.85)_100%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-slate-950 to-transparent" />
 
         {/* glass nav */}
         <header className="relative z-20">
@@ -156,7 +156,7 @@ export default function Landing() {
         {/* hero content — staged entrance on load */}
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center px-5 pt-16 text-center sm:pt-24">
           <Reveal immediate y={12}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-sky-300 backdrop-blur">
+            <span className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-sky-300 backdrop-blur-sm">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400" />
               Predict · Explain · Prevent
             </span>
@@ -165,7 +165,7 @@ export default function Landing() {
             <h1 className="mt-6 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-6xl">
               Road safety that acts
               <br />
-              <span className="bg-gradient-to-r from-sky-300 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-sky-300 via-sky-400 to-cyan-300 bg-clip-text text-transparent">
                 before
               </span>{" "}
               the crash
@@ -188,7 +188,7 @@ export default function Landing() {
               </Link>
               <Link
                 href="/research"
-                className="rounded-xl border border-slate-600/70 bg-slate-900/40 px-6 py-3 text-sm font-semibold text-slate-200 backdrop-blur transition hover:border-slate-500 hover:text-white"
+                className="rounded-xl border border-slate-600/70 bg-slate-900/40 px-6 py-3 text-sm font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-500 hover:text-white"
               >
                 Read the research
               </Link>
@@ -204,12 +204,12 @@ export default function Landing() {
 
       <LaneDivider />
 
-      <section className="bg-gradient-to-b from-slate-900/40 to-slate-950">
+      <section className="bg-linear-to-b from-slate-900/40 to-slate-950">
         <Reveal>
           <div className="mx-auto grid max-w-6xl grid-cols-2 divide-x divide-y divide-slate-800/70 border-x border-b border-slate-800/70 lg:grid-cols-4 lg:divide-y-0">
             {STATS.map((stat) => (
               <div key={stat.label} className="group px-5 py-9 text-center transition-colors hover:bg-slate-900/50">
-                <p className="bg-gradient-to-b from-white to-slate-400 bg-clip-text text-3xl font-bold tabular-nums text-transparent sm:text-4xl">
+                <p className="bg-linear-to-b from-white to-slate-400 bg-clip-text text-3xl font-bold tabular-nums text-transparent sm:text-4xl">
                   {stat.value}
                 </p>
                 <p className="mt-2 text-xs leading-snug text-slate-500">{stat.label}</p>
@@ -234,7 +234,7 @@ export default function Landing() {
         <div className="mt-12 grid gap-5 lg:grid-cols-3">
           {PILLARS.map((pillar, i) => (
             <Reveal key={pillar.title} delay={i * 0.1}>
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/80 to-slate-900/40 p-7 transition-all hover:-translate-y-1 hover:border-sky-500/40">
+              <div className="group relative h-full overflow-hidden rounded-2xl border border-slate-800/80 bg-linear-to-b from-slate-900/80 to-slate-900/40 p-7 transition-all hover:-translate-y-1 hover:border-sky-500/40">
                 <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-sky-500/5 blur-2xl transition-colors group-hover:bg-sky-500/10" />
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 font-mono text-sm font-semibold text-sky-300">
                   {i + 1}
@@ -309,7 +309,7 @@ export default function Landing() {
               <Reveal key={item.title} delay={(i % 3) * 0.08}>
                 <Link
                   href={item.href}
-                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/80 to-slate-900/40 p-6 transition-all hover:-translate-y-1 hover:border-sky-500/40"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/80 bg-linear-to-b from-slate-900/80 to-slate-900/40 p-6 transition-all hover:-translate-y-1 hover:border-sky-500/40"
                 >
                   <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-sky-500/5 blur-2xl transition-colors group-hover:bg-sky-500/10" />
                   <div className="flex items-center justify-between">
@@ -343,7 +343,7 @@ export default function Landing() {
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">
               Simulated against iRAD&apos;s own reactive rule, using the real fusion and
               discovery engines in this repo — reproducible with{" "}
-              <code className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-300">
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-xs text-slate-300">
                 python -m ai.blackspot.report
               </code>
             </p>
