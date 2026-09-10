@@ -200,6 +200,9 @@ python -m ai.trie.external_validation      # do the model's factors predict who
 python -m ai.trie.statistical_validation   # odds ratios + 95% CIs, interaction
                                            # LR test, calibration (ECE 0.18%),
                                            # leave-one-out ablation
+python -m ai.trie.conformal_validation     # distribution-free conformal coverage
+                                           # guarantee, per sensor regime (>=90%
+                                           # fatal coverage; alarm-rate cost)
 # Detectors
 python -m ai.training.train_helmet --evaluate       # helmet/triple-riding mAP (78%)
 python -m ai.vru_intelligence.annotate_footage      # rider vulnerability on the clips

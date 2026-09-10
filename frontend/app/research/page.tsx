@@ -587,6 +587,56 @@ export default function ResearchPage() {
           </p>
         </div>
 
+        {/* Conformal coverage guarantee — the principled UQ upgrade */}
+        <div className="mt-5 rounded-2xl border border-emerald-800/40 bg-emerald-950/15 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-slate-100">
+              A coverage guarantee, not just a band
+            </p>
+            <span className="text-[0.65rem] uppercase tracking-wide text-emerald-400">conformal · distribution-free</span>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">
+            The live gauge&apos;s uncertainty band is honest but heuristic. This replaces it with a{" "}
+            <span className="text-slate-200">theorem</span>: class-conditional split conformal, applied
+            separately per sensor regime, guarantees that at least{" "}
+            <span className="text-slate-200">90%</span> of the crashes that were <em>actually fatal</em>{" "}
+            fall inside the model&apos;s &ldquo;cannot rule out fatal&rdquo; set — distribution-free, on
+            real crashes. The price of that guarantee is the alarm rate, and it is the observability
+            thesis made rigorous: more sensors, fewer false alarms at the same guaranteed recall.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[440px] text-left text-xs">
+              <thead>
+                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <th className="pb-2 font-medium">Sensor regime</th>
+                  <th className="pb-2 pr-3 text-right font-medium">Fatal coverage (≥90% target)</th>
+                  <th className="pb-2 text-right font-medium">Alarm rate (cost)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { r: "Full suite — camera + telemetry + clock", cov: "92.8%", alarm: "68.3%" },
+                  { r: "No camera — telemetry + clock", cov: "96.5%", alarm: "88.5%" },
+                  { r: "Telemetry only — speed", cov: "94.8%", alarm: "83.5%" },
+                ].map((row) => (
+                  <tr key={row.r} className="border-t border-slate-800/70">
+                    <td className="py-1.5 text-slate-300">{row.r}</td>
+                    <td className="py-1.5 pr-3 text-right font-semibold tabular-nums text-emerald-400">{row.cov}</td>
+                    <td className="py-1.5 text-right tabular-nums text-slate-400">{row.alarm}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            The guarantee holds in every regime (all ≥ 90%). With the full sensor suite the model can
+            confidently <span className="text-slate-400">clear ~32%</span> of cases of any fatal risk;
+            without the camera only ~12–17% — the quantified, guaranteed-recall cost of reduced
+            observability, replacing a heuristic with a proof. Reproduce with{" "}
+            <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.conformal_validation</code>.
+          </p>
+        </div>
+
         {/* Interactive 3D view of the real joint effect (speed x light) */}
         <div className="mt-5 overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/40">
           <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4">
