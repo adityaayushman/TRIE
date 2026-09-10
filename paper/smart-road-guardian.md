@@ -23,8 +23,8 @@ cars, and 66.8% of the 1.68–1.77 lakh annual deaths are vulnerable road users
 (VRUs) with no metal around them — all three assumptions fail. We present a
 transportation-risk system that inverts each: an **observability-aware risk
 fusion** that scores only the factors a given sensor suite can actually measure
-and redistributes the rest, reporting a **calibrated uncertainty band** whose
-width is driven by sensor coverage; a **VRU-first weighting** extended by a
+and redistributes the rest, with a **distribution-free conformal coverage
+guarantee** conditional on the sensor suite; a **VRU-first weighting** extended by a
 fine-tuned helmet/triple-riding detector into a per-rider vulnerability
 multiplier; and **predictive black-spot discovery** that nominates dangerous
 road segments from near-misses before a crash record exists. Because no public
@@ -62,11 +62,14 @@ carry assumptions that do not hold here:
 **1.2 Contributions.** We invert each assumption and, crucially, *validate the
 core premise on real crash data*:
 
-- **(C1) Observability-aware risk fusion with calibrated uncertainty** — a
-  transparent additive model that scores only observed factors, redistributes the
-  weight of the unobserved, and reports a confidence band whose floor/ceiling are
-  "every unmeasured factor is benign / at its worst." *(Primary contribution;
-  fully validated on real data — §4.1.)*
+- **(C1) Observability-aware risk fusion with a conformal coverage guarantee** — a
+  transparent additive model that scores only observed factors and redistributes
+  the weight of the unobserved. Its uncertainty is upgraded from a heuristic band
+  to **class-conditional, observability-conditional split conformal**: in every
+  sensor regime, ≥ 1−α of truly fatal outcomes are guaranteed (distribution-free)
+  to fall in the model's "cannot rule out fatal" set, and the alarm-rate *cost* of
+  that guarantee rises as sensors drop — the observability thesis as a theorem.
+  *(Primary contribution; validated on real crash data — §4.1.)*
 - **(C2) VRU-first weighting + per-rider vulnerability** — VRUs are first-class,
   exposure-weighted; a fine-tuned detector reads helmet/no-helmet/triple-riding
   and amplifies scene exposure by a WHO-grounded multiplier.
@@ -93,7 +96,7 @@ records.
 | **Hotspot / black-spot identification** | Empirical Bayes (Hauer et al. 2002, *TRR* 1784); AASHTO Highway Safety Manual (2010); comparative evaluation (Cheng & Washington 2005, *AA&P* 37) | Combine a Safety Performance Function with observed crash counts (EB shrinkage) to rank sites, correcting regression-to-the-mean | EB still needs **crash history**; we nominate from **near-misses** with a Wilson lower bound, before crashes accrue — complementary, earlier |
 | **Explainable ML for crash severity** | SHAP/LIME over ensemble severity models, e.g. Chang et al. (2022, *AA&P* 166) — XGBoost + SHAP on fatal pedestrian crashes | Post-hoc attribution (SHAP) over black-box severity classifiers | Our shipped model is **exactly additive by construction** — explanation needs no post-hoc attribution; we add **calibrated uncertainty from observability**, which post-hoc XAI does not provide |
 | **VRU & helmet safety** | WHO helmet fatality-reduction (~42%); helmet-detection CV | Detect/enforce; quantify helmet benefit | We convert detection into a **scene vulnerability multiplier** wired into the risk score |
-| **Uncertainty quantification** | Bayesian/ensemble UQ in ML | Predictive uncertainty from model/data | Our band is **driven by sensor coverage** (which factors were measurable), an interpretable, deployment-relevant notion |
+| **Uncertainty quantification** | Bayesian/ensemble UQ; conformal prediction (Vovk; Angelopoulos & Bates) | Predictive uncertainty; distribution-free coverage guarantees | We apply **class-conditional, observability-conditional split conformal**: a per-sensor-regime, distribution-free guarantee on covering the *fatal* class — UQ tied to which factors were measurable, a deployment-relevant, guaranteed notion |
 
 **Gap we occupy.** No prior system, to our knowledge, combines (i) observability-
 aware fusion that never scores an unmeasured factor as safe, (ii) a calibrated
@@ -190,6 +193,18 @@ carry almost all available signal. The model is **well calibrated** (Brier 0.012
 ECE 0.18%). Leave-one-out ablation: dropping speed costs most (ΔAUC −0.13),
 dropping poor surface costs nothing (−0.00), consistent with its null OR.
 
+**Conformal coverage guarantee (the observability thesis, formalised).** We
+replace the heuristic band with class-conditional (by-label) split conformal at
+α=0.1, applied separately per sensor regime (a three-way fit/calibrate/test split
+of the 128k casualties). The distribution-free guarantee — that ≥90% of truly
+fatal outcomes fall in the model's "cannot rule out fatal" set — holds in **every**
+regime: **92.8%** with the full sensor suite, **96.5%** without the camera, **94.8%**
+telemetry-only. The *cost* is the alarm rate, and it is exactly the observability
+thesis made rigorous: with the full suite the model confidently clears **32%** of
+cases of any fatal risk, versus only **12–17%** once the camera is removed — same
+guaranteed fatal-recall, quantified price for fewer sensors, a theorem where the
+shipped band was a heuristic. Reproduce: `python -m ai.trie.conformal_validation`.
+
 **Interpretation and scope.** This validates the **factor structure** the model
 rests on — the right factors, directions and ordering — on real crashes. It is GB,
 not India (the two VRU classes that dominate Indian deaths, pedestrians and
@@ -282,6 +297,7 @@ Every result is one command from the open-source repository:
 |---|---|
 | External validation (real crashes) | `python -m ai.trie.external_validation` |
 | Statistical validation (ORs, interactions, calibration) | `python -m ai.trie.statistical_validation` |
+| Conformal coverage guarantee (per sensor regime) | `python -m ai.trie.conformal_validation` |
 | Black-spot discovery evaluation | `python -m ai.blackspot.evaluate` |
 | Learned-fusion study | `python -m ai.trie.fusion_study` |
 | Interaction analysis (H-statistic) | `python -m ai.trie.interaction_analysis` |
