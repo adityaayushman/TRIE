@@ -1,17 +1,12 @@
-# Render Blueprint for the backend + database. Deploy: connect this repo at
-# render.com/select-repo, and Render provisions everything below from this
-# file. The frontend is deployed separately to Vercel — see README.md.
+# Render Blueprint for the backend. Deploy: connect this repo at
+# render.com/select-repo. The frontend is deployed separately to Vercel — see
+# README.md.
 #
-# databaseUrl below is written by Render into TRIE_DATABASE_URL as a bare
-# postgresql:// URL; backend/app/core/config.py normalizes that to the
-# +asyncpg scheme SQLAlchemy's async engine needs, so no manual edit is
-# required.
-databases:
-  - name: trie-db
-    plan: free
-    databaseName: trie
-    user: trie
-
+# The database is an external, persistent Postgres (Supabase), NOT a Render
+# free instance — the free Render Postgres expires after ~30 days and took the
+# backend down with it. TRIE_DATABASE_URL is therefore set manually in the
+# Render dashboard (sync: false), as a bare postgresql:// URL that
+# backend/app/core/config.py normalizes to the +asyncpg scheme.
 services:
   - type: web
     name: trie-backend
@@ -22,9 +17,7 @@ services:
     healthCheckPath: /api/v1/health
     envVars:
       - key: TRIE_DATABASE_URL
-        fromDatabase:
-          name: trie-db
-          property: connectionString
+        sync: false
       - key: TRIE_SECRET_KEY
         # Render generates this once and keeps it stable across deploys.
         # Required: app.core.config defaults it to a fresh random value per
