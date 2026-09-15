@@ -208,6 +208,10 @@ python -m ai.trie.india_validation --file "News Crashes.xlsx"
                                            # fatal crashes (Mendeley bc5sv6wnd9, CC BY):
                                            # 56% VRU victims, 69.5% killed by a heavier
                                            # vehicle. Download the xlsx first.
+python -m ai.trie.india_severity_model     # INFERENTIAL Indian model on 8,116 REAL
+                                           # NHAI-highway records (Zenodo 16946653, CC BY):
+                                           # VRU involvement OR 1.97 (1.80-2.17) for a
+                                           # killed/serious outcome; auto-downloads the CSV
 # Detectors
 python -m ai.training.train_helmet --evaluate       # helmet/triple-riding mAP (78%)
 python -m ai.vru_intelligence.annotate_footage      # rider vulnerability on the clips

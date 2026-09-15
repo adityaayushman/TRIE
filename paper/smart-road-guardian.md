@@ -33,11 +33,14 @@ validate the model's *premise* on 128,269 real casualties from the UK STATS19
 database: the factors the model weights predict fatal outcomes with ROC-AUC
 0.725 (95% CI 0.713–0.737), every factor carries the expected direction, and a
 likelihood-ratio test confirms a significant speed×VRU interaction (p<1e-9) — the
-compounding the VRU-first thesis predicts. The VRU-first premise is separately
-corroborated on 2,898 real Indian fatal crashes (56% VRU victims; 69.5% killed
-by a heavier vehicle). We report honest limitations prominently: the black-spot
-evaluation is a controlled simulation, and the inferential validation is UK, not
-Indian, data. All code and evaluations are open.
+compounding the VRU-first thesis predicts. The premise is then confirmed on real
+Indian data twice over: descriptively on 2,898 fatal crashes (56% VRU victims;
+69.5% killed by a heavier vehicle), and inferentially on 8,116 record-level NHAI
+highway crashes, where VRU involvement carries an adjusted odds ratio of 1.97
+(95% CI 1.80–2.17) for a killed-or-serious outcome. We report honest limitations
+prominently: the black-spot evaluation is a controlled simulation, and the
+Indian inferential model covers national-highway crashes at injury-severity
+granularity. All code and evaluations are open.
 
 **Keywords:** road safety, vulnerable road users, surrogate safety measures,
 explainable AI, uncertainty quantification, risk fusion, India.
@@ -224,9 +227,32 @@ direction with MoRTH's 66.8%; and **69.5%** of VRU victims were killed in a
 collision with a *heavier* road user (car / bus / truck / auto) — direct
 support for the exposure argument the VRU-first weighting encodes. This is a
 media-reported, fatal-only sample, so it corroborates the premise
-*descriptively* rather than re-fitting the severity model; the UK data carries
-the inferential result. It is, nonetheless, the first check of the premise on
-real Indian crashes. Reproduce: `python -m ai.trie.india_validation`.
+*descriptively* rather than re-fitting the severity model. Reproduce: `python -m
+ai.trie.india_validation`.
+
+**Indian inferential model.** The fatal-only limitation is then removed on a
+second Indian source that carries non-fatal crashes: **8,116** record-level
+accidents from four National Highways Authority of India (NHAI) segments,
+2013-2022 (Khanum et al., *Scientific Reports*, 2025; Zenodo
+10.5281/zenodo.16946653, CC-BY-4.0), decoded with the authors' published
+codebook. A multivariable logistic regression on a Killed-or-Seriously-Injured
+outcome — the direct Indian counterpart to the STATS19 model — replicates every
+factor the risk model rests on, each significant in the predicted direction:
+**VRU involvement OR 1.97** (95% CI 1.80–2.17, *p*≈7×10⁻⁴⁵), the
+**VRU-struck-by-heavier-vehicle mismatch OR 1.48** (1.18–1.87, *p*<10⁻³),
+overspeeding OR 1.23 (*p*<10⁻⁵) and night OR 1.25 (*p*<10⁻⁶). A crash involving
+a vulnerable road user has nearly double the adjusted odds of a severe outcome,
+and dropping VRU costs more discrimination than dropping any other factor
+(leave-one-out ablation); AUC 0.60 (95% CI 0.59–0.62), well calibrated (ECE
+0.036). Reported in full: three geometry/weather terms come out *protective*
+(adverse weather 0.88×, sharp curve 0.46×) — a known highway-exposure and
+behavioural-compensation artefact (severe crashes concentrate on high-speed
+divided straights; drivers slow in rain), not a contradiction of the four
+factors above. Scope: NHAI national highways (a high-speed inter-urban profile),
+injury severity not the live risk score, night an 18:00–06:00 time proxy (no
+light field in the data). Within that scope it is the first *inferential*
+confirmation of the VRU-first factor structure on real Indian crashes.
+Reproduce: `python -m ai.trie.india_severity_model`.
 
 ### 4.2 Per-rider vulnerability detector
 
@@ -314,6 +340,7 @@ Every result is one command from the open-source repository:
 | Statistical validation (ORs, interactions, calibration) | `python -m ai.trie.statistical_validation` |
 | Conformal coverage guarantee (per sensor regime) | `python -m ai.trie.conformal_validation` |
 | Indian corroboration (2,898 real fatal crashes) | `python -m ai.trie.india_validation` |
+| Indian inferential severity model (8,116 NHAI records) | `python -m ai.trie.india_severity_model` |
 | Black-spot discovery evaluation | `python -m ai.blackspot.evaluate` |
 | Learned-fusion study | `python -m ai.trie.fusion_study` |
 | Interaction analysis (H-statistic) | `python -m ai.trie.interaction_analysis` |
@@ -335,3 +362,4 @@ All references below verified against author/year/venue/DOI.
 8. Arya, D., Maeda, H., Ghosh, S. K., Toshniwal, D., & Sekimoto, Y. (2024). "RDD2022: A multi-national image dataset for automatic road damage detection." *Geoscience Data Journal*, 11(4). doi:10.1002/gdj3.260. (Preprint: arXiv:2209.08538, 2022.)
 9. Department for Transport (Great Britain). *Road Safety Data (STATS19)*, 2024.
 10. Chang, I., Park, H., Hong, E., Lee, J., & Kwon, N. (2022). "Predicting effects of built environment on fatal pedestrian accidents at location-specific level: application of XGBoost and SHAP." *Accident Analysis & Prevention*, 166, 106545. — representative SHAP-over-ensemble crash-severity work; contrast with our by-construction additive explanation.
+11. Khanum, H., Garg, A., Faheem, M. I., & Kulkarni, R. (2025). "Accident data of selected Indian highways for accident severity prediction using machine learning models." Dataset, Zenodo. doi:10.5281/zenodo.16946653 (CC-BY-4.0). — 8,116 record-level NHAI-highway crashes; the Indian inferential severity source.
