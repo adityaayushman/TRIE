@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Weekly, so the reproducibility check catches an upstream data change
+    # even with no commits — Monday 03:00 UTC.
+    - cron: "0 3 * * 1"
 
 jobs:
   # Backend + AI test suite, excluding tests marked `model`. No torch/
@@ -37,6 +41,25 @@ jobs:
           cache: pip
       - run: pip install -r backend/requirements-dev.txt torch ultralytics mediapipe --extra-index-url https://download.pytorch.org/whl/cpu
       - run: pytest -m model -q
+
+  # Regression check for the paper's headline numbers: re-fetches STATS19 (DfT)
+  # and the NHAI/Zenodo release live and re-derives every cited statistic,
+  # asserting it lands within a tolerance band rather than an exact match (the
+  # source data can be revised upstream). Off pull_request for the same reason
+  # as model-tests: it downloads external data, so an untrusted PR shouldn't
+  # trigger that traffic. Runs on every push to main and weekly, so a silent
+  # break in the reproducibility story is caught even with no code changes.
+  research-repro:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install "numpy>=1.26,<2" "pandas>=2.0,<3" "scipy>=1.11" "scikit-learn>=1.4" "statsmodels>=0.14"
+      - run: python scripts/check_reproducibility.py
 
   frontend:
     runs-on: ubuntu-latest

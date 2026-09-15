@@ -1,5 +1,7 @@
 # Smart Road Guardian AI X
 
+[![CI](https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml/badge.svg)](https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml)
+
 > **Predict. Explain. Prevent.**
 
 An Explainable Multimodal Edge AI Transportation Intelligence Platform for
@@ -8,7 +10,10 @@ system architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Presenting or
 evaluating it? Start with the [presentation kit](docs/PRESENTATION.md) — thesis,
 every result, and a five-minute demo script in one page. Writing it up? A working
 paper draft (IMRaD, real-data validation, verified citations, honest limitations)
-lives at [paper/smart-road-guardian.md](paper/smart-road-guardian.md).
+lives at [paper/smart-road-guardian.md](paper/smart-road-guardian.md). Every
+model's scope and known weak points: [docs/MODEL_CARDS.md](docs/MODEL_CARDS.md).
+Every dataset's provenance, including one rejected for being mislabeled:
+[docs/DATASHEETS.md](docs/DATASHEETS.md). What's next and why: [ROADMAP.md](ROADMAP.md).
 
 ## Live
 
@@ -20,8 +25,9 @@ lives at [paper/smart-road-guardian.md](paper/smart-road-guardian.md).
 
 Both run on free tiers. The backend **sleeps after ~15 minutes idle**, so the
 first request after a quiet spell takes ~50s to wake it and the dashboard
-briefly shows "cannot reach the backend" before recovering. The free
-PostgreSQL instance expires ~30 days after creation and needs recreating.
+briefly shows "cannot reach the backend" before recovering. The database is a
+persistent, external Supabase Postgres (not Render's free instance, which
+expires — see `render.yaml`), so it does not need periodic recreating.
 
 Reading the dashboard is open to everyone; the *Run an Assessment* control
 writes to a shared database, so it requires a (free) account — register or
@@ -247,6 +253,19 @@ web service, healthchecked at `/api/v1/health`. Migrations run on every
 container start (see [`backend/Dockerfile`](backend/Dockerfile)). Pushes to
 `main` auto-deploy.
 
+**Real Web Push alerts (optional, one-time).** `TRIE_VAPID_PUBLIC_KEY` and
+`TRIE_VAPID_PRIVATE_KEY_B64` are unset by default — every other feature works
+without them, and `/dashboard/settings`'s alert toggle just reports itself
+unavailable. To turn on real device alerts:
+
+```bash
+python -m app.vapid_keys   # prints a matched keypair — generate your own, never reuse another deployment's
+```
+
+Set both printed values in the Render dashboard (Environment tab — they are
+`sync: false` in `render.yaml` for the same reason `TRIE_DATABASE_URL` is: a
+secret pair the Blueprint shouldn't auto-generate independently).
+
 **Frontend.** Deploy `frontend/` with the Vercel CLI, which uploads the real
 local tree and aliases the production domain:
 
@@ -296,6 +315,23 @@ Several original "next steps" are now shipped, each honestly scoped on
   They are studies, not yet swapped into the live pipeline — see below.
 - **Black-spot discovery has a quantified evaluation** — 100% detection, 0%
   false-positives, lead-time distribution vs iRAD (`ai.blackspot.evaluate`).
+- **The Indian corroboration now has an inferential model, not just descriptive
+  rates** — 8,116 real NHAI-highway crash records; VRU involvement OR 1.97 for
+  a killed-or-serious outcome (`ai.trie.india_severity_model`).
+- **The alerting loop is real, not a mock** — genuine Web Push (RFC 8291/8292):
+  a HIGH/CRITICAL assessment pages every subscribed device with an OS/browser
+  notification, tab open or closed. Toggle at `/dashboard/settings`; see
+  "Deploying" below for the one-time VAPID keypair step.
+- **Live telemetry ingestion from a real device** — `/dashboard/live`'s "Live
+  device telemetry" reads *this browser's own* GPS speed/heading and
+  motion-sensor acceleration and streams it through the production pipeline —
+  real sensor data, not the seeded demo feed (honestly scoped: one real
+  device, not population-scale near-miss telemetry).
+- **Role-based access** — `operator` (default) vs `admin` (granted once at
+  registration from an email allowlist); gates the one write the public read
+  design deliberately withholds, `DELETE /risk/events/{id}`.
+- **Historical export** — `/dashboard/history` → "Export CSV" downloads every
+  persisted field, not just what's on screen.
 
 ## Still open
 
@@ -332,9 +368,5 @@ Several original "next steps" are now shipped, each honestly scoped on
 - The forecast, road-hazard detail and unobserved-factor list ride the
   websocket but are **not persisted**, so a dashboard seeded from
   `GET /risk/events` shows them as em dashes until the first live broadcast.
-- `next` is on 14.2.35, not the advisory-clean 16.2.10 — `npm audit`'s own
-  fix requires that major bump (React 19, likely breaking changes), which
-  deserves dedicated test time rather than a quick patch. The 14.2.x line
-  still carries several high-severity entries as a result.
 - The frontend has **no component tests**; CI covers it with `tsc --noEmit`
   and `next build` only.
