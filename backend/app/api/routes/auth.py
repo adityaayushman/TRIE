@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import current_user, get_user_by_email
 from app.auth.security import AuthError, create_access_token, hash_password, verify_password
+from app.core.config import get_settings
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserRead
@@ -34,8 +35,11 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     except AuthError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
+    # The only place a role is ever assigned — no promotion endpoint exists.
+    # See app.models.user.User.role and Settings.admin_emails.
+    role = "admin" if request.email.strip().lower() in get_settings().admin_emails else "operator"
     user = User(
-        email=request.email, password_hash=password_hash, organisation=request.organisation
+        email=request.email, password_hash=password_hash, organisation=request.organisation, role=role
     )
     db.add(user)
     await db.commit()

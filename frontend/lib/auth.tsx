@@ -7,6 +7,11 @@ export interface Account {
   id: string;
   email: string;
   organisation: string;
+  /** "operator" (default) or "admin" — set once at registration server-side
+   * (see backend/app/api/routes/auth.py), never changed by the client. Gates
+   * exactly one action today: deleting a risk event (see lib/api.ts's
+   * deleteEvent and components/RiskTimeline.tsx). */
+  role: string;
   created_at: string;
 }
 

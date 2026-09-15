@@ -27,6 +27,7 @@ class UserRead(BaseModel):
     id: uuid.UUID
     email: str
     organisation: str
+    role: str
     created_at: datetime
 
 

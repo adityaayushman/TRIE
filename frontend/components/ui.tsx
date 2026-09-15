@@ -20,7 +20,7 @@ export function PageHeader({
 }) {
   const Icon = ICONS[icon];
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="flex items-center gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
           <Icon size={18} />

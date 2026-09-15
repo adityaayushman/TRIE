@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { deleteEvent } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { RISK_THRESHOLDS, RiskEvent } from "@/lib/types";
 import { Card, EmptyState, SectionTitle } from "./ui";
 
@@ -19,8 +21,24 @@ const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
  * is the baseline. */
 const REFERENCE_LINES = RISK_THRESHOLDS.filter((t) => t.min > 0);
 
-export function RiskTimeline({ events }: { events: RiskEvent[] }) {
+export function RiskTimeline({ events, onDeleted }: { events: RiskEvent[]; onDeleted?: () => void }) {
   const [hovered, setHovered] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { account } = useAuth();
+  const isAdmin = account?.role === "admin";
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("Delete this assessment? This cannot be undone.")) return;
+    setDeletingId(id);
+    try {
+      await deleteEvent(id);
+      onDeleted?.();
+    } catch (cause) {
+      window.alert((cause as Error).message);
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   /** Per-vehicle, not fleet-wide: ai/temporal_prediction/ keys its trend by
    * vehicle_id, and joining two vehicles' scores into one line would draw a
@@ -168,6 +186,7 @@ export function RiskTimeline({ events }: { events: RiskEvent[] }) {
                 <th className="py-1.5 pr-3 font-medium">Risk</th>
                 <th className="py-1.5 pr-3 font-medium">Level</th>
                 <th className="py-1.5 font-medium">Primary cause</th>
+                {isAdmin && <th className="py-1.5 pl-3 font-medium">{/* admin action */}</th>}
               </tr>
             </thead>
             <tbody className="text-slate-400">
@@ -184,6 +203,18 @@ export function RiskTimeline({ events }: { events: RiskEvent[] }) {
                     </td>
                     <td className="py-1.5 pr-3">{event.risk_level}</td>
                     <td className="py-1.5">{event.primary_cause}</td>
+                    {isAdmin && (
+                      <td className="py-1.5 pl-3 text-right">
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          disabled={deletingId === event.id}
+                          className="text-[0.65rem] text-red-500/70 transition hover:text-red-400 disabled:opacity-40"
+                          title="Admin-only: delete this assessment"
+                        >
+                          {deletingId === event.id ? "…" : "Delete"}
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
             </tbody>
