@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { HeroScene } from "@/components/HeroScene";
+import { ImpactShake } from "@/components/ImpactShake";
 import { Reveal } from "@/components/Reveal";
+import { SectionTabs } from "@/components/SectionTabs";
 import { ICONS, IconName } from "@/components/icons";
 
 /** Dashed lane-marking divider — the road motif carried between sections. */
@@ -116,6 +118,7 @@ const EXPLORE: { icon: IconName; href: string; title: string; body: string }[] =
 
 export default function Landing() {
   return (
+    <ImpactShake>
     <main className="min-h-screen">
       {/* Hero — a live 3D road scene behind the pitch */}
       <section className="relative min-h-[94vh] overflow-hidden">
@@ -130,22 +133,26 @@ export default function Landing() {
         {/* glass nav */}
         <header className="relative z-20">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-            <span className="text-sm font-bold tracking-tight text-slate-50">
+            <span className="whitespace-nowrap text-xs font-bold tracking-tight text-slate-50 sm:text-sm">
               Smart Road Guardian <span className="text-sky-400">AI X</span>
             </span>
+            {/* Secondary links collapse away below sm — SectionTabs' own
+                persistent CTA and the footer still carry these destinations,
+                so the tiny mobile header stays to brand + one clear action
+                instead of wrapping across two cramped lines. */}
             <nav className="flex items-center gap-1.5">
-              <Link href="/research" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+              <Link href="/research" className="hidden rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white sm:inline-block">
                 Research
               </Link>
-              <Link href="/dashboard" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+              <Link href="/dashboard" className="hidden rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white sm:inline-block">
                 Live demo
               </Link>
-              <Link href="/login" className="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white">
+              <Link href="/login" className="hidden rounded-lg px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:text-white sm:inline-block">
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="rounded-lg bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-400"
+                className="shrink-0 rounded-lg bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-400"
               >
                 Get started
               </Link>
@@ -202,9 +209,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <LaneDivider />
+      <SectionTabs />
 
-      <section className="bg-linear-to-b from-slate-900/40 to-slate-950">
+      <section id="overview" className="scroll-mt-16 bg-linear-to-b from-slate-900/40 to-slate-950">
         <Reveal>
           <div className="mx-auto grid max-w-6xl grid-cols-2 divide-x divide-y divide-slate-800/70 border-x border-b border-slate-800/70 lg:grid-cols-4 lg:divide-y-0">
             {STATS.map((stat) => (
@@ -250,7 +257,7 @@ export default function Landing() {
       <LaneDivider />
 
       {/* Plain-language walkthrough for a first-time visitor */}
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-24">
         <Reveal>
           <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
             New here? Start with this
@@ -289,7 +296,7 @@ export default function Landing() {
       <LaneDivider />
 
       {/* A plain map of the live pages, so the dashboard is not a wall of tabs */}
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section id="explore" className="mx-auto max-w-6xl scroll-mt-16 px-5 py-24">
         <Reveal>
           <p className="text-center text-xs font-semibold uppercase tracking-[0.16em] text-sky-400">
             What you can explore
@@ -331,7 +338,7 @@ export default function Landing() {
 
       <LaneDivider />
 
-      <section className="border-t border-slate-800/80 bg-slate-900/40">
+      <section id="evidence" className="scroll-mt-16 border-t border-slate-800/80 bg-slate-900/40">
         <div className="mx-auto max-w-4xl px-5 py-20 text-center">
           <Reveal>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-400">
@@ -391,6 +398,36 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Closing CTA band — the destination for the sticky tab bar's
+          persistent "Get started" button. */}
+      <section className="border-t border-slate-800/80 bg-linear-to-b from-slate-900/40 to-slate-950">
+        <div className="mx-auto max-w-3xl px-5 py-20 text-center">
+          <Reveal>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-50 sm:text-3xl">
+              See it react to a road, live
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400">
+              No account needed to look around. Create one only when you want to submit your own
+              telemetry — from the live dashboard, or your own device&apos;s GPS and motion sensors.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/register"
+                className="rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-400 hover:shadow-[0_0_40px_-4px_rgba(56,189,248,0.9)]"
+              >
+                Create a free account
+              </Link>
+              <Link
+                href="/dashboard"
+                className="rounded-xl border border-slate-600/70 bg-slate-900/40 px-6 py-3 text-sm font-semibold text-slate-200 backdrop-blur-sm transition hover:border-slate-500 hover:text-white"
+              >
+                Explore without signing in
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       <footer className="border-t border-slate-800/80">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-8">
           <p className="text-xs text-slate-600">
@@ -419,5 +456,6 @@ export default function Landing() {
         </div>
       </footer>
     </main>
+    </ImpactShake>
   );
 }

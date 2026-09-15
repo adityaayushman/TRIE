@@ -31,3 +31,22 @@ body {
      pages are transparent over it. */
   background-color: #05070c;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* The hero's collision flash (components/ImpactShake.tsx) — a single soft
+   fade, not a strobe, so it stays safe under prefers-reduced-motion (which
+   ImpactShake respects for the positional jolt, not this). */
+@keyframes impact-flash {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
