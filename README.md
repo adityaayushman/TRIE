@@ -203,6 +203,11 @@ python -m ai.trie.statistical_validation   # odds ratios + 95% CIs, interaction
 python -m ai.trie.conformal_validation     # distribution-free conformal coverage
                                            # guarantee, per sensor regime (>=90%
                                            # fatal coverage; alarm-rate cost)
+python -m ai.trie.india_validation --file "News Crashes.xlsx"
+                                           # VRU-first premise on 2,898 REAL Indian
+                                           # fatal crashes (Mendeley bc5sv6wnd9, CC BY):
+                                           # 56% VRU victims, 69.5% killed by a heavier
+                                           # vehicle. Download the xlsx first.
 # Detectors
 python -m ai.training.train_helmet --evaluate       # helmet/triple-riding mAP (78%)
 python -m ai.vru_intelligence.annotate_footage      # rider vulnerability on the clips

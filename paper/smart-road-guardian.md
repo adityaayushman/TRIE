@@ -33,9 +33,11 @@ validate the model's *premise* on 128,269 real casualties from the UK STATS19
 database: the factors the model weights predict fatal outcomes with ROC-AUC
 0.725 (95% CI 0.713–0.737), every factor carries the expected direction, and a
 likelihood-ratio test confirms a significant speed×VRU interaction (p<1e-9) — the
-compounding the VRU-first thesis predicts. We report honest limitations
-prominently: the black-spot evaluation is a controlled simulation, and the
-external validation is UK, not Indian, data. All code and evaluations are open.
+compounding the VRU-first thesis predicts. The VRU-first premise is separately
+corroborated on 2,898 real Indian fatal crashes (56% VRU victims; 69.5% killed
+by a heavier vehicle). We report honest limitations prominently: the black-spot
+evaluation is a controlled simulation, and the inferential validation is UK, not
+Indian, data. All code and evaluations are open.
 
 **Keywords:** road safety, vulnerable road users, surrogate safety measures,
 explainable AI, uncertainty quantification, risk fusion, India.
@@ -213,6 +215,19 @@ score low, an honest cross-domain difference), and crash severity is not identic
 to the live risk score. Reproduce: `python -m ai.trie.external_validation`,
 `python -m ai.trie.statistical_validation`.
 
+**Indian corroboration.** The GB caveat is answered directly on real Indian
+data: 2,898 fatal crashes reported nationally in 2022-2023 (extracted via NLP
+from Times of India coverage; Sharma et al., *Data in Brief*, 2025; Mendeley
+10.17632/bc5sv6wnd9.7, CC BY). VRUs are **56.2%** of the fatal-crash victims
+(two-wheeler riders 38.8%, pedestrians 16.0%, cyclists 1.3%), consistent in
+direction with MoRTH's 66.8%; and **69.5%** of VRU victims were killed in a
+collision with a *heavier* road user (car / bus / truck / auto) — direct
+support for the exposure argument the VRU-first weighting encodes. This is a
+media-reported, fatal-only sample, so it corroborates the premise
+*descriptively* rather than re-fitting the severity model; the UK data carries
+the inferential result. It is, nonetheless, the first check of the premise on
+real Indian crashes. Reproduce: `python -m ai.trie.india_validation`.
+
 ### 4.2 Per-rider vulnerability detector
 
 YOLOv11s fine-tuned (helmet/no-helmet/triple-riding/plate), 383 val images,
@@ -298,6 +313,7 @@ Every result is one command from the open-source repository:
 | External validation (real crashes) | `python -m ai.trie.external_validation` |
 | Statistical validation (ORs, interactions, calibration) | `python -m ai.trie.statistical_validation` |
 | Conformal coverage guarantee (per sensor regime) | `python -m ai.trie.conformal_validation` |
+| Indian corroboration (2,898 real fatal crashes) | `python -m ai.trie.india_validation` |
 | Black-spot discovery evaluation | `python -m ai.blackspot.evaluate` |
 | Learned-fusion study | `python -m ai.trie.fusion_study` |
 | Interaction analysis (H-statistic) | `python -m ai.trie.interaction_analysis` |
