@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { FatalityScene3D } from "@/components/FatalityScene3D";
+import { FusionPlayground } from "@/components/FusionPlayground";
 
 export const metadata: Metadata = {
   title: "Research & Methodology — Smart Road Guardian AI X",
@@ -422,6 +423,25 @@ export default function ResearchPage() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Interactive: operate the fusion live */}
+      <section className="mx-auto max-w-5xl px-5 py-14">
+        <Kicker>Try it live</Kicker>
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-50">
+          Operate the risk engine yourself
+        </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-400">
+          Not a mock — this is the exact fusion from{" "}
+          <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">ai/trie/risk_fusion.py</code>{" "}
+          running in your browser: the same weights, the same redistribution, the same uncertainty
+          band. Drag a factor and the score moves; <span className="text-slate-200">turn a sensor
+          off</span> and watch its weight redistribute and the confidence band widen — because the
+          engine never scores an unmeasured factor as safe.
+        </p>
+        <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
+          <FusionPlayground />
         </div>
       </section>
 
