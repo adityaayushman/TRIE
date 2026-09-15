@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { FatalityScene3D } from "@/components/FatalityScene3D";
 import { FusionPlayground } from "@/components/FusionPlayground";
+import { ConformalExplorer } from "@/components/ConformalExplorer";
 
 export const metadata: Metadata = {
   title: "Research & Methodology — Smart Road Guardian AI X",
@@ -624,29 +625,8 @@ export default function ResearchPage() {
             real crashes. The price of that guarantee is the alarm rate, and it is the observability
             thesis made rigorous: more sensors, fewer false alarms at the same guaranteed recall.
           </p>
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[440px] text-left text-xs">
-              <thead>
-                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
-                  <th className="pb-2 font-medium">Sensor regime</th>
-                  <th className="pb-2 pr-3 text-right font-medium">Fatal coverage (≥90% target)</th>
-                  <th className="pb-2 text-right font-medium">Alarm rate (cost)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { r: "Full suite — camera + telemetry + clock", cov: "92.8%", alarm: "68.3%" },
-                  { r: "No camera — telemetry + clock", cov: "96.5%", alarm: "88.5%" },
-                  { r: "Telemetry only — speed", cov: "94.8%", alarm: "83.5%" },
-                ].map((row) => (
-                  <tr key={row.r} className="border-t border-slate-800/70">
-                    <td className="py-1.5 text-slate-300">{row.r}</td>
-                    <td className="py-1.5 pr-3 text-right font-semibold tabular-nums text-emerald-400">{row.cov}</td>
-                    <td className="py-1.5 text-right tabular-nums text-slate-400">{row.alarm}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mt-4">
+            <ConformalExplorer />
           </div>
           <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
             The guarantee holds in every regime (all ≥ 90%). With the full sensor suite the model can
