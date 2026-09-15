@@ -4,6 +4,7 @@ import { API_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useRiskStream } from "@/lib/useRiskStream";
 import { ConnectionBadge } from "@/components/ConnectionBadge";
+import { LiveDeviceTelemetry } from "@/components/LiveDeviceTelemetry";
 import { RiskDashboard } from "@/components/RiskDashboard";
 import { TelemetryControls } from "@/components/TelemetryControls";
 import { EmptyState, PageHeader } from "@/components/ui";
@@ -23,7 +24,10 @@ export default function LivePage() {
       />
 
       {account ? (
-        <TelemetryControls onAssessed={refresh} />
+        <div className="grid gap-5 lg:grid-cols-2">
+          <TelemetryControls onAssessed={refresh} />
+          <LiveDeviceTelemetry onAssessed={refresh} />
+        </div>
       ) : (
         <EmptyState
           title="Sign in to run an assessment"
