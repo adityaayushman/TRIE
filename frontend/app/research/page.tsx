@@ -740,6 +740,41 @@ export default function ResearchPage() {
           high-fatality classes here; GB&apos;s segregated-infrastructure cyclists score low, which is
           the India-vs-GB difference made visible, not hidden.
         </p>
+
+        {/* Indian corroboration on real crashes */}
+        <div className="mt-5 rounded-2xl border border-emerald-800/40 bg-emerald-950/15 p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-semibold text-slate-100">…and it holds on real Indian crashes</p>
+            <span className="text-[0.65rem] uppercase tracking-wide text-emerald-400">2,898 fatal crashes</span>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">
+            The caveat above is answered directly. On 2,898 real Indian fatal crashes (2022–23,
+            extracted from Times of India coverage; Mendeley 10.17632/bc5sv6wnd9.7, CC BY), the
+            VRU-first premise holds — VRUs are the majority of victims, and, the core exposure
+            argument, most VRU deaths come from a collision with a heavier vehicle.
+          </p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <div>
+              <p className="text-2xl font-bold tabular-nums text-emerald-300">56.2%</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">of fatal-crash victims are VRUs (two-wheeler, pedestrian, cyclist) — cf. MoRTH&apos;s 66.8%</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold tabular-nums text-emerald-300">69.5%</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">of VRU victims were killed by a heavier vehicle (car / bus / truck / auto) — the exposure the model weights</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold tabular-nums text-slate-200">38.8%</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">two-wheeler riders alone — the single largest victim group</p>
+            </div>
+          </div>
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            Honest scope: media-reported (a fatal, newsworthy sample), fatal-only — so this
+            corroborates the premise <span className="text-slate-400">descriptively</span>, while the
+            UK data above carries the inferential model. It is, nonetheless, the first check of the
+            premise on real <span className="text-slate-400">Indian</span> crashes. Reproduce with{" "}
+            <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.india_validation</code>.
+          </p>
+        </div>
       </section>
 
       {/* Benchmarks */}
