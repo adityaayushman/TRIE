@@ -28,7 +28,15 @@ target_metadata = Base.metadata
 # Read the DB URL from the app's own settings (TRIE_DATABASE_URL) rather than
 # duplicating it in alembic.ini, so migrations always target the same
 # database the app itself would connect to.
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+#
+# `%` is escaped to `%%` because alembic stores this in a ConfigParser, which
+# treats `%` as interpolation syntax — a URL-encoded password (e.g. `%40` for
+# `@`, `%23` for `#`) would otherwise raise "invalid interpolation syntax".
+# ConfigParser turns `%%` back into a literal `%` on read, and SQLAlchemy then
+# percent-decodes it to the real password, so the connection is unchanged.
+config.set_main_option(
+    "sqlalchemy.url", get_settings().database_url.replace("%", "%%")
+)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
