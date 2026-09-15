@@ -4,6 +4,7 @@ import Link from "next/link";
 import { API_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Card, PageHeader, SectionTitle } from "@/components/ui";
+import { PushAlerts } from "@/components/PushAlerts";
 
 /** Honest system status. Every row is what the code actually does today —
  * this is the same status table as docs/ARCHITECTURE.md, rendered, so a
@@ -16,6 +17,7 @@ const MODEL_STATUS = [
   { module: "Driver monitoring", detail: "MediaPipe FaceLandmarker + EAR/PERCLOS", real: true },
   { module: "Risk fusion (TRIE)", detail: "Weighted rule model — learned model pending", real: false },
   { module: "Uncertainty (confidence band)", detail: "Sensor-suite-aware band from unobserved-factor weight", real: true },
+  { module: "Alerting (human-facing)", detail: "Real Web Push (RFC 8291/8292) to subscribed devices on HIGH/CRITICAL risk — see below", real: true },
   { module: "Temporal forecast", detail: "Linear extrapolation live; LSTM prototyped (cuts error ~47% — see Research)", real: false },
   { module: "Explainability", detail: "Exact additive factor shares (rule); learned model's interactions verified by H-statistic", real: true },
 ];
@@ -52,6 +54,13 @@ export default function SettingsPage() {
               <dd className="text-slate-200">{account.email}</dd>
               <dt className="text-slate-500">Organisation</dt>
               <dd className="text-slate-200">{account.organisation || "—"}</dd>
+              <dt className="text-slate-500">Role</dt>
+              <dd className="text-slate-200">
+                {account.role}
+                {account.role === "admin" && (
+                  <span className="ml-2 text-[0.65rem] text-slate-500">— can delete risk events</span>
+                )}
+              </dd>
               <dt className="text-slate-500">Member since</dt>
               <dd className="text-slate-200">
                 {new Date(account.created_at).toLocaleDateString()}
@@ -73,6 +82,11 @@ export default function SettingsPage() {
             to submit telemetry.
           </p>
         )}
+      </Card>
+
+      <Card delay={0.025}>
+        <SectionTitle hint="a real OS/browser notification, not a mock">Alerting</SectionTitle>
+        <PushAlerts />
       </Card>
 
       <Card delay={0.05}>

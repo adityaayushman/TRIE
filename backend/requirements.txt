@@ -9,3 +9,4 @@ numpy>=1.26,<2
 alembic>=1.13
 pyjwt>=2.9
 bcrypt>=4.1
+pywebpush>=2.0

@@ -24,6 +24,32 @@ class Settings(BaseSettings):
     TRIE_SECRET_KEY explicitly (render.yaml generates one per service).
     """
 
+    vapid_public_key: str = ""
+    """Web Push VAPID public key (base64url, uncompressed EC point) — sent to
+    the frontend so it can subscribe. Empty disables push alerts entirely
+    (POST /alerts/subscribe 503s) rather than silently no-op, so a missing
+    deployment secret is loud, not a quiet feature gap.
+    """
+    vapid_private_key_b64: str = ""
+    """The matching private key, PEM-encoded then base64'd (so one env var
+    holds it without embedding raw newlines). Never logged, never returned by
+    any endpoint. Generate a pair with `python -m app.vapid_keys` and set both
+    halves together — they are one keypair, not two independent secrets.
+    """
+    vapid_subject: str = "mailto:trie-alerts@example.com"
+    """Contact URI push services may use if a subscription is abused. Not a
+    secret; safe to commit a placeholder and override per deployment.
+    """
+
+    admin_emails: list[str] = []
+    """Email addresses granted the "admin" role at registration time (see
+    app/models/user.py). Same convention as cors_origins: a JSON array string
+    in the env var, e.g. TRIE_ADMIN_EMAILS='["a@x.com","b@y.com"]'. Empty means
+    no one is an admin, which is the safe default — a deployment that forgets
+    to set this simply has no admin-only actions available, rather than an
+    open one.
+    """
+
     @field_validator("database_url")
     @classmethod
     def _use_asyncpg_driver(cls, value: str) -> str:

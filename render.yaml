@@ -30,3 +30,13 @@ services:
         # site call this API, which is fine for a first deploy but should
         # be narrowed once the real frontend URL is known.
         value: '["*"]'
+      - key: TRIE_VAPID_PUBLIC_KEY
+        # Real Web Push alerting (app/services/push.py). Generate a matched
+        # keypair with `python -m app.vapid_keys` and set both this and
+        # TRIE_VAPID_PRIVATE_KEY_B64 together — they are one keypair, not two
+        # independent secrets. Left unset, push alerts report themselves
+        # unavailable (GET /alerts/vapid-public-key -> enabled: false) rather
+        # than failing; every other feature is unaffected.
+        sync: false
+      - key: TRIE_VAPID_PRIVATE_KEY_B64
+        sync: false
