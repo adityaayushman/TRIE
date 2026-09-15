@@ -65,3 +65,21 @@ async def current_user(
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     result = await db.execute(select(User).where(User.email == email))
     return result.scalar_one_or_none()
+
+
+_FORBIDDEN = HTTPException(
+    status_code=status.HTTP_403_FORBIDDEN,
+    detail="This action needs an admin account",
+)
+
+
+async def require_admin(user: User = Depends(current_user)) -> User:
+    """The signed-in user, or 403 if they are not an admin.
+
+    Layers on top of current_user (not instead of it): a request with no token
+    at all still 401s, so "not signed in" and "signed in but not privileged
+    enough" stay distinguishable to the caller.
+    """
+    if user.role != "admin":
+        raise _FORBIDDEN
+    return user
