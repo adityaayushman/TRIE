@@ -26,6 +26,20 @@ export function fetchRecentEvents(limit = 50): Promise<RiskEvent[]> {
   return getJson<RiskEvent[]>(`/risk/events?limit=${limit}`);
 }
 
+/** Admin-only (backend 403s a non-admin token; see require_admin). Removes
+ * one persisted assessment — the one write the public isn't given, for
+ * clearing a bad or test entry out of history. */
+export async function deleteEvent(id: string): Promise<void> {
+  const token = typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+  const response = await fetch(`${API_URL}/risk/events/${id}`, {
+    method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) {
+    throw new Error(`DELETE /risk/events/${id} failed: ${response.status}`);
+  }
+}
+
 /** Nominated black spots. Thresholds are the study's knobs (see
  * ai/blackspot/engine.py) and are surfaced in the UI rather than fixed, so a
  * reviewer can see how the nomination rule responds. */
@@ -47,6 +61,8 @@ export function fetchBlackSpots(params: {
 export interface Telemetry {
   vehicle_id: string;
   speed_kmh: number;
+  acceleration_ms2?: number;
+  heading_deg?: number;
   latitude?: number;
   longitude?: number;
 }
