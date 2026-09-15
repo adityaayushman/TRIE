@@ -1,9 +1,10 @@
 "use client";
 
-import { Component, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Component, MutableRefObject, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Grid } from "@react-three/drei";
 import * as THREE from "three";
+import { prefersReducedMotion, triggerImpact } from "@/lib/impact";
 
 /** If WebGL is unavailable or the scene throws, render nothing rather than
  * white-screening the landing — the hero still shows its text and the ambient
@@ -259,11 +260,194 @@ function BlackSpots() {
   );
 }
 
+/** The hero's one-time dramatic beat: a two-wheeler cuts laterally across a
+ * car's lane with no warning — the exact "lane drift where there is no lane
+ * discipline" scenario the platform's second pillar names, and the exact
+ * road user (a two-wheeler rider) the platform is built to protect. Plays
+ * once, ~3.2s after mount, then both actors dissolve into debris and the
+ * scene settles permanently into the calm ambient loop underneath — a hook,
+ * not a repeating jump-scare.
+ *
+ * `shakeRef` is written once (to 1.0) at the impact instant; Scene() owns the
+ * actual decay and applies it to the camera, so there is one authority for
+ * camera motion instead of two components fighting over `camera.position`.
+ */
+const IMPACT_T = 3.2;
+const IMPACT_POINT: [number, number] = [-1.1, -14];
+
+function CollisionSequence({ shakeRef }: { shakeRef: MutableRefObject<number> }) {
+  const car = useRef<THREE.Group>(null);
+  const bike = useRef<THREE.Group>(null);
+  const burst = useRef<THREE.Mesh>(null);
+  const debris = useRef<THREE.InstancedMesh>(null);
+  const fired = useRef(false);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const DEBRIS_N = 16;
+  const debrisState = useMemo(
+    () =>
+      Array.from({ length: DEBRIS_N }, () => ({
+        vx: (Math.random() * 2 - 1) * 6,
+        vy: Math.random() * 5 + 2,
+        vz: (Math.random() * 2 - 1) * 6,
+        spin: Math.random() * 8,
+      })),
+    []
+  );
+
+  const initialized = useRef(false);
+
+  useFrame(({ clock }, dt) => {
+    const t = clock.getElapsedTime();
+
+    // An InstancedMesh's un-set instances default to an identity matrix — a
+    // unit cube sitting at the world origin — not "invisible." Zero every
+    // instance out on the very first frame, before the collision has any
+    // debris of its own to place there.
+    if (!initialized.current) {
+      initialized.current = true;
+      if (debris.current) {
+        dummy.scale.setScalar(0);
+        dummy.updateMatrix();
+        for (let i = 0; i < DEBRIS_N; i++) debris.current.setMatrixAt(i, dummy.matrix);
+        debris.current.instanceMatrix.needsUpdate = true;
+      }
+      if (burst.current) burst.current.scale.setScalar(0);
+    }
+
+    if (t < IMPACT_T) {
+      // Approach: the car drives its lane, the bike cuts across it — both
+      // arrive at IMPACT_POINT at exactly t = IMPACT_T.
+      const p = Math.min(1, t / IMPACT_T);
+      if (car.current) {
+        car.current.position.set(IMPACT_POINT[0], 0, 28 - (28 - IMPACT_POINT[1]) * p);
+        car.current.rotation.y = Math.PI;
+      }
+      if (bike.current) {
+        const BIKE_START_X = -6.5;
+        const x = BIKE_START_X + (IMPACT_POINT[0] - BIKE_START_X) * p;
+        bike.current.position.set(x, 0, IMPACT_POINT[1]);
+        bike.current.rotation.y = Math.PI / 2; // travelling sideways, across the lane
+      }
+      return;
+    }
+
+    if (!fired.current) {
+      fired.current = true;
+      // The flash/debris still play under reduced motion — they convey the
+      // moment without moving anything on screen. Only the camera jolt (a
+      // motion effect, not a content one) is gated behind the media query.
+      if (!prefersReducedMotion()) shakeRef.current = 1;
+      triggerImpact();
+      if (burst.current) {
+        burst.current.scale.setScalar(0.1);
+        (burst.current.material as THREE.MeshBasicMaterial).opacity = 1;
+      }
+      if (debris.current) {
+        debrisState.forEach((d, i) => {
+          dummy.position.set(IMPACT_POINT[0], 0.5, IMPACT_POINT[1]);
+          dummy.scale.setScalar(0.22);
+          dummy.updateMatrix();
+          debris.current!.setMatrixAt(i, dummy.matrix);
+        });
+        debris.current.instanceMatrix.needsUpdate = true;
+      }
+    }
+
+    const since = t - IMPACT_T;
+
+    // The two actors crumple in place and dissolve rather than sliding away —
+    // reads as wreckage settling, stays tasteful for a product site.
+    const collapse = Math.max(0, 1 - since / 0.6);
+    if (car.current) car.current.scale.setScalar(collapse);
+    if (bike.current) bike.current.scale.setScalar(collapse);
+
+    // Flash: expands and fades fast.
+    if (burst.current && since < 0.5) {
+      const k = since / 0.5;
+      burst.current.scale.setScalar(0.1 + k * 5);
+      (burst.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1 - k) * 0.9;
+    } else if (burst.current) {
+      (burst.current.material as THREE.MeshBasicMaterial).opacity = 0;
+    }
+
+    // Debris: simple ballistic flight, shrinking as it "settles" (a stand-in
+    // for a fade, since scaling avoids per-instance transparency sorting).
+    if (debris.current && since < 1.4) {
+      debrisState.forEach((d, i) => {
+        const x = IMPACT_POINT[0] + d.vx * since;
+        const y = Math.max(0.06, 0.5 + d.vy * since - 4.9 * since * since);
+        const z = IMPACT_POINT[1] + d.vz * since;
+        const shrink = Math.max(0, 1 - since / 1.4);
+        dummy.position.set(x, y, z);
+        dummy.rotation.set(d.spin * since, d.spin * since * 0.7, 0);
+        dummy.scale.setScalar(0.22 * shrink);
+        dummy.updateMatrix();
+        debris.current!.setMatrixAt(i, dummy.matrix);
+      });
+      debris.current.instanceMatrix.needsUpdate = true;
+    }
+  });
+
+  return (
+    <>
+      <group ref={car}>
+        <mesh position={[0, 0.42, 0]}>
+          <boxGeometry args={[1.5, 0.45, 3.3]} />
+          <meshStandardMaterial color="#16233c" metalness={0.8} roughness={0.32} />
+        </mesh>
+        <mesh position={[0, 0.82, -0.3]}>
+          <boxGeometry args={[1.28, 0.42, 1.55]} />
+          <meshStandardMaterial color="#0e1a30" metalness={0.7} roughness={0.28} />
+        </mesh>
+        {[0.48, -0.48].map((x, i) => (
+          <mesh key={i} position={[x, 0.45, -1.68]}>
+            <sphereGeometry args={[0.11, 12, 12]} />
+            <meshBasicMaterial color="#eaf6ff" toneMapped={false} />
+          </mesh>
+        ))}
+      </group>
+      <group ref={bike}>
+        <mesh position={[0, 0.45, 0]}>
+          <boxGeometry args={[0.28, 0.32, 1.4]} />
+          <meshStandardMaterial color="#1b2a44" metalness={0.7} roughness={0.4} />
+        </mesh>
+        <mesh position={[0, 0.92, 0.15]}>
+          <capsuleGeometry args={[0.16, 0.42, 4, 8]} />
+          <meshStandardMaterial color="#0b1220" metalness={0.3} roughness={0.8} />
+        </mesh>
+        <mesh position={[0, 1.32, 0.02]}>
+          <sphereGeometry args={[0.15, 12, 12]} />
+          <meshStandardMaterial color="#dbe7f5" metalness={0.2} roughness={0.5} />
+        </mesh>
+      </group>
+      <mesh ref={burst} position={[IMPACT_POINT[0], 0.6, IMPACT_POINT[1]]}>
+        <sphereGeometry args={[1, 16, 16]} />
+        <meshBasicMaterial color="#fff4e0" toneMapped={false} transparent opacity={0} depthWrite={false} />
+      </mesh>
+      <instancedMesh ref={debris} args={[undefined as unknown as THREE.BufferGeometry, undefined as unknown as THREE.Material, DEBRIS_N]}>
+        <boxGeometry />
+        <meshBasicMaterial color="#f59e0b" toneMapped={false} />
+      </instancedMesh>
+    </>
+  );
+}
+
 function Scene() {
+  const shake = useRef(0);
+
   useFrame(({ camera, clock }) => {
     const t = clock.getElapsedTime();
     camera.position.x = Math.sin(t * 0.08) * 1.4;
     camera.position.y = 4 + Math.sin(t * 0.05) * 0.3;
+    // Impact shake: an additive, hard-decaying jolt layered on the ambient
+    // sway above — CollisionSequence sets shake.current = 1 exactly once.
+    if (shake.current > 0.001) {
+      camera.position.x += (Math.random() * 2 - 1) * 0.45 * shake.current;
+      camera.position.y += (Math.random() * 2 - 1) * 0.3 * shake.current;
+      shake.current *= 0.9;
+    } else {
+      shake.current = 0;
+    }
     camera.lookAt(0, 0, -26);
   });
 
@@ -295,7 +479,39 @@ function Scene() {
       <Car lane={4.4} speed={26} phase={0.55} />
       <Motorbike lane={-2.2} speed={16} phase={0.28} />
       <BlackSpots />
+      <CollisionSequence shakeRef={shake} />
+      {/* A brief point-light pulse at the impact site, on top of the emissive
+          burst mesh, so the flash actually lights the grid/cars around it
+          rather than just glowing in isolation. */}
+      <ImpactLight />
     </>
+  );
+}
+
+/** A point light that snaps to full brightness at the impact instant and
+ * decays with it — separate from the emissive burst mesh (which is unlit and
+ * so cannot itself illuminate anything else in the scene). */
+function ImpactLight() {
+  const light = useRef<THREE.PointLight>(null);
+  const fired = useRef(false);
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    if (!light.current) return;
+    if (t < IMPACT_T) return;
+    if (!fired.current) fired.current = true;
+    const since = t - IMPACT_T;
+    light.current.intensity = Math.max(0, 6 * (1 - since / 0.45));
+  });
+
+  return (
+    <pointLight
+      ref={light}
+      position={[IMPACT_POINT[0], 1.2, IMPACT_POINT[1]]}
+      color="#ffb35c"
+      intensity={0}
+      distance={14}
+    />
   );
 }
 

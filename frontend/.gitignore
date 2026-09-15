@@ -1,1 +1,5 @@
 .vercel
+# Auto-scaffolded by `next dev` on 16.x on first run in a repo it doesn't
+# recognise — not project content, regenerates harmlessly if deleted.
+AGENTS.md
+CLAUDE.md
