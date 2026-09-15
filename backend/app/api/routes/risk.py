@@ -1,6 +1,9 @@
+import logging
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, Query
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +13,7 @@ from ai.common.types import EnvironmentState, RiskLevel, VehicleDynamics
 from ai.environment.time_of_day import describe_hour, light_risk_for_hour
 from ai.no_camera import telemetry_only_pipeline
 from ai.pipeline import TransportationRiskPipeline
-from app.auth.dependencies import current_user
+from app.auth.dependencies import current_user, require_admin
 from app.db.session import get_db
 from app.models.risk_event import RiskEvent
 from app.models.user import User
@@ -21,9 +24,11 @@ from app.schemas.risk import (
     RiskAssessmentResponse,
     RiskEventRead,
 )
+from app.services.push import send_high_risk_alert
 from app.websockets.manager import manager
 
 router = APIRouter(prefix="/risk", tags=["risk"])
+logger = logging.getLogger(__name__)
 
 # One pipeline per process, built lazily. Exposed as a dependency
 # (`get_pipeline`) so tests can override it via app.dependency_overrides.
@@ -132,7 +137,17 @@ async def assess_risk(
         is_waterlogged=result.road.is_waterlogged,
         surface_quality_score=result.road.surface_quality_score,
     )
-    await manager.broadcast(response.model_dump())
+    payload = response.model_dump()
+    await manager.broadcast(payload)
+    # The real alerting loop: pages the signed-in user's subscribed devices on
+    # a HIGH/CRITICAL assessment. A delivery failure (expired subscription,
+    # push service outage) must never fail the assessment that triggered it —
+    # send_high_risk_alert already isolates per-subscription errors, this is
+    # the outer guard for anything else (e.g. no VAPID keys configured).
+    try:
+        await send_high_risk_alert(db, user.id, payload)
+    except Exception:
+        logger.warning("push alert dispatch failed", exc_info=True)
     return response
 
 
@@ -145,6 +160,27 @@ async def list_recent_events(
         select(RiskEvent).order_by(RiskEvent.created_at.desc()).limit(limit)
     )
     return list(result.scalars().all())
+
+
+@router.delete("/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_event(
+    event_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> None:
+    """Remove one persisted assessment — a real, role-gated operator action.
+
+    Reads stay public for everyone (see GET /events above); this is the one
+    write the *public* is deliberately not given: a bad or test entry (a
+    mistaken demo run, a device that briefly reported nonsense telemetry)
+    otherwise sits in history and can pollute a black-spot nomination forever.
+    Admin-only (require_admin — 403 for a signed-in non-admin, 401 signed out).
+    """
+    event = await db.get(RiskEvent, event_id)
+    if event is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such event")
+    await db.delete(event)
+    await db.commit()
 
 
 @router.get("/blackspots", response_model=list[BlackSpotRead])

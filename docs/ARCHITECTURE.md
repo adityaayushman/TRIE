@@ -159,6 +159,12 @@ Three consequences for the architecture, none of which discard the vision:
 - `ai/ingestion/` (frames reach the pipeline from video and cameras),
   `ai/blackspot/` (exposure-normalised aggregation, fed by GPS through the
   API), the FastAPI backend, the dashboard, and the test suite.
+- `backend/app/services/push.py` — real Web Push (RFC 8291/8292) alerting: a
+  HIGH/CRITICAL assessment pages every subscribed device with a genuine
+  OS/browser notification, not just an open-tab websocket update. Toggle at
+  `/dashboard/settings`; needs a deployment-generated VAPID keypair
+  (`python -m app.vapid_keys`) to be live — reports itself unavailable, not
+  broken, when unset.
 
 `ai/blackspot/simulation.py` and `ai/blackspot/report.py` quantify the
 platform's central claim over iRAD/e-DAR: not "we do it differently" but "here
