@@ -44,10 +44,10 @@ export function RoadHazardPanel({ snapshot }: { snapshot: Snapshot }) {
           )}
         </ul>
       ) : (
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-400">
           No surface hazards detected. With no camera attached to the JSON API there is no
           image to inspect, so this reports a clean surface — the edge pipeline
-          (<span className="font-mono text-slate-600">ai/cli.py</span>) is where real frames
+          (<span className="font-mono text-slate-400">ai/cli.py</span>) is where real frames
           are analysed.
         </p>
       )}

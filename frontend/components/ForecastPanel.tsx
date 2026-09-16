@@ -39,7 +39,7 @@ export function ForecastPanel({ snapshot, delay = 0 }: { snapshot: Snapshot; del
       </div>
 
       {live && (
-        <p className="mt-4 text-xs leading-relaxed text-slate-500">
+        <p className="mt-4 text-xs leading-relaxed text-slate-400">
           {trend > 0.05 ? (
             <>
               Risk is <span className="text-amber-400">rising</span> — projected{" "}

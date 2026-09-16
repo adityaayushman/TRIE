@@ -29,7 +29,7 @@ export function PageHeader({
           <h1 className="bg-linear-to-r from-white to-slate-400 bg-clip-text text-xl font-bold tracking-tight text-transparent">
             {title}
           </h1>
-          {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+          {subtitle && <p className="mt-0.5 text-xs text-slate-400">{subtitle}</p>}
         </div>
       </div>
       {right && <div className="shrink-0 pt-1">{right}</div>}
@@ -67,10 +67,10 @@ export function Card({
 
 export function SectionTitle({ children, hint }: { children: ReactNode; hint?: string }) {
   return (
-    <h2 className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-slate-500">
+    <h2 className="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-slate-400">
       {children}
       {hint && (
-        <span className="ml-1.5 font-normal normal-case tracking-normal text-slate-600">
+        <span className="ml-1.5 font-normal normal-case tracking-normal text-slate-400">
           {hint}
         </span>
       )}
@@ -117,8 +117,8 @@ export function Stat({
           style={{ backgroundColor: ACCENT_COLORS[accent] }}
         />
       )}
-      <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 ${valueSize} font-semibold tabular-nums ${muted ? "text-slate-600" : "text-slate-100"}`}>
+      <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">{label}</p>
+      <p className={`mt-1 ${valueSize} font-semibold tabular-nums ${muted ? "text-slate-400" : "text-slate-100"}`}>
         {live ? (
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span
@@ -138,7 +138,7 @@ export function Stat({
           value
         )}
         {value !== null && unit && (
-          <span className="ml-0.5 text-xs font-normal text-slate-500">{unit}</span>
+          <span className="ml-0.5 text-xs font-normal text-slate-400">{unit}</span>
         )}
       </p>
     </div>
@@ -175,7 +175,7 @@ export function Badge({
  * memorised or guessed from the code. */
 export function Legend({ items }: { items: { color: string; label: string }[] }) {
   return (
-    <ul className="flex flex-wrap items-center gap-4 text-[0.7rem] text-slate-500">
+    <ul className="flex flex-wrap items-center gap-4 text-[0.7rem] text-slate-400">
       {items.map((item) => (
         <li key={item.label} className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
@@ -190,7 +190,7 @@ export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
     <div className="rounded-xl border border-dashed border-slate-800 px-6 py-10 text-center">
       <p className="text-sm font-medium text-slate-300">{title}</p>
-      <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-500">{body}</p>
+      <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-400">{body}</p>
     </div>
   );
 }

@@ -50,8 +50,8 @@ export default function LivePage() {
       )}
 
       {!account && (
-        <p className="text-center text-xs text-slate-600">
-          <Link href="/register" className="text-sky-400 hover:text-sky-300">
+        <p className="text-center text-xs text-slate-400">
+          <Link href="/register" className="text-sky-400 underline underline-offset-2 decoration-sky-400/40 hover:text-sky-300">
             Create an account
           </Link>{" "}
           to submit telemetry.

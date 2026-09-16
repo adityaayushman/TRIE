@@ -50,18 +50,18 @@ export default function SettingsPage() {
         {account ? (
           <div className="space-y-3">
             <dl className="grid grid-cols-[7rem_1fr] gap-y-2 text-xs">
-              <dt className="text-slate-500">Email</dt>
+              <dt className="text-slate-400">Email</dt>
               <dd className="text-slate-200">{account.email}</dd>
-              <dt className="text-slate-500">Organisation</dt>
+              <dt className="text-slate-400">Organisation</dt>
               <dd className="text-slate-200">{account.organisation || "—"}</dd>
-              <dt className="text-slate-500">Role</dt>
+              <dt className="text-slate-400">Role</dt>
               <dd className="text-slate-200">
                 {account.role}
                 {account.role === "admin" && (
-                  <span className="ml-2 text-[0.65rem] text-slate-500">— can delete risk events</span>
+                  <span className="ml-2 text-[0.65rem] text-slate-400">— can delete risk events</span>
                 )}
               </dd>
-              <dt className="text-slate-500">Member since</dt>
+              <dt className="text-slate-400">Member since</dt>
               <dd className="text-slate-200">
                 {new Date(account.created_at).toLocaleDateString()}
               </dd>
@@ -74,9 +74,9 @@ export default function SettingsPage() {
             </button>
           </div>
         ) : (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Not signed in.{" "}
-            <Link href="/login" className="text-sky-400 hover:text-sky-300">
+            <Link href="/login" className="text-sky-400 underline underline-offset-2 decoration-sky-400/40 hover:text-sky-300">
               Sign in
             </Link>{" "}
             to submit telemetry.
@@ -102,12 +102,12 @@ export default function SettingsPage() {
               />
               <div>
                 <p className="text-xs font-medium text-slate-200">{row.module}</p>
-                <p className="text-[0.7rem] text-slate-500">{row.detail}</p>
+                <p className="text-[0.7rem] text-slate-400">{row.detail}</p>
               </div>
             </li>
           ))}
         </ul>
-        <p className="mt-4 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-600">
+        <p className="mt-4 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
           <span className="text-emerald-400">Green</span> runs a real algorithm on real input.{" "}
           <span className="text-amber-400">Amber</span> is an honest rule-based placeholder
           pending a learned model — the reasoning layer is transparent by design, not hidden
@@ -121,25 +121,25 @@ export default function SettingsPage() {
         </SectionTitle>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
-            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">mAP@50</p>
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-400">mAP@50</p>
             <p className="mt-0.5 text-lg font-bold tabular-nums text-sky-400">
               {(ROAD_DAMAGE_EVAL.overall.mAP50 * 100).toFixed(1)}%
             </p>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
-            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">mAP@50-95</p>
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-400">mAP@50-95</p>
             <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
               {(ROAD_DAMAGE_EVAL.overall.mAP50_95 * 100).toFixed(1)}%
             </p>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
-            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">Precision</p>
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-400">Precision</p>
             <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
               {(ROAD_DAMAGE_EVAL.overall.precision * 100).toFixed(1)}%
             </p>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2.5">
-            <p className="text-[0.6rem] uppercase tracking-wide text-slate-500">Recall</p>
+            <p className="text-[0.6rem] uppercase tracking-wide text-slate-400">Recall</p>
             <p className="mt-0.5 text-lg font-bold tabular-nums text-slate-100">
               {(ROAD_DAMAGE_EVAL.overall.recall * 100).toFixed(1)}%
             </p>
@@ -149,7 +149,7 @@ export default function SettingsPage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[380px] text-left text-xs">
             <thead>
-              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                 <th className="pb-2 font-medium">Damage class</th>
                 <th className="pb-2 pr-3 text-right font-medium">Val instances</th>
                 <th className="pb-2 pr-3 text-right font-medium">mAP@50</th>
@@ -169,8 +169,8 @@ export default function SettingsPage() {
           </table>
         </div>
 
-        <p className="mt-4 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-600">
-          Fine-tuned from <span className="font-mono text-slate-500">yolo11s</span> on the
+        <p className="mt-4 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
+          Fine-tuned from <span className="font-mono text-slate-400">yolo11s</span> on the
           RDD2022 India split, evaluated on 1,542 held-out images. Alligator cracks and
           potholes — the damage that actually threatens a two-wheeler — detect well; transverse
           cracks barely register because the val split has only 17 of them to learn from.
@@ -183,13 +183,13 @@ export default function SettingsPage() {
       <Card delay={0.15}>
         <SectionTitle>Connection</SectionTitle>
         <dl className="grid grid-cols-[7rem_1fr] gap-y-2 text-xs">
-          <dt className="text-slate-500">API</dt>
+          <dt className="text-slate-400">API</dt>
           <dd className="break-all font-mono text-slate-300">{API_URL}</dd>
-          <dt className="text-slate-500">Docs</dt>
+          <dt className="text-slate-400">Docs</dt>
           <dd>
             <a
               href={API_URL.replace("/api/v1", "/docs")}
-              className="font-mono text-sky-400 hover:text-sky-300"
+              className="font-mono text-sky-400 underline underline-offset-2 decoration-sky-400/40 hover:text-sky-300"
             >
               /docs
             </a>

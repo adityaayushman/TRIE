@@ -27,17 +27,17 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
             lower={live?.risk_lower}
             upper={live?.risk_upper}
           />
-          <p className="text-center text-xs text-slate-500">
+          <p className="text-center text-xs text-slate-400">
             Vehicle <span className="font-mono text-slate-300">{assessment.vehicle_id}</span>
           </p>
           {assessment.latitude !== null && assessment.longitude !== null && (
-            <p className="text-center font-mono text-[0.7rem] text-slate-600">
+            <p className="text-center font-mono text-[0.7rem] text-slate-400">
               {assessment.latitude.toFixed(4)}, {assessment.longitude.toFixed(4)}
             </p>
           )}
           {live && live.environment_label && (
             <p
-              className="flex items-center gap-1.5 text-[0.7rem] text-slate-500"
+              className="flex items-center gap-1.5 text-[0.7rem] text-slate-400"
               title="Time-of-day lighting risk, from the assessment clock (IST) — a real input, no camera needed. See ai/environment."
             >
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: `rgba(148,163,184,${0.3 + live.light_risk * 0.7})` }} />
@@ -60,7 +60,7 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
 
             {live && live.unobserved_factors.length > 0 && (
               <div className="mt-4 border-t border-slate-800 pt-3">
-                <p className="mb-2 text-[0.65rem] uppercase tracking-wide text-slate-600">
+                <p className="mb-2 text-[0.65rem] uppercase tracking-wide text-slate-400">
                   Not observed — no sensor, weight redistributed
                 </p>
                 <ul className="flex flex-wrap gap-1.5">
@@ -70,7 +70,7 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2.5 text-[0.7rem] leading-relaxed text-slate-500">
+                <p className="mt-2.5 text-[0.7rem] leading-relaxed text-slate-400">
                   These have no sensor here, so the true risk is only known to lie between{" "}
                   <span className="tabular-nums text-slate-300">{live.risk_lower.toFixed(0)}%</span> and{" "}
                   <span className="tabular-nums text-slate-300">{live.risk_upper.toFixed(0)}%</span> — the
@@ -88,7 +88,7 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
           <SectionTitle>Causal Chain</SectionTitle>
           <div className="space-y-4">
             <div>
-              <p className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+              <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                 Primary cause
               </p>
               <p className="mt-0.5 text-lg font-semibold text-slate-100">
@@ -96,7 +96,7 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
               </p>
             </div>
             <div className="border-l-2 border-slate-800 pl-3">
-              <p className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+              <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                 Predicted event if unaddressed
               </p>
               <p className="mt-0.5 text-base font-medium text-amber-400">
@@ -104,7 +104,7 @@ export function RiskDashboard({ assessment }: { assessment: Snapshot }) {
               </p>
             </div>
             <div>
-              <p className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+              <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                 Recommended actions
               </p>
               <ul className="mt-1.5 space-y-1">

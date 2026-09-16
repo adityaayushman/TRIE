@@ -83,7 +83,7 @@ export function RiskTimeline({ events, onDeleted }: { events: RiskEvent[]; onDel
     <Card>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <SectionTitle hint={`vehicle ${vehicleId}`}>Risk History</SectionTitle>
-        <span className="mb-3 text-[0.7rem] text-slate-600">
+        <span className="mb-3 text-[0.7rem] text-slate-400">
           {series.length} assessment{series.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -166,22 +166,22 @@ export function RiskTimeline({ events, onDeleted }: { events: RiskEvent[]; onDel
               {active.risk_score.toFixed(1)}%
             </span>
             <span className="ml-1.5 text-slate-400">{active.risk_level}</span>
-            <span className="ml-2 text-slate-600">
+            <span className="ml-2 text-slate-400">
               {new Date(active.created_at).toLocaleTimeString()}
             </span>
-            <span className="ml-2 text-slate-500">{active.primary_cause}</span>
+            <span className="ml-2 text-slate-400">{active.primary_cause}</span>
           </div>
         )}
       </div>
 
       <details className="mt-3">
-        <summary className="cursor-pointer text-[0.7rem] text-slate-600 hover:text-slate-400">
+        <summary className="cursor-pointer text-[0.7rem] text-slate-400 hover:text-slate-400">
           View as table
         </summary>
         <div className="mt-2 max-h-56 overflow-y-auto">
           <table className="w-full text-left text-xs">
             <thead className="sticky top-0 bg-slate-900">
-              <tr className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+              <tr className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                 <th className="py-1.5 pr-3 font-medium">Time</th>
                 <th className="py-1.5 pr-3 font-medium">Risk</th>
                 <th className="py-1.5 pr-3 font-medium">Level</th>

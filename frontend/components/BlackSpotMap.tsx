@@ -152,7 +152,7 @@ export function BlackSpotMap({
               {activeSpot.latitude.toFixed(4)}, {activeSpot.longitude.toFixed(4)}
             </p>
             <p className="mt-1 text-[0.7rem] text-slate-400">{activeSpot.dominant_cause}</p>
-            <div className="mt-1.5 flex gap-3 text-[0.65rem] text-slate-500">
+            <div className="mt-1.5 flex gap-3 text-[0.65rem] text-slate-400">
               <span><span className="tabular-nums text-slate-300">{activeSpot.near_miss_count}</span> near-misses</span>
               <span><span className="tabular-nums text-slate-300">{(activeSpot.confidence * 100).toFixed(1)}%</span> conf.</span>
             </div>
@@ -167,7 +167,7 @@ export function BlackSpotMap({
             label: INTERVENTION_LABEL[k],
           }))}
         />
-        <p className="text-[0.65rem] text-slate-600">Marker size ∝ near-misses · hover or tap a spot</p>
+        <p className="text-[0.65rem] text-slate-400">Marker size ∝ near-misses · hover or tap a spot</p>
       </div>
     </div>
   );

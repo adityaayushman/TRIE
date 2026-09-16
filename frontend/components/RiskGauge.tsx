@@ -138,7 +138,7 @@ export function RiskGauge({
         </span>
         <span className="text-sm uppercase tracking-wide text-slate-400">{level}</span>
         {hasBand && (
-          <span className="mt-1.5 text-center text-[0.65rem] leading-tight text-slate-500">
+          <span className="mt-1.5 text-center text-[0.65rem] leading-tight text-slate-400">
             <span className="tabular-nums text-slate-400">{lower!.toFixed(0)}–{upper!.toFixed(0)}%</span>
             <br />
             {confidence}

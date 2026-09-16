@@ -15,7 +15,7 @@ export default function TrafficAnalyticsPage() {
       <Card>
         <SectionTitle hint="same engine, aggregated">What this is</SectionTitle>
         <p className="max-w-3xl text-xs leading-relaxed text-slate-400">
-          <span className="font-mono text-slate-500">ai/traffic_intelligence</span> derives
+          <span className="font-mono text-slate-400">ai/traffic_intelligence</span> derives
           congestion, density and vehicle count from the perception engine&apos;s detections —
           two-wheelers count as road users here, unlike car-only Western traffic models, since
           a lane full of motorcycles reads as congested and dangerous even when no car is

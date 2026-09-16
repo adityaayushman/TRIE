@@ -152,7 +152,7 @@ export default function Landing() {
               </Link>
               <Link
                 href="/register"
-                className="shrink-0 rounded-lg bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-400"
+                className="shrink-0 rounded-lg bg-sky-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_20px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-600"
               >
                 Get started
               </Link>
@@ -189,7 +189,7 @@ export default function Landing() {
             <div className="mt-9 flex flex-wrap justify-center gap-3">
               <Link
                 href="/dashboard"
-                className="rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-400 hover:shadow-[0_0_40px_-4px_rgba(56,189,248,0.9)]"
+                className="rounded-xl bg-sky-700 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-600 hover:shadow-[0_0_40px_-4px_rgba(56,189,248,0.9)]"
               >
                 Open the live dashboard
               </Link>
@@ -219,8 +219,8 @@ export default function Landing() {
                 <p className="bg-linear-to-b from-white to-slate-400 bg-clip-text text-3xl font-bold tabular-nums text-transparent sm:text-4xl">
                   {stat.value}
                 </p>
-                <p className="mt-2 text-xs leading-snug text-slate-500">{stat.label}</p>
-                <p className="mt-1.5 text-[0.6rem] font-medium uppercase tracking-wide text-slate-700">
+                <p className="mt-2 text-xs leading-snug text-slate-400">{stat.label}</p>
+                <p className="mt-1.5 text-[0.6rem] font-medium uppercase tracking-wide text-slate-400">
                   {stat.source}
                 </p>
               </div>
@@ -280,7 +280,7 @@ export default function Landing() {
                     <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300 transition group-hover:border-sky-400/60 group-hover:bg-sky-500/20">
                       <Icon size={20} />
                     </span>
-                    <span className="font-mono text-2xl font-bold text-slate-700 transition group-hover:text-slate-600">
+                    <span className="font-mono text-2xl font-bold text-slate-400 transition group-hover:text-slate-400">
                       0{i + 1}
                     </span>
                   </div>
@@ -323,7 +323,7 @@ export default function Landing() {
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-300">
                       <Icon size={18} />
                     </span>
-                    <span className="text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-sky-400">
+                    <span className="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-sky-400">
                       →
                     </span>
                   </div>
@@ -368,7 +368,7 @@ export default function Landing() {
             <Reveal delay={0.1}>
               <div className="h-full rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
                 <p className="text-3xl font-bold tabular-nums text-slate-300">170 days</p>
-                <p className="mt-1.5 text-xs text-slate-500">
+                <p className="mt-1.5 text-xs text-slate-400">
                   iRAD, under a generous 1-in-20 crash assumption
                 </p>
               </div>
@@ -376,14 +376,14 @@ export default function Landing() {
             <Reveal delay={0.2}>
               <div className="h-full rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
                 <p className="text-3xl font-bold tabular-nums text-slate-300">never</p>
-                <p className="mt-1.5 text-xs text-slate-500">
+                <p className="mt-1.5 text-xs text-slate-400">
                   iRAD at 1-in-1000, within its own 3-year window
                 </p>
               </div>
             </Reveal>
           </div>
 
-          <p className="mx-auto mt-8 max-w-2xl text-xs leading-relaxed text-slate-600">
+          <p className="mx-auto mt-8 max-w-2xl text-xs leading-relaxed text-slate-400">
             A methodology validation, not a field trial. The near-miss-to-crash conversion
             rate has no published source, so it is swept across a range rather than assumed —
             discovery leads under every rate tested. Validating against MoRTH&apos;s published
@@ -413,7 +413,7 @@ export default function Landing() {
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/register"
-                className="rounded-xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-400 hover:shadow-[0_0_40px_-4px_rgba(56,189,248,0.9)]"
+                className="rounded-xl bg-sky-700 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_30px_-6px_rgba(56,189,248,0.8)] transition hover:bg-sky-600 hover:shadow-[0_0_40px_-4px_rgba(56,189,248,0.9)]"
               >
                 Create a free account
               </Link>
@@ -430,10 +430,10 @@ export default function Landing() {
 
       <footer className="border-t border-slate-800/80">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-8">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-400">
             Smart Road Guardian AI X — an explainable transportation intelligence platform.
           </p>
-          <div className="flex gap-4 text-xs text-slate-500">
+          <div className="flex gap-4 text-xs text-slate-400">
             <Link href="/research" className="transition hover:text-slate-300">
               Research
             </Link>

@@ -120,7 +120,7 @@ export default function VehicleIntelligencePage() {
                 <p className="text-3xl font-bold tabular-nums text-red-300">
                   ×{vuln.peak.toFixed(2)}
                 </p>
-                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-500">
+                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-400">
                   peak scene risk
                 </p>
               </div>
@@ -128,7 +128,7 @@ export default function VehicleIntelligencePage() {
                 <p className="text-3xl font-bold tabular-nums text-slate-200">
                   {vuln.flaggedCount}/{vuln.total}
                 </p>
-                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-500">
+                <p className="mt-0.5 text-[0.6rem] uppercase tracking-wide text-slate-400">
                   feeds flagged
                 </p>
               </div>
@@ -145,7 +145,7 @@ export default function VehicleIntelligencePage() {
         <p className="max-w-3xl text-xs leading-relaxed text-slate-400">
           The deployed API has no camera attached, so there is nothing live to point a
           Vehicle Intelligence page at. There is, however, a real perception model
-          (<span className="font-mono text-slate-500">ai/perception</span>, YOLOv11,
+          (<span className="font-mono text-slate-400">ai/perception</span>, YOLOv11,
           COCO-pretrained) that has never had anywhere to run in production. This page
           runs that same model, frame by frame, over real licensed street-traffic
           recordings, and replays the detections in sync with the footage — genuine
