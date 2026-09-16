@@ -56,11 +56,11 @@ export function ConformalExplorer() {
     <div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div>
-          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-slate-600">Coverage target</p>
+          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-slate-400">Coverage target</p>
           <Seg value={target} options={TARGETS} onChange={setTarget} render={(t) => `${t}%`} />
         </div>
         <div>
-          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-slate-600">Sensor regime</p>
+          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-wide text-slate-400">Sensor regime</p>
           <Seg value={regime} options={REGIMES.map((r) => r.key)} onChange={setRegime} render={(k) => REGIMES.find((r) => r.key === k)!.label} />
         </div>
       </div>
@@ -79,7 +79,7 @@ export function ConformalExplorer() {
         </div>
         {/* the cost */}
         <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500">The cost (alarm rate)</p>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">The cost (alarm rate)</p>
           <p className="mt-1 text-3xl font-bold tabular-nums text-slate-200">{cell.alarm.toFixed(1)}%</p>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800">
             <div className="h-full rounded-full bg-amber-400/80" style={{ width: `${cell.alarm}%` }} />
@@ -90,7 +90,7 @@ export function ConformalExplorer() {
           </p>
         </div>
       </div>
-      <p className="mt-3 text-[0.7rem] text-slate-600">
+      <p className="mt-3 text-[0.7rem] text-slate-400">
         Real STATS19 result across the grid ·{" "}
         <code className="rounded-sm bg-slate-800 px-1 py-0.5 text-[0.65rem] text-slate-400">python -m ai.trie.conformal_validation --alpha {((100 - target) / 100).toFixed(2)}</code>
       </p>

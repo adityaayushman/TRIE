@@ -56,7 +56,7 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
       <SectionTitle hint="drives the live pipeline">Run an Assessment</SectionTitle>
 
       <div className="flex flex-wrap items-end gap-5">
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">Vehicle</span>
           <input
             value={vehicleId}
@@ -65,7 +65,7 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
           />
         </label>
 
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">
             Speed <span className="tabular-nums text-slate-300">{speed}</span> km/h
           </span>
@@ -80,7 +80,7 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
         </label>
 
         {locations.length > 0 && (
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-slate-400">
             <span className="mb-1.5 block">Site</span>
             <select
               value={locationId}
@@ -100,13 +100,13 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
         <button
           onClick={run}
           disabled={busy}
-          className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-sky-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "Assessing…" : "Run assessment"}
         </button>
       </div>
 
-      <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-600">
+      <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">
         {locationId ? (
           <>
             Posts telemetry tagged to this site — it inherits the site&apos;s own registered
@@ -119,7 +119,7 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
           </>
         )}{" "}
         No camera is attached to the JSON API, so driver distraction and lane drift report as{" "}
-        <span className="text-slate-500">not observed</span> and are dropped from the score
+        <span className="text-slate-400">not observed</span> and are dropped from the score
         rather than assumed safe — speed is the live input.
       </p>
 

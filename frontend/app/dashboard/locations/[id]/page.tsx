@@ -64,22 +64,22 @@ export default function LocationDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <dl className="flex flex-wrap gap-x-8 gap-y-2">
             <div>
-              <dt className="text-slate-500">Coordinates</dt>
+              <dt className="text-slate-400">Coordinates</dt>
               <dd className="mt-0.5 font-mono text-slate-300">
                 {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
               </dd>
             </div>
             <div>
-              <dt className="text-slate-500">Registered</dt>
+              <dt className="text-slate-400">Registered</dt>
               <dd className="mt-0.5 text-slate-300">{new Date(location.created_at).toLocaleDateString()}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Assessments</dt>
+              <dt className="text-slate-400">Assessments</dt>
               <dd className="mt-0.5 tabular-nums text-slate-300">{location.event_count}</dd>
             </div>
           </dl>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/locations" className="text-slate-500 transition hover:text-slate-300">
+            <Link href="/dashboard/locations" className="text-slate-400 transition hover:text-slate-300">
               ← All locations
             </Link>
             {account?.role === "admin" && (

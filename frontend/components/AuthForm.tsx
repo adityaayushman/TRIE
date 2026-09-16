@@ -54,7 +54,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <h1 className="text-lg font-semibold text-slate-100">
             {isRegister ? "Create an account" : "Sign in"}
           </h1>
-          <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
+          <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
             {isRegister
               ? "An account is only needed to submit telemetry. Reading the dashboard, history and black spots never requires one."
               : "Welcome back."}
@@ -76,7 +76,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             {isRegister && (
               <label className="block">
                 <span className="mb-1.5 block text-xs text-slate-400">
-                  Organisation <span className="text-slate-600">(optional)</span>
+                  Organisation <span className="text-slate-400">(optional)</span>
                 </span>
                 <input
                   value={organisation}
@@ -102,7 +102,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-hidden transition focus:border-sky-600"
               />
               {isRegister && (
-                <span className="mt-1 block text-[0.65rem] text-slate-600">
+                <span className="mt-1 block text-[0.65rem] text-slate-400">
                   At least 8 characters.
                 </span>
               )}
@@ -117,13 +117,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-sky-600 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-lg bg-sky-700 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-xs text-slate-500">
+          <p className="mt-5 text-center text-xs text-slate-400">
             {isRegister ? "Already have an account? " : "No account? "}
             <Link
               href={isRegister ? "/login" : "/register"}
@@ -134,7 +134,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           </p>
         </div>
 
-        <p className="mt-5 text-center text-xs text-slate-600">
+        <p className="mt-5 text-center text-xs text-slate-400">
           <Link href="/dashboard" className="transition hover:text-slate-400">
             Or browse the dashboard without an account →
           </Link>

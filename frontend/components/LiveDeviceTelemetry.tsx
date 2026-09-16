@@ -174,7 +174,7 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
 
       <div className="flex flex-wrap items-center gap-4">
         {locations.length > 0 && (
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-slate-400">
             <span className="mb-1.5 block">Site (optional)</span>
             <select
               value={locationId}
@@ -197,7 +197,7 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
           className={`rounded-lg px-4 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
             status === "live"
               ? "bg-emerald-600 text-white hover:bg-emerald-500"
-              : "bg-sky-600 text-white hover:bg-sky-500"
+              : "bg-sky-700 text-white hover:bg-sky-600"
           }`}
         >
           {status === "live" ? "Stop" : status === "requesting" ? "Requesting…" : "Start live telemetry"}
@@ -206,23 +206,23 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
         {status === "live" && (
           <dl className="flex w-full flex-col gap-1 text-[0.7rem] sm:w-auto sm:flex-row sm:flex-wrap sm:gap-x-5">
             <div className="flex justify-between gap-3 sm:justify-start">
-              <dt className="text-slate-600">Speed</dt>
+              <dt className="text-slate-400">Speed</dt>
               <dd className="tabular-nums text-slate-300">
                 {reading.speedKmh !== null ? `${reading.speedKmh.toFixed(1)} km/h` : "waiting for GPS fix…"}
               </dd>
             </div>
             <div className="flex justify-between gap-3 sm:justify-start">
-              <dt className="text-slate-600">Heading</dt>
+              <dt className="text-slate-400">Heading</dt>
               <dd className="tabular-nums text-slate-300">{reading.headingDeg !== null ? `${reading.headingDeg.toFixed(0)}°` : "—"}</dd>
             </div>
             <div className="flex justify-between gap-3 sm:justify-start">
-              <dt className="text-slate-600">Accel.</dt>
+              <dt className="text-slate-400">Accel.</dt>
               <dd className="tabular-nums text-slate-300">
                 {reading.accelMs2 !== null ? `${reading.accelMs2.toFixed(2)} m/s²` : "not observed (no motion permission)"}
               </dd>
             </div>
             <div className="flex justify-between gap-3 sm:justify-start">
-              <dt className="text-slate-600">Last sent</dt>
+              <dt className="text-slate-400">Last sent</dt>
               <dd className="tabular-nums text-slate-300">
                 {lastSentAt ? `${Math.round((Date.now() - lastSentAt) / 1000)}s ago` : "sending on first GPS fix…"}
               </dd>
@@ -231,9 +231,9 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
         )}
       </div>
 
-      <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-600">{copy[status]}</p>
+      <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-400">{copy[status]}</p>
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
-      <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-600">
+      <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
         Honest scope: this is <span className="text-slate-400">one real device</span> (yours),
         not population-scale near-miss telemetry — the black-spot engine needs many vehicles
         passing the same stretch to nominate it. It is nonetheless a genuine, live sensor feed

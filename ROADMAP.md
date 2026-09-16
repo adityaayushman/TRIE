@@ -29,8 +29,8 @@ code.
 |---|------|-------|--------|--------|
 | 1.1 | **Model cards** for every model | 🟦 Repo | ½d | ✅ Done — `docs/MODEL_CARDS.md` |
 | 1.2 | **Dataset datasheets** for every dataset | 🟦 Repo | ½d | ✅ Done — `docs/DATASHEETS.md` |
-| 1.3 | **CI: one-command reproduce check** in GitHub Actions | 🟦 Repo | ½d | Run the non-DL validations on push; badge in README. |
-| 1.4 | **Frontend accessibility + Lighthouse pass** (a11y labels, contrast, reduced-motion) | 🟦 Repo | 1d | The 3D/motion widgets need `prefers-reduced-motion` fallbacks. |
+| 1.3 | **CI: one-command reproduce check** in GitHub Actions | 🟦 Repo | ½d | ✅ Done — `.github/workflows/ci.yml`'s `research-repro` job runs `scripts/check_reproducibility.py` on every push (plus weekly), badge in README. |
+| 1.4 | **Frontend accessibility + Lighthouse pass** (a11y labels, contrast, reduced-motion) | 🟦 Repo | 1d | ✅ Done — real Lighthouse audit (not assumed) across all 12 pages, iterated until every one hit a clean 1.0 accessibility score. Fixed: text/button color-contrast failing WCAG AA at this dark theme's actual background shades (`text-slate-500/600/700` → `400`, `bg-sky-500/600` + white text → `700`, ~130 instances), 4 inline links relying on color alone (added underline), a real heading-order gap on `/dashboard/locations` when signed out, unlabelled range sliders in `FusionPlayground`, and a missing favicon. The hero's collision sequence already gated its camera/DOM jolt behind `prefers-reduced-motion`. Left open, lower priority: `font-size` (best-practices, not a11y — this app's compact `text-[0.6rem]` caption/badge language is a deliberate density tradeoff, not addressed here) and `valid-source-maps` (build tooling, not user-facing). |
 
 ## P2 — From demo to pilot (needs data, but not a full partnership)
 

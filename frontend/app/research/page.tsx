@@ -78,7 +78,7 @@ function Contribution({
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-500">Prior work</p>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Prior work</p>
           <p className="mt-1.5 text-xs leading-relaxed text-slate-400">{prior}</p>
         </div>
         <div className="rounded-xl border border-sky-900/50 bg-sky-950/20 p-4">
@@ -218,7 +218,7 @@ export default function ResearchPage() {
             it always <span className="font-semibold text-white">shows its reasoning</span>.
             Everything below is the evidence, but you do not need the jargon to follow the point.
           </p>
-          <p className="relative mt-4 border-t border-sky-500/15 pt-4 text-xs leading-relaxed text-slate-500">
+          <p className="relative mt-4 border-t border-sky-500/15 pt-4 text-xs leading-relaxed text-slate-400">
             A few terms you will meet: a <span className="text-slate-300">black spot</span> is a
             dangerous stretch of road; a <span className="text-slate-300">vulnerable road user (VRU)</span>{" "}
             is someone with no metal around them — a rider or a pedestrian;{" "}
@@ -256,7 +256,7 @@ export default function ResearchPage() {
             ].map((s) => (
               <div key={s.l} className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
                 <p className="text-3xl font-bold tabular-nums text-slate-50">{s.n}</p>
-                <p className="mt-1.5 text-[0.7rem] leading-snug text-slate-500">{s.l}</p>
+                <p className="mt-1.5 text-[0.7rem] leading-snug text-slate-400">{s.l}</p>
                 <p className="mt-3 border-t border-slate-800 pt-3 text-xs leading-relaxed text-slate-400">{s.b}</p>
               </div>
             ))}
@@ -384,7 +384,7 @@ export default function ResearchPage() {
                 Intelligence footage: each rider is boxed green for a helmet or red for a bare head,
                 and the worst frame of every demo clip peaks at ×1.72.
               </p>
-              <p className="text-slate-500">
+              <p className="text-slate-400">
                 Honest limits: the full 25-epoch run confirmed epoch 15 as the peak — the later
                 epochs did not improve validation mAP, so the reported checkpoint is a genuine best,
                 not an early stop. The validation set holds only 27 with-helmet instances, so that
@@ -394,7 +394,7 @@ export default function ResearchPage() {
               </p>
             </div>
             <div className="rounded-xl border border-slate-800/80 bg-slate-950/50 p-4">
-              <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-slate-400">
                 Held-out validation · 383 images · mAP@50
               </p>
               <div className="mt-3 space-y-2.5">
@@ -415,7 +415,7 @@ export default function ResearchPage() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 border-t border-slate-800 pt-2 text-[0.65rem] leading-relaxed text-slate-500">
+              <p className="mt-3 border-t border-slate-800 pt-2 text-[0.65rem] leading-relaxed text-slate-400">
                 Overall mAP@50 <span className="tabular-nums text-slate-300">78.2%</span> · mAP@50-95{" "}
                 <span className="tabular-nums text-slate-300">56.2%</span>. Reproducible with{" "}
                 <code className="rounded-sm bg-slate-800 px-1 py-0.5 text-[0.6rem] text-slate-300">
@@ -462,7 +462,7 @@ export default function ResearchPage() {
         <div className="mt-8 overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-xs">
             <thead>
-              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-500">
+              <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                 <th className="pb-3 pr-4 font-medium">Dimension</th>
                 <th className="pb-3 pr-4 font-medium">Conventional ADAS</th>
                 <th className="pb-3 pr-4 font-medium">iRAD / e-DAR (official)</th>
@@ -522,8 +522,8 @@ export default function ResearchPage() {
               ].map((row) => (
                 <tr key={row.d} className="border-t border-slate-800/70 align-top">
                   <td className="py-2.5 pr-4 font-medium text-slate-200">{row.d}</td>
-                  <td className="py-2.5 pr-4 text-slate-500">{row.adas}</td>
-                  <td className="py-2.5 pr-4 text-slate-500">{row.official}</td>
+                  <td className="py-2.5 pr-4 text-slate-400">{row.adas}</td>
+                  <td className="py-2.5 pr-4 text-slate-400">{row.official}</td>
                   <td className="bg-sky-500/6 px-4 py-2.5 text-slate-200">{row.ours}</td>
                 </tr>
               ))}
@@ -579,7 +579,7 @@ export default function ResearchPage() {
           <p className="text-sm font-semibold text-slate-200">
             The fitted importance matches the model&apos;s own weighting
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-400">
             Standardised logistic-regression coefficients on the real data — every factor in the
             expected direction, in the model&apos;s rough order.
           </p>
@@ -601,7 +601,7 @@ export default function ResearchPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+          <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
             Speed and VRU status dominate; poor surface is weakest — the same ordering the fusion
             encodes (speed 0.22, VRU 0.20, road 0.13). Reproduce with{" "}
             <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.external_validation</code>.
@@ -628,7 +628,7 @@ export default function ResearchPage() {
           <div className="mt-4">
             <ConformalExplorer />
           </div>
-          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
             The guarantee holds in every regime (all ≥ 90%). With the full sensor suite the model can
             confidently <span className="text-slate-400">clear ~32%</span> of cases of any fatal risk;
             without the camera only ~12–17% — the quantified, guaranteed-recall cost of reduced
@@ -643,9 +643,9 @@ export default function ResearchPage() {
             <p className="text-sm font-semibold text-slate-200">
               The joint effect, in the round — speed × light
             </p>
-            <span className="text-[0.65rem] uppercase tracking-wide text-slate-500">drag to rotate</span>
+            <span className="text-[0.65rem] uppercase tracking-wide text-slate-400">drag to rotate</span>
           </div>
-          <p className="px-5 pb-1 pt-1 text-xs leading-relaxed text-slate-500">
+          <p className="px-5 pb-1 pt-1 text-xs leading-relaxed text-slate-400">
             The same real STATS19 crashes, cut two ways at once: fatal-collision rate by speed limit
             (front) and by daylight vs darkness (the two rows). Height is the fatality rate. Both are
             large, independently-significant effects — speed{" "}
@@ -657,7 +657,7 @@ export default function ResearchPage() {
             real is speed×VRU (p &lt; 1e-9), in the table below.
           </p>
           <FatalityScene3D />
-          <div className="flex flex-wrap items-center gap-4 border-t border-slate-800/70 px-5 py-2.5 text-[0.7rem] text-slate-500">
+          <div className="flex flex-wrap items-center gap-4 border-t border-slate-800/70 px-5 py-2.5 text-[0.7rem] text-slate-400">
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "#f5b942" }} /> Daylight</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ backgroundColor: "#6366f1" }} /> Darkness</span>
             <span className="ml-auto">bar height = fatal-collision rate (%) · DfT STATS19 GB 2024</span>
@@ -669,14 +669,14 @@ export default function ResearchPage() {
           <p className="text-sm font-semibold text-slate-200">
             The inferential result — odds ratios, a significance test, calibration
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-400">
             A multivariable logistic regression on the 128,269 casualties: the mutually-adjusted
             estimate a methods section cites, not four univariate rates.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[440px] text-left text-xs">
               <thead>
-                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                   <th className="pb-2 font-medium">Factor</th>
                   <th className="pb-2 pr-3 text-right font-medium">Odds ratio (95% CI)</th>
                   <th className="pb-2 text-right font-medium">p</th>
@@ -691,10 +691,10 @@ export default function ResearchPage() {
                 ].map((r) => (
                   <tr key={r.f} className="border-t border-slate-800/70">
                     <td className="py-1.5 text-slate-300">{r.f}</td>
-                    <td className={`py-1.5 pr-3 text-right tabular-nums ${r.sig ? "font-semibold text-slate-100" : "text-slate-500"}`}>
-                      {r.or} <span className="font-normal text-slate-500">({r.ci})</span>
+                    <td className={`py-1.5 pr-3 text-right tabular-nums ${r.sig ? "font-semibold text-slate-100" : "text-slate-400"}`}>
+                      {r.or} <span className="font-normal text-slate-400">({r.ci})</span>
                     </td>
-                    <td className={`py-1.5 text-right tabular-nums ${r.sig ? "text-emerald-400" : "text-slate-600"}`}>{r.p}</td>
+                    <td className={`py-1.5 text-right tabular-nums ${r.sig ? "text-emerald-400" : "text-slate-400"}`}>{r.p}</td>
                   </tr>
                 ))}
               </tbody>
@@ -703,27 +703,27 @@ export default function ResearchPage() {
           <div className="mt-4 grid gap-3 border-t border-slate-800 pt-4 text-[0.7rem] leading-relaxed sm:grid-cols-3">
             <div>
               <p className="font-semibold text-slate-300">Interaction (LR test)</p>
-              <p className="mt-0.5 text-slate-500">
+              <p className="mt-0.5 text-slate-400">
                 speed×VRU is real — OR 1.34, <span className="text-emerald-400">p &lt; 1e-9</span>; speed×darkness is{" "}
                 <span className="text-slate-400">not significant (p = 0.21)</span>. Jointly χ² = 39.2, p = 3e-9.
               </p>
             </div>
             <div>
               <p className="font-semibold text-slate-300">Discrimination</p>
-              <p className="mt-0.5 text-slate-500">
+              <p className="mt-0.5 text-slate-400">
                 ROC-AUC <span className="tabular-nums text-slate-300">0.725</span> (95% CI 0.713–0.737); a
                 gradient-boosted baseline reaches 0.733 — the four factors carry almost all of it.
               </p>
             </div>
             <div>
               <p className="font-semibold text-slate-300">Calibration &amp; ablation</p>
-              <p className="mt-0.5 text-slate-500">
+              <p className="mt-0.5 text-slate-400">
                 Well calibrated (ECE <span className="tabular-nums text-slate-300">0.18%</span>). Leave-one-out:
                 dropping speed costs most (AUC −0.13); surface adds nothing (−0.00), matching its null OR.
               </p>
             </div>
           </div>
-          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] text-slate-500">
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] text-slate-400">
             Reproduce with{" "}
             <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.statistical_validation</code>.
             An honest by-product: the test <span className="text-slate-400">demoted</span> the eye&apos;s
@@ -756,18 +756,18 @@ export default function ResearchPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
               <p className="text-2xl font-bold tabular-nums text-emerald-300">56.2%</p>
-              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">of fatal-crash victims are VRUs (two-wheeler, pedestrian, cyclist) — cf. MoRTH&apos;s 66.8%</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-400">of fatal-crash victims are VRUs (two-wheeler, pedestrian, cyclist) — cf. MoRTH&apos;s 66.8%</p>
             </div>
             <div>
               <p className="text-2xl font-bold tabular-nums text-emerald-300">69.5%</p>
-              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">of VRU victims were killed by a heavier vehicle (car / bus / truck / auto) — the exposure the model weights</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-400">of VRU victims were killed by a heavier vehicle (car / bus / truck / auto) — the exposure the model weights</p>
             </div>
             <div>
               <p className="text-2xl font-bold tabular-nums text-slate-200">38.8%</p>
-              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-500">two-wheeler riders alone — the single largest victim group</p>
+              <p className="mt-0.5 text-[0.7rem] leading-snug text-slate-400">two-wheeler riders alone — the single largest victim group</p>
             </div>
           </div>
-          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
             Honest scope: media-reported (a fatal, newsworthy sample), fatal-only — so this
             corroborates the premise <span className="text-slate-400">descriptively</span>. The
             inferential Indian model is below. It is, together, the first check of the
@@ -794,7 +794,7 @@ export default function ResearchPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[460px] text-left text-xs">
               <thead>
-                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                   <th className="pb-2 font-medium">Factor (adjusted)</th>
                   <th className="pb-2 pr-3 text-right font-medium">Odds ratio</th>
                   <th className="pb-2 pr-3 text-right font-medium">95% CI</th>
@@ -811,7 +811,7 @@ export default function ResearchPage() {
                   <tr key={r.f} className="border-t border-slate-800/70">
                     <td className="py-1.5">{r.f}</td>
                     <td className={`py-1.5 pr-3 text-right font-semibold tabular-nums ${r.hi ? "text-emerald-300" : "text-slate-200"}`}>{r.or}×</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-slate-500">{r.ci}</td>
+                    <td className="py-1.5 pr-3 text-right tabular-nums text-slate-400">{r.ci}</td>
                     <td className="py-1.5 text-right tabular-nums text-slate-400">{r.p}</td>
                   </tr>
                 ))}
@@ -826,7 +826,7 @@ export default function ResearchPage() {
             <em> inferentially</em> confirmed on Indian data. Dropping VRU costs the most discrimination
             of any factor. Model AUC 0.60 (95% CI 0.59–0.62), well-calibrated (ECE 0.036).
           </p>
-          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-500">
+          <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
             Reported in full honesty: three geometry/weather terms come out{" "}
             <span className="text-slate-400">protective</span> (adverse weather 0.88×, sharp curve
             0.46×), a known highway artefact — severe crashes concentrate on high-speed divided
@@ -847,7 +847,7 @@ export default function ResearchPage() {
           {/* Quantified discovery evaluation */}
           <div className="mt-8 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Black-spot discovery: a quantified evaluation, not one anecdote</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               40 seeds, two traffic volumes, a genuinely dangerous stretch against a busy-but-safe one.
               Reproduce with{" "}
               <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.blackspot.evaluate</code>.
@@ -855,7 +855,7 @@ export default function ResearchPage() {
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[460px] text-left text-xs">
                 <thead>
-                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                     <th className="pb-2 font-medium">Setting</th>
                     <th className="pb-2 pr-3 text-right font-medium">Detection</th>
                     <th className="pb-2 pr-3 text-right font-medium">False-positive</th>
@@ -877,7 +877,7 @@ export default function ResearchPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               The 0% false-positive on a <span className="text-slate-400">busy-but-safe</span> road is the
               load-bearing result: it shows the engine flags danger, not merely traffic volume — the failure
               mode raw counts fall into. Detection is 100% across all 80 runs; the lead time is reported as a
@@ -888,7 +888,7 @@ export default function ResearchPage() {
           {/* Lead-time comparison */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Time to flag a dangerous stretch, vs iRAD</p>
-            <p className="mt-1 text-xs text-slate-500">Lower is better. Quiet-road median against iRAD&apos;s crash-count rule.</p>
+            <p className="mt-1 text-xs text-slate-400">Lower is better. Quiet-road median against iRAD&apos;s crash-count rule.</p>
             <div className="mt-5 space-y-3">
               {[
                 { label: "This system (near-miss discovery)", display: "7.5 days", tone: "sky", pct: 3 },
@@ -918,13 +918,13 @@ export default function ResearchPage() {
           {/* Road damage per-class */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Road-damage detector: measured mAP on held-out Indian images</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               YOLOv11s fine-tuned on RDD2022 India, 1,542 val images. Stated as a component metric, not a leaderboard claim.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[420px] text-left text-xs">
                 <thead>
-                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                     <th className="pb-2 font-medium">Damage class</th>
                     <th className="pb-2 pr-3 text-right font-medium">Val instances</th>
                     <th className="pb-2 text-right font-medium">mAP@50</th>
@@ -947,7 +947,7 @@ export default function ResearchPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               Alligator cracks and potholes — the damage that actually threatens a two-wheeler —
               detect well; transverse cracks barely register because the split holds only 17 of
               them. COCO-pretrained weights have no pothole class at all, so this is the
@@ -959,7 +959,7 @@ export default function ResearchPage() {
           {/* Helmet / triple-riding per-class */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Rider-vulnerability detector: measured mAP on held-out images</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               YOLOv11s fine-tuned for helmet / no-helmet / triple-riding / plate, 383 val images;
               trained 25 epochs, best checkpoint at epoch 15. A component metric that feeds the
               vulnerability multiplier, not a leaderboard claim.
@@ -967,7 +967,7 @@ export default function ResearchPage() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[420px] text-left text-xs">
                 <thead>
-                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                     <th className="pb-2 font-medium">Class</th>
                     <th className="pb-2 pr-3 text-right font-medium">Val instances</th>
                     <th className="pb-2 text-right font-medium">mAP@50</th>
@@ -990,7 +990,7 @@ export default function ResearchPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               Triple-riding and bare-headed riders — the violations that predict a fatal outcome —
               detect strongly; with-helmet is the noisiest class because the split holds only 27 of
               them. The demo clips contain no triple-riding, yet the detector scores it highest, so
@@ -1002,7 +1002,7 @@ export default function ResearchPage() {
           {/* Learned fusion vs the hand-set rule */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Learned fusion vs the hand-set rule</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               Is the additive rule leaving signal on the table? A controlled study against a ground
               truth where crash risk compounds (fast <span className="text-slate-400">and</span> bad
               surface <span className="text-slate-400">and</span> vulnerable road users) — the
@@ -1012,7 +1012,7 @@ export default function ResearchPage() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[440px] text-left text-xs">
                 <thead>
-                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                     <th className="pb-2 font-medium">Model</th>
                     <th className="pb-2 pr-3 text-right font-medium">ROC-AUC</th>
                     <th className="pb-2 text-right font-medium">Brier (lower better)</th>
@@ -1033,7 +1033,7 @@ export default function ResearchPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               Learning the weights beats the hand-set rule (AUC 0.78 → 0.82); a non-linear model
               edges ahead further by capturing the compounding, all while staying calibrated. Stable
               across seeds. The honest scope matches the black-spot evaluation: the ground truth is
@@ -1044,18 +1044,18 @@ export default function ResearchPage() {
 
             <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <p className="text-xs font-semibold text-slate-200">…and it learned the right structure</p>
-              <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-500">
+              <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-400">
                 &quot;Fits better&quot; is not &quot;learned the right thing.&quot; Friedman&apos;s
                 H-statistic — which measures how much of a pair&apos;s effect is interaction, not
                 additive — ranks the three couplings the model discovered against the three the
                 ground truth was built with. They match, top-3:
               </p>
               <ul className="mt-2 space-y-1 font-mono text-[0.7rem] text-slate-400">
-                <li><span className="text-emerald-400">1.</span> speed × road surface <span className="text-slate-500">H=0.25</span></li>
-                <li><span className="text-emerald-400">2.</span> speed × VRU exposure <span className="text-slate-500">H=0.22</span></li>
-                <li><span className="text-emerald-400">3.</span> distraction × VRU exposure <span className="text-slate-500">H=0.19</span></li>
+                <li><span className="text-emerald-400">1.</span> speed × road surface <span className="text-slate-400">H=0.25</span></li>
+                <li><span className="text-emerald-400">2.</span> speed × VRU exposure <span className="text-slate-400">H=0.22</span></li>
+                <li><span className="text-emerald-400">3.</span> distraction × VRU exposure <span className="text-slate-400">H=0.19</span></li>
               </ul>
-              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-500">
+              <p className="mt-2 text-[0.7rem] leading-relaxed text-slate-400">
                 3/3 recovered, each well above the noise floor — the learned fusion is inspectable and
                 right for the right reason. SHAP is skipped deliberately: the shipped rule is already
                 exactly its own attribution, and the library forces a numpy upgrade this repo&apos;s
@@ -1068,7 +1068,7 @@ export default function ResearchPage() {
           {/* Horizon forecasting */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Horizon forecasting: learned vs linear extrapolation</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-400">
               Forecast error 6 steps ahead on held-out risk trajectories (ramp → peak → fall,
               stop-go, noise). Self-supervised — the target is the risk that actually occurs.
               Reproduce with{" "}
@@ -1077,7 +1077,7 @@ export default function ResearchPage() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[440px] text-left text-xs">
                 <thead>
-                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-600">
+                  <tr className="text-[0.6rem] uppercase tracking-wide text-slate-400">
                     <th className="pb-2 font-medium">Forecaster</th>
                     <th className="pb-2 pr-3 text-right font-medium">MAE (lower better)</th>
                     <th className="pb-2 text-right font-medium">RMSE</th>
@@ -1098,7 +1098,7 @@ export default function ResearchPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-500">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               The honest, self-critical finding: the shipped linear extrapolation is{" "}
               <span className="text-slate-400">worse than doing nothing</span> at this horizon — it
               shoots the recent trend straight through every turning point, overshooting the peak a
@@ -1128,7 +1128,7 @@ export default function ResearchPage() {
                 <p className="font-mono text-[0.7rem] text-sky-400/80">{row.model}</p>
               </div>
               <p className="mt-1.5 text-xs text-slate-400">{row.measured}</p>
-              <p className="mt-1 text-[0.7rem] text-slate-500">{row.honesty}</p>
+              <p className="mt-1 text-[0.7rem] text-slate-400">{row.honesty}</p>
             </div>
           ))}
         </div>
@@ -1174,7 +1174,7 @@ export default function ResearchPage() {
           ].map((c) => (
             <div key={c.cmd} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-slate-800 bg-slate-950/60 px-4 py-2.5">
               <span className="text-sky-300">$ {c.cmd}</span>
-              <span className="text-slate-600">— {c.what}</span>
+              <span className="text-slate-400">— {c.what}</span>
             </div>
           ))}
         </div>
@@ -1187,10 +1187,10 @@ export default function ResearchPage() {
           <ol className="mt-5 space-y-3">
             {REFERENCES.map((ref, i) => (
               <li key={ref.work} className="flex gap-3 text-xs leading-relaxed">
-                <span className="font-mono text-slate-600">[{i + 1}]</span>
+                <span className="font-mono text-slate-400">[{i + 1}]</span>
                 <span className="text-slate-400">
                   <span className="text-slate-300">{ref.cite}</span> <span className="italic">{ref.work}</span>{" "}
-                  <span className="text-slate-500">{ref.note}</span>
+                  <span className="text-slate-400">{ref.note}</span>
                 </span>
               </li>
             ))}
@@ -1203,10 +1203,10 @@ export default function ResearchPage() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-5 py-10">
           <div>
             <p className="text-sm font-semibold text-slate-200">See it running</p>
-            <p className="mt-1 text-xs text-slate-500">The live dashboard renders every claim above against real data.</p>
+            <p className="mt-1 text-xs text-slate-400">The live dashboard renders every claim above against real data.</p>
           </div>
           <div className="flex gap-3">
-            <Link href="/dashboard" className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-500">
+            <Link href="/dashboard" className="rounded-lg bg-sky-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-600">
               Open the dashboard
             </Link>
             <a href="https://github.com/adityaayushman/TRIE" className="rounded-lg border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-slate-600 hover:text-slate-100">

@@ -70,7 +70,7 @@ export function PushAlerts() {
     <div className="flex items-start justify-between gap-4">
       <div>
         <p className="text-xs font-medium text-slate-200">Real device alerts</p>
-        <p className="mt-0.5 max-w-md text-[0.7rem] leading-relaxed text-slate-500">{copy[status]}</p>
+        <p className="mt-0.5 max-w-md text-[0.7rem] leading-relaxed text-slate-400">{copy[status]}</p>
       </div>
       {canToggle && (
         <button

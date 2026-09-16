@@ -247,7 +247,7 @@ export function CameraTile({
       <div className="flex items-center justify-between gap-2 px-3 py-2.5">
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-slate-200">{clip.title}</p>
-          <p className="text-[0.65rem] text-slate-600">recorded footage · real detector output</p>
+          <p className="text-[0.65rem] text-slate-400">recorded footage · real detector output</p>
         </div>
         <div className="flex shrink-0 gap-1.5">
           <Badge>{vehicleCount} veh</Badge>

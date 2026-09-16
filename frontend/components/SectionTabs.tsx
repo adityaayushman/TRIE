@@ -68,7 +68,7 @@ export function SectionTabs() {
                 key={tab.id}
                 href={`#${tab.id}`}
                 className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                  isActive ? "bg-sky-500/10 text-sky-300" : "text-slate-500 hover:text-slate-300"
+                  isActive ? "bg-sky-500/10 text-sky-300" : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 <Icon size={13} />
@@ -79,7 +79,7 @@ export function SectionTabs() {
         </nav>
         <Link
           href="/register"
-          className="hidden shrink-0 rounded-lg bg-sky-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_16px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-400 sm:inline-block"
+          className="hidden shrink-0 rounded-lg bg-sky-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_0_16px_-4px_rgba(56,189,248,0.7)] transition hover:bg-sky-600 sm:inline-block"
         >
           Get started
         </Link>

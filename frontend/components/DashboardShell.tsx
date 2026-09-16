@@ -34,7 +34,7 @@ function NavLink({ href, label, active, icon }: { href: string; label: string; a
     <Link
       href={href}
       className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-        active ? "text-white" : "text-slate-500 hover:text-slate-300"
+        active ? "text-white" : "text-slate-400 hover:text-slate-300"
       }`}
     >
       {active && (
@@ -44,7 +44,7 @@ function NavLink({ href, label, active, icon }: { href: string; label: string; a
           className="absolute inset-0 rounded-lg border border-sky-500/25 bg-linear-to-r from-sky-500/20 to-sky-500/5"
         />
       )}
-      <span className={`relative z-10 ${active ? "text-sky-300" : "text-slate-600"}`}>
+      <span className={`relative z-10 ${active ? "text-sky-300" : "text-slate-400"}`}>
         <Icon />
       </span>
       <span className="relative z-10">{label}</span>
@@ -70,7 +70,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => setOpen((o) => !o)}
               aria-label="Toggle navigation"
-              className="rounded-lg p-1.5 text-slate-500 transition hover:text-slate-300 lg:hidden"
+              className="rounded-lg p-1.5 text-slate-400 transition hover:text-slate-300 lg:hidden"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
                 <path d="M2 4h12M2 8h12M2 12h12" strokeWidth="1.5" strokeLinecap="round" />
@@ -84,10 +84,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             {loading ? null : account ? (
               <>
-                <span className="hidden text-xs text-slate-500 sm:inline">
+                <span className="hidden text-xs text-slate-400 sm:inline">
                   {account.email}
                   {account.organisation && (
-                    <span className="ml-1.5 text-slate-600">· {account.organisation}</span>
+                    <span className="ml-1.5 text-slate-400">· {account.organisation}</span>
                   )}
                 </span>
                 <button
@@ -99,10 +99,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </>
             ) : (
               <>
-                <span className="hidden text-xs text-slate-600 sm:inline">Viewing anonymously</span>
+                <span className="hidden text-xs text-slate-400 sm:inline">Viewing anonymously</span>
                 <Link
                   href="/login"
-                  className="rounded-lg bg-sky-600 px-3 py-1 text-xs font-semibold text-white transition hover:bg-sky-500"
+                  className="rounded-lg bg-sky-700 px-3 py-1 text-xs font-semibold text-white transition hover:bg-sky-600"
                 >
                   Sign in
                 </Link>
@@ -130,7 +130,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <p className="mt-6 px-3 text-[0.65rem] leading-relaxed text-slate-700">
+          <p className="mt-6 px-3 text-[0.65rem] leading-relaxed text-slate-400">
             Vehicle Intelligence and Traffic Analytics run on recorded footage, not a live
             camera. Driver monitoring and edge-device sections appear once real hardware
             feeds this API.

@@ -40,11 +40,11 @@ function StatCard({
         style={{ background: t.glow, opacity: 0.7 }}
       />
       <span aria-hidden className="absolute left-0 top-4 h-8 w-0.5 rounded-full" style={{ backgroundColor: t.bar }} />
-      <p className="relative text-[0.65rem] font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="relative text-[0.65rem] font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`relative mt-2 bg-linear-to-br ${t.value} bg-clip-text text-3xl font-bold tabular-nums text-transparent`}>
         {value}
       </p>
-      {hint && <p className="relative mt-1 text-[0.65rem] text-slate-600">{hint}</p>}
+      {hint && <p className="relative mt-1 text-[0.65rem] text-slate-400">{hint}</p>}
     </div>
   );
 }
@@ -100,26 +100,26 @@ export default function OverviewPage() {
               <div>
                 <p className="text-3xl font-bold tabular-nums text-slate-100">
                   {snapshot.risk_score.toFixed(1)}
-                  <span className="ml-1 text-sm font-normal text-slate-500">%</span>
+                  <span className="ml-1 text-sm font-normal text-slate-400">%</span>
                 </p>
-                <p className="text-xs uppercase tracking-wide text-slate-500">
+                <p className="text-xs uppercase tracking-wide text-slate-400">
                   {snapshot.risk_level} · {snapshot.vehicle_id}
                 </p>
               </div>
               <div className="border-t border-slate-800 pt-3">
-                <p className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+                <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                   Primary cause
                 </p>
                 <p className="mt-0.5 text-sm text-slate-200">{snapshot.primary_cause}</p>
               </div>
               {live && (
                 <div className="border-t border-slate-800 pt-3">
-                  <p className="text-[0.65rem] uppercase tracking-wide text-slate-600">
+                  <p className="text-[0.65rem] uppercase tracking-wide text-slate-400">
                     Projected
                   </p>
                   <p className="mt-0.5 text-sm text-slate-200">
                     {live.future_risk_score.toFixed(1)}%
-                    <span className="ml-2 text-xs text-slate-500">
+                    <span className="ml-2 text-xs text-slate-400">
                       {(live.collision_probability * 100).toFixed(0)}% collision prob.
                     </span>
                   </p>
@@ -133,9 +133,9 @@ export default function OverviewPage() {
               </Link>
             </div>
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               No assessments yet.{" "}
-              <Link href="/dashboard/live" className="text-sky-400 hover:text-sky-300">
+              <Link href="/dashboard/live" className="text-sky-400 underline underline-offset-2 decoration-sky-400/40 hover:text-sky-300">
                 Run one →
               </Link>
             </p>

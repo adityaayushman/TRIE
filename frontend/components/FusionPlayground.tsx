@@ -113,9 +113,9 @@ export function FusionPlayground() {
                       className="h-3 w-3 accent-sky-500"
                     />
                     {f.label}
-                    <span className="text-[0.6rem] text-slate-600">{f.hint}</span>
+                    <span className="text-[0.6rem] text-slate-400">{f.hint}</span>
                   </label>
-                  <span className="font-mono text-[0.7rem] tabular-nums text-slate-500">
+                  <span className="font-mono text-[0.7rem] tabular-nums text-slate-400">
                     {on ? `${Math.round(mag[f.key] * 100)}%` : "unobserved"}
                   </span>
                 </div>
@@ -126,6 +126,7 @@ export function FusionPlayground() {
                   value={Math.round(mag[f.key] * 100)}
                   disabled={!on}
                   onChange={(e) => setMag((m) => ({ ...m, [f.key]: Number(e.target.value) / 100 }))}
+                  aria-label={`${f.label} level`}
                   className="mt-1.5 h-1 w-full cursor-pointer accent-sky-500 disabled:cursor-not-allowed"
                 />
               </div>
@@ -137,13 +138,13 @@ export function FusionPlayground() {
       {/* live output — the real dashboard gauge + factor bars */}
       <div className="flex flex-col items-center">
         <RiskGauge score={score} level={level} lower={lower} upper={upper} />
-        <p className="mt-2 text-center text-[0.7rem] leading-relaxed text-slate-500">
+        <p className="mt-2 text-center text-[0.7rem] leading-relaxed text-slate-400">
           Uncertainty band <span className="tabular-nums text-slate-400">{lower.toFixed(0)}–{upper.toFixed(0)}%</span>{" "}
           — it widens as you turn sensors off, because the unmeasured factors&apos; weight is redistributed,
           not assumed safe.
         </p>
         <div className="mt-3 w-full">
-          <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-slate-600">
+          <p className="text-[0.6rem] font-semibold uppercase tracking-wide text-slate-400">
             Contributing factors (sum to the score)
           </p>
           <FactorBreakdown factors={factors} />

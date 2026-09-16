@@ -35,7 +35,7 @@ export default function LocationsPage() {
         subtitle="Every registered site — a camera or junction — with its own live risk trend."
         right={
           locations && locations.length > 0 ? (
-            <span className="text-[0.7rem] font-medium uppercase tracking-wide text-slate-500">
+            <span className="text-[0.7rem] font-medium uppercase tracking-wide text-slate-400">
               {locations.length} site{locations.length === 1 ? "" : "s"} registered
             </span>
           ) : undefined
@@ -61,10 +61,18 @@ export default function LocationsPage() {
           body="Register the first one above, or keep using the platform without one — every feature works fine scoped to just a vehicle_id, the way it always has."
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {locations.map((loc) => (
-            <LocationCard key={loc.id} location={loc} />
-          ))}
+        <div>
+          {/* A real heading, not just the grid: when signed out, "Register a
+              site" above (which carries its own <h2>) renders as a headingless
+              EmptyState instead, which left the page jumping straight from
+              the <h1> to each card's <h3> with nothing between — a real
+              heading-order violation, not just a card-grid label. */}
+          <h2 className="sr-only">Registered sites</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {locations.map((loc) => (
+              <LocationCard key={loc.id} location={loc} />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -91,13 +99,13 @@ function LocationCard({ location }: { location: LocationSummary }) {
         )}
       </div>
       {location.description && (
-        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{location.description}</p>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-400">{location.description}</p>
       )}
-      <p className="mt-2 font-mono text-[0.65rem] text-slate-600">
+      <p className="mt-2 font-mono text-[0.65rem] text-slate-400">
         {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
       </p>
       <div className="mt-4 flex items-center justify-between border-t border-slate-800/60 pt-3 text-xs">
-        <span className="text-slate-500">
+        <span className="text-slate-400">
           {location.event_count} assessment{location.event_count === 1 ? "" : "s"}
         </span>
         <span className="tabular-nums text-slate-300">
@@ -164,7 +172,7 @@ function RegisterLocationForm({ onRegistered }: { onRegistered: () => void }) {
         Register a site
       </SectionTitle>
       <div className="flex flex-wrap items-end gap-4">
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">Name</span>
           <input
             value={name}
@@ -173,7 +181,7 @@ function RegisterLocationForm({ onRegistered }: { onRegistered: () => void }) {
             className="w-56 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-hidden focus:border-sky-600"
           />
         </label>
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">Description (optional)</span>
           <input
             value={description}
@@ -182,7 +190,7 @@ function RegisterLocationForm({ onRegistered }: { onRegistered: () => void }) {
             className="w-56 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-hidden focus:border-sky-600"
           />
         </label>
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">Latitude</span>
           <input
             value={latitude}
@@ -191,7 +199,7 @@ function RegisterLocationForm({ onRegistered }: { onRegistered: () => void }) {
             className="w-28 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-slate-200 outline-hidden focus:border-sky-600"
           />
         </label>
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           <span className="mb-1.5 block">Longitude</span>
           <input
             value={longitude}
@@ -210,7 +218,7 @@ function RegisterLocationForm({ onRegistered }: { onRegistered: () => void }) {
         <button
           onClick={submit}
           disabled={busy}
-          className="rounded-lg bg-sky-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-sky-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy ? "Registering…" : "Register site"}
         </button>

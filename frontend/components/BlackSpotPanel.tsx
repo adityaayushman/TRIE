@@ -55,12 +55,12 @@ function BlackSpotCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-slate-600">#{rank}</span>
+            <span className="font-mono text-xs text-slate-400">#{rank}</span>
             <span className="font-mono text-sm text-slate-200">
               {spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-400">
             {spot.dominant_cause} · {INTERVENTION_COPY[spot.intervention]}
           </p>
         </div>
@@ -159,7 +159,7 @@ export function BlackSpotPanel() {
                 key={s}
                 onClick={() => setSource(s)}
                 className={`rounded-md px-2.5 py-1 font-medium transition ${
-                  source === s ? "bg-slate-800 text-slate-100" : "text-slate-500 hover:text-slate-300"
+                  source === s ? "bg-slate-800 text-slate-100" : "text-slate-400 hover:text-slate-300"
                 }`}
               >
                 {s === "sample" ? "Illustrative sample" : "Live telemetry"}
@@ -189,15 +189,15 @@ export function BlackSpotPanel() {
         ) : (
           <>
             <div className="mt-5 flex flex-wrap items-end gap-5 border-t border-slate-800 pt-4">
-              <label className="text-xs text-slate-500">
+              <label className="text-xs text-slate-400">
                 <span className="block mb-1">Min exposure: <span className="text-slate-300 tabular-nums">{minExposure}</span></span>
                 <input type="range" min={1} max={100} value={minExposure} onChange={(e) => setMinExposure(Number(e.target.value))} className="w-40 accent-sky-500" />
               </label>
-              <label className="text-xs text-slate-500">
+              <label className="text-xs text-slate-400">
                 <span className="block mb-1">Min near-misses: <span className="text-slate-300 tabular-nums">{minNearMisses}</span></span>
                 <input type="range" min={1} max={20} value={minNearMisses} onChange={(e) => setMinNearMisses(Number(e.target.value))} className="w-40 accent-sky-500" />
               </label>
-              <label className="text-xs text-slate-500">
+              <label className="text-xs text-slate-400">
                 <span className="mb-1 block">Near-miss level</span>
                 <select
                   value={nearMissLevel}
@@ -210,12 +210,12 @@ export function BlackSpotPanel() {
                 </select>
               </label>
             </div>
-            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-600">
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
               Min exposure is what excludes a barely-seen cell — the Wilson bound alone cannot,
               since 1 near-miss in 1 pass scores higher than 40 in 200. With no camera attached,
               speed is the only live factor and risk tops out near 35%, so the level defaults to{" "}
-              <span className="text-slate-500">moderate</span>; at{" "}
-              <span className="text-slate-500">high</span> nothing this API records could qualify.
+              <span className="text-slate-400">moderate</span>; at{" "}
+              <span className="text-slate-400">high</span> nothing this API records could qualify.
             </p>
           </>
         )}

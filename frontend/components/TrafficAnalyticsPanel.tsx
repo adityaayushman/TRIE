@@ -159,7 +159,7 @@ function FlowChart({ data }: { data: DemoClipData }) {
 
       {active && (
         <div className="pointer-events-none absolute right-2 top-1 rounded-lg border border-slate-700 bg-slate-950/95 px-3 py-2 text-[0.7rem] shadow-lg">
-          <p className="mb-1 tabular-nums text-slate-500">{active.t.toFixed(1)}s</p>
+          <p className="mb-1 tabular-nums text-slate-400">{active.t.toFixed(1)}s</p>
           <div className="space-y-0.5">
             {[
               { c: BOX_COLOR.vehicle, l: "Vehicles", v: active.vehicles.length },
@@ -225,7 +225,7 @@ export function TrafficAnalyticsPanel() {
               key={clip.name}
               onClick={() => setSelected(clip.name)}
               className={`rounded-lg px-2.5 py-1 text-[0.7rem] font-medium transition ${
-                selected === clip.name ? "bg-slate-800 text-slate-100" : "text-slate-500 hover:text-slate-300"
+                selected === clip.name ? "bg-slate-800 text-slate-100" : "text-slate-400 hover:text-slate-300"
               }`}
             >
               {clip.title.split(",")[0]}
@@ -247,7 +247,7 @@ export function TrafficAnalyticsPanel() {
           </div>
         </>
       ) : (
-        <p className="text-xs text-slate-500">Loading {activeClip?.title}…</p>
+        <p className="text-xs text-slate-400">Loading {activeClip?.title}…</p>
       )}
     </Card>
   );
