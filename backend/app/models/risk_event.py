@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, DateTime, Float, String, Text, func
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -29,6 +29,15 @@ class RiskEvent(Base):
     # doing spatial queries in SQL would want PostGIS and a GiST index here.
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # Nullable, and deliberately so: ad-hoc telemetry (a device with no
+    # registered site — the original, still-supported way to use this API)
+    # has no location to point at. Tagged events (app/models/location.py) are
+    # how multi-location scaling works: everything already filters by
+    # vehicle_id or raw lat/lon, so a location is a second, named axis to
+    # filter and list by, not a schema change to how risk is computed.
+    location_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("locations.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     # Set client-side: SQL now() is whole-second on SQLite and transaction-start
     # on PostgreSQL, both of which tie for events written close together and make
     # "most recent first" ordering arbitrary. server_default only covers rows

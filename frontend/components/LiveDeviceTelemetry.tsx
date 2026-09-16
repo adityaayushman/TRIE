@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { postAssessment } from "@/lib/api";
+import { fetchLocations, postAssessment } from "@/lib/api";
+import { LocationSummary } from "@/lib/types";
 import { Card, SectionTitle } from "./ui";
 
 // A stable per-tab id so repeated real-device runs are attributable to one
@@ -41,6 +42,19 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
   });
   const [lastSentAt, setLastSentAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [locations, setLocations] = useState<LocationSummary[]>([]);
+  const [locationId, setLocationId] = useState<string>("");
+  const locationIdRef = useRef(locationId);
+  locationIdRef.current = locationId;
+
+  useEffect(() => {
+    fetchLocations()
+      .then(setLocations)
+      .catch(() => {
+        // Optional grouping tag only — the device's own real GPS still
+        // works fine with nothing selected.
+      });
+  }, []);
 
   const watchIdRef = useRef<number | null>(null);
   const latestRef = useRef(reading);
@@ -128,8 +142,14 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
           speed_kmh: r.speedKmh ?? 0,
           acceleration_ms2: r.accelMs2 ?? undefined,
           heading_deg: r.headingDeg ?? undefined,
+          // Always this device's own real fix, even when tagged to a site —
+          // unlike TelemetryControls' ad-hoc case, a moving device has a
+          // real GPS reading of its own that a registered site's fixed
+          // coordinates must never override. location_id here is purely an
+          // organisational tag (which site's dashboard this shows up on).
           latitude: r.lat ?? undefined,
           longitude: r.lon ?? undefined,
+          location_id: locationIdRef.current || undefined,
         });
         setLastSentAt(Date.now());
         onAssessed?.();
@@ -153,6 +173,24 @@ export function LiveDeviceTelemetry({ onAssessed }: { onAssessed?: () => void })
       <SectionTitle hint="your device's own sensors, not a simulated feed">Live device telemetry</SectionTitle>
 
       <div className="flex flex-wrap items-center gap-4">
+        {locations.length > 0 && (
+          <label className="text-xs text-slate-500">
+            <span className="mb-1.5 block">Site (optional)</span>
+            <select
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
+              className="w-44 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-hidden focus:border-sky-600"
+            >
+              <option value="">Untagged</option>
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <button
           onClick={status === "idle" || status === "denied" || status === "unsupported" ? start : stop}
           disabled={status === "requesting"}

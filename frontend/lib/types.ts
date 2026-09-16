@@ -31,6 +31,9 @@ export interface RiskSnapshot {
   explanation: string;
   latitude: number | null;
   longitude: number | null;
+  /** Which registered site (lib/types.ts Location) this assessment is tagged
+   * to, if any — null for ad-hoc telemetry with no site. */
+  location_id: string | null;
 }
 
 export interface DetectedObject {
@@ -100,4 +103,20 @@ export interface BlackSpot {
 
 export function riskLevelOf(score: number): RiskLevel {
   return RISK_THRESHOLDS.find((t) => score >= t.min)!.level;
+}
+
+/** A registered site — a camera or junction an operator manages — with a live
+ * rollup so a list of locations needs no per-card second fetch.
+ * Matches backend/app/schemas/location.py LocationSummary. */
+export interface LocationSummary {
+  id: string;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+  event_count: number;
+  latest_risk_score: number | null;
+  latest_risk_level: RiskLevel | null;
+  latest_event_at: string | null;
 }

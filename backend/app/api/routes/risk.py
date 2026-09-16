@@ -15,6 +15,7 @@ from ai.no_camera import telemetry_only_pipeline
 from ai.pipeline import TransportationRiskPipeline
 from app.auth.dependencies import current_user, require_admin
 from app.db.session import get_db
+from app.models.location import Location
 from app.models.risk_event import RiskEvent
 from app.models.user import User
 from app.schemas.risk import (
@@ -89,6 +90,19 @@ async def assess_risk(
         environment=environment,
     )
 
+    # A registered site (app/models/location.py) is optional — ad-hoc
+    # telemetry with no location_id works exactly as it always has. When one
+    # is given: validate it exists (a stale/typo'd id shouldn't silently tag
+    # nothing), and a fixed camera that sent no GPS fix of its own inherits
+    # the site's coordinates rather than being recorded as location-less.
+    latitude, longitude = request.latitude, request.longitude
+    if request.location_id is not None:
+        location = await db.get(Location, request.location_id)
+        if location is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such location")
+        if latitude is None and longitude is None:
+            latitude, longitude = location.latitude, location.longitude
+
     event = RiskEvent(
         vehicle_id=request.vehicle_id,
         risk_score=result.risk.risk_score,
@@ -99,8 +113,9 @@ async def assess_risk(
         recommended_actions=result.recommendation.actions,
         contributing_factors=result.risk.contributing_factors,
         explanation=result.recommendation.explanation,
-        latitude=request.latitude,
-        longitude=request.longitude,
+        latitude=latitude,
+        longitude=longitude,
+        location_id=request.location_id,
     )
     db.add(event)
     await db.commit()
@@ -120,8 +135,9 @@ async def assess_risk(
         predicted_event=result.causal.predicted_event,
         recommended_actions=result.recommendation.actions,
         explanation=result.recommendation.explanation,
-        latitude=request.latitude,
-        longitude=request.longitude,
+        latitude=latitude,
+        longitude=longitude,
+        location_id=request.location_id,
         unobserved_factors=result.risk.unobserved_factors,
         environment_label=environment.label,
         environment_hour=environment.hour,
@@ -137,7 +153,12 @@ async def assess_risk(
         is_waterlogged=result.road.is_waterlogged,
         surface_quality_score=result.road.surface_quality_score,
     )
-    payload = response.model_dump()
+    # mode="json" (not the bare model_dump()): location_id is the first UUID
+    # field this payload has ever carried, and Python's json.dumps below has
+    # no idea how to encode a raw uuid.UUID — mode="json" pre-converts it (and
+    # datetimes, etc.) to plain JSON-safe types the way FastAPI's own response
+    # serialization already does for the HTTP response.
+    payload = response.model_dump(mode="json")
     await manager.broadcast(payload)
     # The real alerting loop: pages the signed-in user's subscribed devices on
     # a HIGH/CRITICAL assessment. A delivery failure (expired subscription,
@@ -154,11 +175,13 @@ async def assess_risk(
 @router.get("/events", response_model=list[RiskEventRead])
 async def list_recent_events(
     limit: int = 50,
+    location_id: uuid.UUID | None = Query(None, description="Scope to one registered site"),
     db: AsyncSession = Depends(get_db),
 ) -> list[RiskEvent]:
-    result = await db.execute(
-        select(RiskEvent).order_by(RiskEvent.created_at.desc()).limit(limit)
-    )
+    query = select(RiskEvent).order_by(RiskEvent.created_at.desc()).limit(limit)
+    if location_id is not None:
+        query = query.where(RiskEvent.location_id == location_id)
+    result = await db.execute(query)
     return list(result.scalars().all())
 
 
@@ -199,6 +222,9 @@ async def discover_blackspots(
         ),
     ),
     sample_limit: int = Query(200_000, ge=1, description="Cap on observations loaded"),
+    location_id: uuid.UUID | None = Query(
+        None, description="Scope discovery to one registered site's telemetry only"
+    ),
     db: AsyncSession = Depends(get_db),
 ) -> list[BlackSpotRead]:
     """Nominate dangerous road stretches from near-miss telemetry.
@@ -216,13 +242,16 @@ async def discover_blackspots(
     than an on-demand endpoint.
     """
     since = datetime.now(timezone.utc) - timedelta(days=days)
+    conditions = [
+        RiskEvent.latitude.is_not(None),
+        RiskEvent.longitude.is_not(None),
+        RiskEvent.created_at >= since,
+    ]
+    if location_id is not None:
+        conditions.append(RiskEvent.location_id == location_id)
     result = await db.execute(
         select(RiskEvent)
-        .where(
-            RiskEvent.latitude.is_not(None),
-            RiskEvent.longitude.is_not(None),
-            RiskEvent.created_at >= since,
-        )
+        .where(*conditions)
         .order_by(RiskEvent.created_at.desc())
         .limit(sample_limit)
     )

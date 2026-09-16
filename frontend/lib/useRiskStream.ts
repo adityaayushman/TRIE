@@ -28,7 +28,12 @@ export interface RiskStream {
   refresh: () => void;
 }
 
-export function useRiskStream(): RiskStream {
+/** `locationId`: scope both the persisted history (a real query-param filter)
+ * and the live websocket snapshot (client-side — the broadcast is global, so
+ * a payload for a different site is simply not accepted as this hook's
+ * snapshot) to one registered site. Omit for the unscoped, whole-platform
+ * stream (the original, still-default behaviour). */
+export function useRiskStream(locationId?: string): RiskStream {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [events, setEvents] = useState<RiskEvent[]>([]);
   const [status, setStatus] = useState<StreamStatus>("loading");
@@ -39,7 +44,7 @@ export function useRiskStream(): RiskStream {
 
   const loadHistory = useCallback(async () => {
     try {
-      const history = await fetchRecentEvents(HISTORY_LIMIT);
+      const history = await fetchRecentEvents(HISTORY_LIMIT, locationId);
       if (cancelledRef.current) return;
       historyAttemptRef.current = 0;
       setEvents(history);
@@ -63,7 +68,7 @@ export function useRiskStream(): RiskStream {
         setStatus("error");
       }
     }
-  }, []);
+  }, [locationId]);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -88,9 +93,19 @@ export function useRiskStream(): RiskStream {
         if (cancelledRef.current) return;
         try {
           const assessment = JSON.parse(event.data) as RiskAssessment;
-          setSnapshot(assessment);
+          // The broadcast is global (every connected client gets every
+          // assessment); a scoped stream only accepts one tagged to its own
+          // site, so a location's live view never flashes another site's
+          // reading. Untagged assessments (location_id: null) never match a
+          // scoped stream either — correct, since they are not this site's.
+          if (!locationId || assessment.location_id === locationId) {
+            setSnapshot(assessment);
+          }
           // The broadcast is not a persisted row, so pull history again to
-          // keep the timeline honest rather than synthesising an entry.
+          // keep the timeline honest rather than synthesising an entry. Scoped
+          // reload of the RIGHT history regardless of whose assessment this
+          // was, since another site's new event doesn't change this one's —
+          // but reloading is cheap and correctness matters more here.
           void loadHistory();
         } catch {
           // A malformed frame shouldn't tear down a working stream.
@@ -117,7 +132,11 @@ export function useRiskStream(): RiskStream {
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
       socket?.close();
     };
-  }, [loadHistory]);
+    // loadHistory's own identity already changes with locationId (it's in
+    // its useCallback deps above), so this effect already re-runs on a scope
+    // change; locationId is listed explicitly too since it's referenced
+    // directly in the onmessage handler above.
+  }, [loadHistory, locationId]);
 
   return { snapshot, events, status, error, refresh: loadHistory };
 }
