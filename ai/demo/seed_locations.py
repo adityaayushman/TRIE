@@ -21,6 +21,17 @@ pipeline's real, documented ceiling — no camera means speed is the only live
 factor, so risk tops out around 30-35% (MODERATE) regardless of location;
 this seeder never fabricates a HIGH/CRITICAL score the deployed API cannot
 actually produce.
+
+NH48 Gurugram Junction gets a longer profile (35 passes, not 10) than the
+rest: enough real exposure and near-misses to clear
+`/dashboard/blackspots`' own default thresholds (min_exposure=30,
+min_near_misses=5, near_miss_level=moderate) and produce a genuine black-spot
+nomination there too — verified live: exposure 40, 12 near-misses, 30% rate,
+dominant cause "High Speed", routed to "enforcement". The other four
+locations are left below that bar deliberately, so the black-spot page's own
+"1 stretch nominated" (not five) stays an honest reflection of which cells
+actually cleared the evidence bar, not an artefact of seeding every location
+identically.
 """
 from __future__ import annotations
 
@@ -42,10 +53,20 @@ SEED_NOTE = (
 # tells its own story within the telemetry-only ceiling (~30-35% max).
 LOCATIONS: dict[str, dict] = {
     "NH48 Gurugram Junction": {
-        "description": f"NH48 near Gurugram, Haryana — the same reference point ai/blackspot/simulation.py uses. {SEED_NOTE}",
+        "description": (
+            "NH48 near Gurugram, Haryana — the same reference point "
+            f"ai/blackspot/simulation.py uses. {SEED_NOTE}"
+        ),
         "latitude": 28.4595,
         "longitude": 77.0266,
-        "speeds": [58, 72, 88, 104, 118, 126, 115, 98, 80, 64],
+        # 35 passes, not 10 (see module docstring): enough real exposure and
+        # near-misses to clear /dashboard/blackspots' own default thresholds.
+        "speeds": [
+            58, 72, 88, 104, 118, 126, 115, 98, 80, 64,
+            45, 52, 60, 68, 75, 82, 58, 64, 71, 49,
+            56, 63, 70, 77, 84, 91, 98, 105, 112, 50,
+            58, 66, 74, 82, 90,
+        ],
     },
     "Silk Board Junction, Bengaluru": {
         "description": f"One of Bengaluru's most notoriously congested junctions (Hosur Road / Outer Ring Road). {SEED_NOTE}",
