@@ -20,6 +20,7 @@ import { ICONS, IconName } from "./icons";
 const SECTIONS = [
   { href: "/dashboard", label: "Overview", exact: true, icon: "overview" },
   { href: "/dashboard/live", label: "Live Risk", exact: false, icon: "live" },
+  { href: "/dashboard/locations", label: "Locations", exact: false, icon: "locations" },
   { href: "/dashboard/vehicles", label: "Vehicle Intelligence", exact: false, icon: "vehicles" },
   { href: "/dashboard/traffic", label: "Traffic Analytics", exact: false, icon: "traffic" },
   { href: "/dashboard/history", label: "Risk History", exact: false, icon: "history" },

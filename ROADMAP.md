@@ -45,7 +45,7 @@ code.
 | # | Item | Owner | Effort | Status |
 |---|------|-------|--------|--------|
 | 3.1 | Role-based access (operator vs admin) | 🟦 Repo | ✅ Done | `role` on `User` (default `operator`), granted once at registration from a `TRIE_ADMIN_EMAILS` allowlist — no promotion endpoint. Gates one real action: `DELETE /risk/events/{id}` (admin-only; 403 for a signed-in operator, 401 signed out). Reads stay public for everyone regardless of role, unchanged. |
-| 3.2 | Multi-location / multi-camera scaling | 🟦 Repo | 2–3d | **Not started** — genuinely the largest remaining P3 item (data model + dashboard list views for >1 camera/location). Named here rather than half-built. |
+| 3.2 | Multi-location / multi-camera scaling | 🟦 Repo | ✅ Done | New `Location` model (name, reference coordinates, who registered it) — `risk_events.location_id` is a nullable FK, so every existing ad-hoc/untagged flow keeps working unchanged. `/dashboard/locations` lists every registered site with a live rollup; `/dashboard/locations/[id]` reuses RiskDashboard/RiskTimeline scoped to just that site. A fixed camera with no GPS of its own inherits the site's registered coordinates on assess. Verified end-to-end with a headless browser against a live local backend (register → create site → tag an assessment → see the rollup and detail page), not just unit tests — caught and fixed a UUID-JSON-serialization bug and a SQLite FK-enforcement gap along the way. |
 | 3.3 | Historical analytics export (CSV) | 🟦 Repo | ✅ Done | `/dashboard/history` → "Export CSV" pulls up to 5,000 persisted events and downloads every field the dashboard renders, RFC 4180-quoted. |
 | 3.4 | Mobile-responsive dashboard pass | 🟦 Repo | Partial | Targeted real fixes shipped (header wrap, live-telemetry readout stacking on narrow screens); a full audit across every dashboard page is not done. |
 
@@ -59,8 +59,7 @@ code.
         └──► 2.3 Live-score validation ──► pilot deployment
 ```
 
-**P1 and P3 are now shipped**, except 3.2 (multi-location scaling) which needs
-real scoping time, not a stopgap. The research ceiling (a flagship IEEE journal
+**P1 and P3 are now fully shipped.** The research ceiling (a flagship IEEE journal
 such as *T-ITS*) is gated almost entirely on **0.2 → 0.1**: real Indian field
 data and one field validation. That is named here as the open experiment, not
 papered over — which is itself the project's methodological stance.

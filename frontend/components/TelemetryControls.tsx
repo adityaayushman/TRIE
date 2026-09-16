@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { postAssessment } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { fetchLocations, postAssessment } from "@/lib/api";
+import { LocationSummary } from "@/lib/types";
 import { Card, SectionTitle } from "./ui";
 
 /** A stretch of NH48 near Gurugram — the same coordinates
  * ai/blackspot/simulation.py uses, so repeated assessments here accumulate
- * into one 500m cell and can actually nominate a black spot. */
+ * into one 500m cell and can actually nominate a black spot. Used when no
+ * registered site is selected below. */
 const DEMO_LAT = 28.4595;
 const DEMO_LON = 77.0266;
 
@@ -18,19 +20,29 @@ const DEMO_LON = 77.0266;
 export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
   const [speed, setSpeed] = useState(95);
   const [vehicleId, setVehicleId] = useState("VEH-DEMO");
+  const [locations, setLocations] = useState<LocationSummary[]>([]);
+  const [locationId, setLocationId] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLocations()
+      .then(setLocations)
+      .catch(() => {
+        // A registered-site dropdown is a convenience, not a requirement —
+        // the ad-hoc demo point below still works if this fetch fails.
+      });
+  }, []);
 
   async function run() {
     setBusy(true);
     setError(null);
     try {
-      await postAssessment({
-        vehicle_id: vehicleId,
-        speed_kmh: speed,
-        latitude: DEMO_LAT,
-        longitude: DEMO_LON,
-      });
+      await postAssessment(
+        locationId
+          ? { vehicle_id: vehicleId, speed_kmh: speed, location_id: locationId }
+          : { vehicle_id: vehicleId, speed_kmh: speed, latitude: DEMO_LAT, longitude: DEMO_LON }
+      );
       onAssessed?.();
     } catch (cause) {
       setError((cause as Error).message);
@@ -67,6 +79,24 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
           />
         </label>
 
+        {locations.length > 0 && (
+          <label className="text-xs text-slate-500">
+            <span className="mb-1.5 block">Site</span>
+            <select
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
+              className="w-44 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-200 outline-hidden focus:border-sky-600"
+            >
+              <option value="">Ad-hoc (demo point)</option>
+              {locations.map((loc) => (
+                <option key={loc.id} value={loc.id}>
+                  {loc.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <button
           onClick={run}
           disabled={busy}
@@ -77,11 +107,20 @@ export function TelemetryControls({ onAssessed }: { onAssessed?: () => void }) {
       </div>
 
       <p className="mt-4 text-[0.7rem] leading-relaxed text-slate-600">
-        Posts telemetry to the live API at {DEMO_LAT}, {DEMO_LON}. No camera is attached to
-        the JSON API, so driver distraction and lane drift report as{" "}
+        {locationId ? (
+          <>
+            Posts telemetry tagged to this site — it inherits the site&apos;s own registered
+            coordinates, the way a fixed camera with no GPS of its own would.
+          </>
+        ) : (
+          <>
+            Posts telemetry to the live API at {DEMO_LAT}, {DEMO_LON}. Repeated runs here
+            accumulate toward a black-spot nomination.
+          </>
+        )}{" "}
+        No camera is attached to the JSON API, so driver distraction and lane drift report as{" "}
         <span className="text-slate-500">not observed</span> and are dropped from the score
-        rather than assumed safe — speed is the live input. Repeated runs at this location
-        accumulate toward a black-spot nomination.
+        rather than assumed safe — speed is the live input.
       </p>
 
       {error && <p className="mt-2 text-xs text-red-400">{error}</p>}

@@ -9,7 +9,8 @@ export type IconName =
   | "traffic"
   | "history"
   | "blackspots"
-  | "settings";
+  | "settings"
+  | "locations";
 
 type IconProps = { className?: string; size?: number };
 
@@ -56,6 +57,14 @@ export const ICONS: Record<IconName, (props: IconProps) => JSX.Element> = {
     <svg className={className} width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor">
       <circle cx="8" cy="8" r="2.2" strokeWidth="1.4" />
       <path d="M8 1.8v1.6M8 12.6v1.6M14.2 8h-1.6M3.4 8H1.8M12.1 3.9l-1.1 1.1M5 11l-1.1 1.1M12.1 12.1L11 11M5 5 3.9 3.9" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  ),
+  // A fixed camera/site — distinct from `blackspots` (a danger nominated
+  // from evidence): this is a registered identity an operator manages.
+  locations: ({ className, size = 15 }) => (
+    <svg className={className} width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor">
+      <path d="M2 5.5a1 1 0 011-1h1.3l.6-1h6.2l.6 1H13a1 1 0 011 1V12a1 1 0 01-1 1H3a1 1 0 01-1-1V5.5z" strokeWidth="1.3" strokeLinejoin="round" />
+      <circle cx="8" cy="8.5" r="2.3" strokeWidth="1.3" />
     </svg>
   ),
 };

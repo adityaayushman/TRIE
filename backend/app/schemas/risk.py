@@ -25,6 +25,7 @@ class RiskEventRead(BaseModel):
     explanation: str
     latitude: float | None
     longitude: float | None
+    location_id: uuid.UUID | None = None
     created_at: datetime
 
 
@@ -42,6 +43,11 @@ class RiskAssessmentRequest(BaseModel):
     heading_deg: float = 0.0
     latitude: float | None = Latitude
     longitude: float | None = Longitude
+    # Optional: tags this assessment to a registered site (app/models/location.py)
+    # so multi-location deployments can list/filter by it. A fixed camera can
+    # omit latitude/longitude entirely and inherit the location's own fix —
+    # see assess_risk in app/api/routes/risk.py.
+    location_id: uuid.UUID | None = None
 
 
 class DetectedObjectRead(BaseModel):
@@ -74,6 +80,7 @@ class RiskAssessmentResponse(BaseModel):
     explanation: str
     latitude: float | None = None
     longitude: float | None = None
+    location_id: uuid.UUID | None = None
 
     # Which factors had no sensor behind them and were dropped from the score
     # (their weight redistributed) rather than measured. Carried explicitly so

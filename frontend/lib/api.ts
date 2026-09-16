@@ -1,4 +1,4 @@
-import { BlackSpot, RiskAssessment, RiskEvent, RiskLevel } from "./types";
+import { BlackSpot, LocationSummary, RiskAssessment, RiskEvent, RiskLevel } from "./types";
 
 /** Base URL of the backend's v1 API, e.g. http://localhost:8000/api/v1.
  * Baked in at build time via NEXT_PUBLIC_API_URL — Next.js inlines
@@ -22,8 +22,10 @@ async function getJson<T>(path: string): Promise<T> {
   return response.json();
 }
 
-export function fetchRecentEvents(limit = 50): Promise<RiskEvent[]> {
-  return getJson<RiskEvent[]>(`/risk/events?limit=${limit}`);
+export function fetchRecentEvents(limit = 50, locationId?: string): Promise<RiskEvent[]> {
+  const query = new URLSearchParams({ limit: String(limit) });
+  if (locationId) query.set("location_id", locationId);
+  return getJson<RiskEvent[]>(`/risk/events?${query}`);
 }
 
 /** Admin-only (backend 403s a non-admin token; see require_admin). Removes
@@ -48,6 +50,7 @@ export function fetchBlackSpots(params: {
   minNearMisses?: number;
   nearMissLevel?: RiskLevel;
   days?: number;
+  locationId?: string;
 } = {}): Promise<BlackSpot[]> {
   const query = new URLSearchParams({
     days: String(params.days ?? 90),
@@ -55,7 +58,56 @@ export function fetchBlackSpots(params: {
     min_near_misses: String(params.minNearMisses ?? 5),
     near_miss_level: params.nearMissLevel ?? "high",
   });
+  if (params.locationId) query.set("location_id", params.locationId);
   return getJson<BlackSpot[]>(`/risk/blackspots?${query}`);
+}
+
+// --- Locations (multi-site scaling) --------------------------------------
+
+export function fetchLocations(): Promise<LocationSummary[]> {
+  return getJson<LocationSummary[]>("/locations");
+}
+
+export function fetchLocation(id: string): Promise<LocationSummary> {
+  return getJson<LocationSummary>(`/locations/${id}`);
+}
+
+export interface LocationInput {
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+}
+
+/** Registering a site is the same bar as submitting telemetry (see
+ * postAssessment below) — any signed-in account, not an admin action. */
+export async function createLocation(input: LocationInput): Promise<LocationSummary> {
+  const token = typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await fetch(`${API_URL}/locations`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Sign in to register a site.");
+    if (response.status === 422) throw new Error("Check the site's name and coordinates.");
+    throw new Error(`POST /locations failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Admin-only, same bar as deleteEvent above. */
+export async function deleteLocation(id: string): Promise<void> {
+  const token = typeof window === "undefined" ? null : localStorage.getItem(TOKEN_KEY);
+  const response = await fetch(`${API_URL}/locations/${id}`, {
+    method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) {
+    throw new Error(`DELETE /locations/${id} failed: ${response.status}`);
+  }
 }
 
 export interface Telemetry {
@@ -65,6 +117,9 @@ export interface Telemetry {
   heading_deg?: number;
   latitude?: number;
   longitude?: number;
+  /** Tags the assessment to a registered site (see LocationSummary). Omit for
+   * ad-hoc telemetry with no site — unaffected either way. */
+  location_id?: string;
 }
 
 // Must match lib/auth.tsx's TOKEN_KEY — where the signed-in JWT is stored.

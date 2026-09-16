@@ -332,6 +332,12 @@ Several original "next steps" are now shipped, each honestly scoped on
   design deliberately withholds, `DELETE /risk/events/{id}`.
 - **Historical export** — `/dashboard/history` → "Export CSV" downloads every
   persisted field, not just what's on screen.
+- **Multi-location/multi-camera scaling** — a registered `Location` (name +
+  reference coordinates) is a nullable tag on every risk event, so ad-hoc
+  telemetry keeps working exactly as before. `/dashboard/locations` lists
+  every site with a live rollup; `/dashboard/locations/[id]` is that one
+  site's own scoped risk dashboard and history. A fixed camera with no GPS of
+  its own inherits the site's registered coordinates on assess.
 
 ## Still open
 
