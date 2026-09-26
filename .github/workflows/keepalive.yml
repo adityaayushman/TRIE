@@ -1,0 +1,30 @@
+name: Keep-alive
+
+# Supabase pauses a free project after about a week without activity, and the
+# backend container runs `alembic upgrade head` on start — so a paused database
+# crash-loops the whole API (this took the live site down for days). A request
+# that actually reads the database every couple of days keeps it awake.
+#
+# /locations is chosen because it queries Postgres; /health does not, so it
+# would keep Render warm but not Supabase.
+on:
+  schedule:
+    - cron: "17 6 */2 * *"   # every 2nd day, 06:17 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Touch the database through the API
+        run: |
+          # The free Render instance can take ~50s to wake, and a paused
+          # database takes longer, so retry generously before calling it a failure.
+          for i in $(seq 1 6); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://trie-backend.onrender.com/api/v1/locations || echo 000)
+            echo "attempt $i: $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          echo "::error::backend did not answer 200 - check Supabase (paused?) and Render"
+          exit 1
