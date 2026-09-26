@@ -19,7 +19,7 @@ code.
 
 | # | Item | Owner | Effort | Notes |
 |---|------|-------|--------|-------|
-| 0.1 | **Field-validate black-spot discovery on real MoRTH black spots** | 🟥 Partner | 1–2 wk *after* data | The single biggest lever. Converts the most novel claim from *simulation* to *evidence*. Needs near-miss telemetry for known locations — not public. Gated on 0.2. |
+| 0.1 | **Field-validate black-spot discovery on real MoRTH black spots** | 🟥 Partner | 1–2 wk *after* data | The single biggest lever. Converts the most novel claim from *simulation* to *evidence*. Needs near-miss telemetry for known locations — not public. Gated on 0.2. *Partial, negative:* a retrospective test on real NHAI crashes (`ai.trie.blackspot_crash_validation`) found no evidence that lower-severity crashes predict severe ones beyond severe-crash history and volume (ΔAUC 0.000, CI ±0.005; lead time equals a severity-shuffled null). It does not test telemetry near-misses, so 0.1 itself is still open. |
 | 0.2 | **Secure a data partnership** (IIT-M/iRAD, TRIPC-IIT-D, WRI India, SaveLIFE, a Smart-City ICCC) | 🟥 Partner | Outreach ongoing | Playbook + email templates already in `docs/OUTREACH.md`. Unblocks 0.1, 3.x. |
 | 0.3 | **Run the IDD perception fine-tune** (Kaggle T4) | 🟨 You | ~½d wall-clock | Notebook ready: `ai/training/kaggle_idd_notebook.md`. Closes the "COCO-only perception" caveat. Local machine can't sustain it (6 GB GPU). |
 
@@ -37,7 +37,7 @@ code.
 | # | Item | Owner | Effort | Notes |
 |---|------|-------|--------|-------|
 | 2.1 | **Real telemetry ingestion** (your device's real sensors, not the seeded demo) | 🟦 Repo | ✅ Done | `/dashboard/live` "Live — your device" mode: real GPS speed/heading (Geolocation) + real accelerometer (DeviceMotion) POSTed to `/risk/assess` on a live loop. Honest scope: one real device, not population near-miss telemetry — see its in-page caveat. |
-| 2.2 | **Alert delivery loop** (operator/rider notification) | ✅ Repo / 🟨 You (1 step) | ✅ Done | Real Web Push (RFC 8291/8292) — `backend/app/services/push.py`, toggle in `/dashboard/settings`, no SMS/app-store account needed. **One manual step to go live:** run `python -m app.vapid_keys` and set the two printed env vars on Render (`sync: false` in `render.yaml`, same pattern as the DB URL). Until set, the endpoint honestly reports `enabled: false` rather than failing. |
+| 2.2 | **Alert delivery loop** (operator/rider notification) | ✅ Repo / 🟨 You (1 step) | ✅ Done | Real Web Push (RFC 8291/8292) — `backend/app/services/push.py`, toggle in `/dashboard/settings`, no SMS/app-store account needed. **Live in production** (VAPID keypair set on Render; `/alerts/vapid-public-key` reports `enabled: true`). To mint a fresh pair: `python -m app.vapid_keys`. A deployment without keys reports `enabled: false` rather than failing. |
 | 2.3 | **End-to-end live-score validation** (score vs realised outcomes) | 🟥 Partner | 1 wk *after* data | Currently factor structure is validated, not the live score. Needs outcome-labelled live data. |
 
 ## P3 — Product hardening (not research-blocking)

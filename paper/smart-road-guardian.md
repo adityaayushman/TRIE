@@ -282,6 +282,34 @@ window). **Honest limit:** authored ground truth; a field retrospective against
 MoRTH's black-spot list needs near-miss telemetry for real Indian locations, which
 is not publicly available. Reproduce: `python -m ai.blackspot.evaluate`.
 
+**Retrospective test on real Indian crashes (a negative result).** Field
+validation against MoRTH's black spots needs near-miss telemetry that is not
+public. What real data permits is a test of the hypothesis underneath predictive
+discovery, that lower-severity events at a stretch anticipate the severe ones,
+using the de-duplicated NHAI records (§4.1): 831 500 m cells on three inferred
+road segments, of which 94 meet iRAD's own rule (>=5 fatal/grievous crashes in
+3 years). The design was fixed in advance (module docstring). *Lead time:* a
+precursor rule (>=3 minor/non-injury crashes in a trailing year) fires before
+iRAD qualification in 52% of the 94 cells, median 329 days ahead, but a
+severity-permutation null (severities shuffled among crashes within each road,
+places and dates fixed) gives 51% and 276 days (permutation *p*=0.41; M=2 and
+M=4 likewise, *p*>=0.47): the lead is a crash-volume effect. *Prediction:*
+splitting each road at its median date, a cell's earlier fatal/grievous count
+predicts >=2 fatal/grievous crashes later with AUC 0.68 (95% CI 0.61-0.74),
+earlier minor crashes alone 0.64, total volume 0.69; a road-adjusted logistic
+model with both reaches 0.755, but the same model *without* minor crashes
+reaches 0.755 too, so the minor crashes' own contribution is dAUC 0.000 (95% CI
+-0.005 to +0.005), and their Poisson rate ratio given fatal/grievous history is
+1.04 (95% CI 0.99-1.09, *p*=0.10). (An earlier comparison against road-blind
+scores appeared to favour the combined model; the control shows that was road
+base rates.) We therefore find **no evidence, on real Indian crash records,
+that lower-severity crashes carry predictive information beyond a stretch's
+severe-crash history and volume**. This is not a test of near-miss *telemetry*,
+a richer and far more frequent signal than recorded minor crashes and the one the
+engine actually consumes, which remains untested; and three inferred segments
+and 227 positive cells limit power. Reproduce:
+`python -m ai.trie.blackspot_crash_validation`.
+
 ### 4.4 Learned fusion and interaction analysis
 
 On a controlled ground truth where risk compounds, a learned fusion beats the
@@ -351,6 +379,7 @@ Every result is one command from the open-source repository:
 | Conformal coverage guarantee (per sensor regime) | `python -m ai.trie.conformal_validation` |
 | Indian corroboration (2,898 real fatal crashes) | `python -m ai.trie.india_validation` |
 | Indian inferential severity model (4,058 distinct NHAI crashes) | `python -m ai.trie.india_severity_model` |
+| Black-spot precursor test on real crashes (negative result; ~3 min) | `python -m ai.trie.blackspot_crash_validation` |
 | Black-spot discovery evaluation | `python -m ai.blackspot.evaluate` |
 | Learned-fusion study | `python -m ai.trie.fusion_study` |
 | Interaction analysis (H-statistic) | `python -m ai.trie.interaction_analysis` |
