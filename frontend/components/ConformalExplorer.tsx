@@ -69,12 +69,14 @@ export function ConformalExplorer() {
         {/* the guarantee */}
         <div className="rounded-xl border border-emerald-800/50 bg-emerald-950/20 p-4">
           <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-emerald-400">
-            The guarantee {meets ? "holds ✓" : ""}
+            Coverage of fatal crashes {meets ? "· at target on this split ✓" : ""}
           </p>
           <p className="mt-1 text-3xl font-bold tabular-nums text-emerald-300">{cell.cov.toFixed(1)}%</p>
           <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-400">
             of truly <span className="text-slate-200">fatal</span> crashes fall in the &ldquo;cannot
-            rule out fatal&rdquo; set — at or above your {target}% target, distribution-free.
+            rule out fatal&rdquo; set. The guarantee is on <em>expected</em> coverage
+            (≥ your {target}% target, distribution-free); this figure is one held-out split,
+            so expect about ±2 points of sampling noise around it.
           </p>
         </div>
         {/* the cost */}

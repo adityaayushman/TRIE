@@ -780,13 +780,13 @@ export default function ResearchPage() {
         <div className="mt-5 rounded-2xl border border-emerald-800/40 bg-emerald-950/15 p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-sm font-semibold text-slate-100">The inferential test, on real Indian crash records</p>
-            <span className="text-[0.65rem] uppercase tracking-wide text-emerald-400">8,116 NHAI records</span>
+            <span className="text-[0.65rem] uppercase tracking-wide text-emerald-400">4,058 NHAI crashes</span>
           </div>
           <p className="mt-1 text-xs leading-relaxed text-slate-400">
             The descriptive check above cannot ask &ldquo;does VRU involvement raise the <em>odds</em>{" "}
             of a severe outcome, holding speed, light and road constant?&rdquo; — media data is
-            fatal-only, with no non-fatal comparison group. This does, on 8,116 real record-level
-            crashes from four National Highways Authority of India segments (2013–2022; Khanum et al.,
+            fatal-only, with no non-fatal comparison group. This does, on 4,058 real record-level
+            crashes from National Highways Authority of India segments (2013–2018 and 2022–2023; Khanum et al.,
             Zenodo 10.5281/zenodo.16946653, CC-BY-4.0), with a genuine Killed-or-Seriously-Injured
             outcome. A multivariable logistic regression — the direct Indian counterpart to the UK
             STATS19 model above:
@@ -803,10 +803,10 @@ export default function ResearchPage() {
               </thead>
               <tbody className="text-slate-300">
                 {[
-                  { f: "VRU involved (2-wheeler / cyclist / pedestrian)", or: "1.97", ci: "1.80–2.17", p: "7×10⁻⁴⁵", hi: true },
-                  { f: "VRU struck by a heavier vehicle", or: "1.48", ci: "1.18–1.87", p: "8×10⁻⁴", hi: true },
-                  { f: "Overspeeding", or: "1.23", ci: "1.13–1.35", p: "4×10⁻⁶", hi: false },
-                  { f: "Night (18:00–06:00 proxy)", or: "1.25", ci: "1.15–1.37", p: "9×10⁻⁷", hi: false },
+                  { f: "VRU involved (2-wheeler / cyclist / pedestrian)", or: "1.97", ci: "1.73–2.26", p: "3×10⁻²³", hi: true },
+                  { f: "VRU struck by a heavier vehicle", or: "1.48", ci: "1.07–2.05", p: "0.018", hi: true },
+                  { f: "Overspeeding", or: "1.23", ci: "1.09–1.40", p: "0.001", hi: false },
+                  { f: "Night (18:00–06:00 proxy)", or: "1.25", ci: "1.10–1.42", p: "5×10⁻⁴", hi: false },
                 ].map((r) => (
                   <tr key={r.f} className="border-t border-slate-800/70">
                     <td className="py-1.5">{r.f}</td>
@@ -824,13 +824,19 @@ export default function ResearchPage() {
             the odds of a killed-or-serious outcome</span> (OR 1.97), and the VRU-vs-heavier-vehicle
             mismatch adds significant further risk (OR 1.48) — the exposure asymmetry, now
             <em> inferentially</em> confirmed on Indian data. Dropping VRU costs the most discrimination
-            of any factor. Model AUC 0.60 (95% CI 0.59–0.62), well-calibrated (ECE 0.036).
+            of any factor. Discrimination is modest, and stated as such: cross-validated AUC 0.58 (95% CI 0.56–0.60), no better than a
+            gradient-boosted baseline (0.57) — the factors carry real signal about who is hurt, not a strong crash-level predictor.
           </p>
           <p className="mt-3 border-t border-slate-800 pt-3 text-[0.7rem] leading-relaxed text-slate-400">
-            Reported in full honesty: three geometry/weather terms come out{" "}
-            <span className="text-slate-400">protective</span> (adverse weather 0.88×, sharp curve
-            0.46×), a known highway artefact — severe crashes concentrate on high-speed divided
-            straights, and drivers slow in rain — not a contradiction of the four factors above.
+            Reported in full honesty: sharp curves come out{" "}
+            <span className="text-slate-300">protective</span> (0.46×, p=0.004) — a known highway
+            artefact (drivers slow for curves; severe crashes concentrate on fast straights). The
+            undivided-road and adverse-weather terms point the same way but are not significant
+            (p≈0.09). <span className="text-slate-300">A correction:</span> the released dataset lists
+            every crash twice (8,116 rows for ~4,058 crashes). An earlier version of this page treated
+            them as independent, which overstated the sample — the odds-ratio point estimates were
+            unchanged, but confidence intervals were too narrow and the cross-validated AUC (then 0.60)
+            was inflated by duplicate leakage. Everything shown here is on the de-duplicated data.
             Scope: NHAI national highways (an inter-urban, high-speed profile), severity not the live
             risk score, night a time proxy (no light field). Reproduce with{" "}
             <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.india_severity_model</code>.

@@ -214,9 +214,9 @@ python -m ai.trie.india_validation --file "News Crashes.xlsx"
                                            # fatal crashes (Mendeley bc5sv6wnd9, CC BY):
                                            # 56% VRU victims, 69.5% killed by a heavier
                                            # vehicle. Download the xlsx first.
-python -m ai.trie.india_severity_model     # INFERENTIAL Indian model on 8,116 REAL
+python -m ai.trie.india_severity_model     # INFERENTIAL Indian model on 4,058 REAL
                                            # NHAI-highway records (Zenodo 16946653, CC BY):
-                                           # VRU involvement OR 1.97 (1.80-2.17) for a
+                                           # VRU involvement OR 1.97 (1.73-2.26) for a
                                            # killed/serious outcome; auto-downloads the CSV
 # Detectors
 python -m ai.training.train_helmet --evaluate       # helmet/triple-riding mAP (78%)
@@ -316,7 +316,7 @@ Several original "next steps" are now shipped, each honestly scoped on
 - **Black-spot discovery has a quantified evaluation** — 100% detection, 0%
   false-positives, lead-time distribution vs iRAD (`ai.blackspot.evaluate`).
 - **The Indian corroboration now has an inferential model, not just descriptive
-  rates** — 8,116 real NHAI-highway crash records; VRU involvement OR 1.97 for
+  rates** — 4,058 real NHAI-highway crash records (the released file lists each twice; de-duplicated); VRU involvement OR 1.97 for
   a killed-or-serious outcome (`ai.trie.india_severity_model`).
 - **The alerting loop is real, not a mock** — genuine Web Push (RFC 8291/8292):
   a HIGH/CRITICAL assessment pages every subscribed device with an OS/browser

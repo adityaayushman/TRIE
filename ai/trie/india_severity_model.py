@@ -8,11 +8,13 @@ counterpart to `statistical_validation.py` (which does exactly that on UK
 STATS19), run on a real Indian record-level dataset that *does* carry non-fatal
 crashes:
 
-    8,116 accident records from four National Highways Authority of India (NHAI)
-    highway segments (Pune-Solapur & Nagpur; Barwa-Adda–Panagarh, NH-2, Jharkhand
-    & West Bengal; Chengapally–Walayar, Tamil Nadu), 2013-2022, released
-    CC-BY-4.0 by Khanum, Garg, Faheem & Kulkarni, Zenodo 10.5281/zenodo.16946653,
-    the dataset behind their *Scientific Reports* severity-prediction paper.
+    ~4,058 distinct accident records from National Highways Authority of India
+    (NHAI) highway segments (Pune-Solapur & Nagpur; Barwa-Adda–Panagarh, NH-2,
+    Jharkhand & West Bengal; Chengapally–Walayar, Tamil Nadu), dated 2013-2018
+    and 2022-2023 (no 2019-2021 records), released CC-BY-4.0 by Khanum, Garg,
+    Faheem & Kulkarni, Zenodo 10.5281/zenodo.16946653, the dataset behind their
+    *Scientific Reports* severity-prediction paper. The released file lists
+    each record twice (8,116 rows); `load_deduplicated` removes the copy.
 
 Every code is decoded with the authors' published Table 1 codebook (severity
 1=Fatal, 2=Grievous, 3=Minor, 4=Non-injury; vehicle 6=two-wheeler, 8=cycle,
@@ -80,11 +82,40 @@ def _hour(t) -> float:
         return np.nan
 
 
+def load_deduplicated(data_dir: Path):
+    """The NHAI records, with the release's duplicated second copy removed.
+
+    The Zenodo file (8,116 rows) is the same ~4,058 crashes listed twice: the
+    second half repeats the first row-for-row (4,054 of 4,058 rows identical;
+    the other four differ only by a chainage/side edit). Treating it as 8,116
+    independent crashes overstates the sample size — point estimates survive
+    uniform duplication, but standard errors shrink by ~sqrt(2) and, worse,
+    cross-validation leaks: a row's duplicate sits in the training fold when
+    it is scored, inflating AUC.
+
+    Detected, not assumed: the first half is kept only when the two halves
+    agree on >=99% of rows. If the publisher ever fixes the file, that test
+    fails and the data is used as-is rather than being wrongly halved.
+    """
+    import pandas as pd
+
+    df = pd.read_csv(_ensure_data(data_dir))
+    n_raw = len(df)
+    half, odd = divmod(n_raw, 2)
+    if half and not odd:
+        first, second = df.iloc[:half].reset_index(drop=True), df.iloc[half:].reset_index(drop=True)
+        differs = ((first != second) & ~(first.isna() & second.isna())).any(axis=1)
+        if (~differs).mean() >= 0.99:
+            df = first
+    df.attrs["n_raw"] = n_raw
+    return df
+
+
 def _load(data_dir: Path):
     import numpy as np
     import pandas as pd
 
-    df = pd.read_csv(_ensure_data(data_dir))
+    df = load_deduplicated(data_dir)
     sev = pd.to_numeric(df["Accident_Severity_C"], errors="coerce")
     v1 = pd.to_numeric(df["Vehicle_Type_Involved_J_V1"], errors="coerce")
     v2 = pd.to_numeric(df["Vehicle_Type_Involved_J_V2"], errors="coerce")
@@ -112,7 +143,9 @@ def _load(data_dir: Path):
         "adverse_weather": ((weather != _FINE_WEATHER) & weather.notna()).astype(int),
         "sharp_curve": (cond == _SHARP_CURVE).astype(int),
     })
-    return m.dropna().reset_index(drop=True)
+    out = m.dropna().reset_index(drop=True)
+    out.attrs["n_raw"] = df.attrs.get("n_raw", len(df))
+    return out
 
 
 def run(data_dir: Path) -> dict:
@@ -182,9 +215,10 @@ def run(data_dir: Path) -> dict:
         ablation[f"drop_{f}"] = {"auc": round(float(roc_auc_score(y, p)), 3), "delta": round(float(roc_auc_score(y, p) - auc), 3)}
 
     result = {
-        "source": "NHAI Indian highway accidents, 2013-2022 (Khanum et al., Zenodo 10.5281/zenodo.16946653, CC-BY-4.0)",
+        "source": "NHAI Indian highway accidents, 2013-2018 and 2022-2023 (Khanum et al., Zenodo 10.5281/zenodo.16946653, CC-BY-4.0), released file de-duplicated",
         "scope": "national-highway crashes; outcome = KSI (Fatal or Grievous); 'night' is an 18:00-06:00 time proxy (no light field)",
         "n": int(len(m)),
+        "n_rows_in_released_file": int(m.attrs.get("n_raw", len(m))),
         "ksi": int(y.sum()),
         "ksi_rate_pct": round(float(y.mean()) * 100, 1),
         "fatal": int(m["fatal"].sum()),
