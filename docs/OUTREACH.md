@@ -88,16 +88,24 @@ Indian field result."*
 > rule), **VRU-first** (weighted for the 66.8% of deaths who are riders and
 > pedestrians), and **explainable with a conformal coverage guarantee**.
 >
-> It is already validated on 128k real crash records (UK STATS19: the model's
-> factors predict fatal outcomes at AUC 0.72, calibrated) and in a 40-seed
-> black-spot simulation — but the honest gap is real **Indian** field data, which
-> is where [TRIPC / RBG Labs] would be the ideal collaborator.
+> It is validated as far as public data allow: the model's factors predict fatal
+> outcomes on 128k UK crash records (AUC 0.73, calibrated), and on ~4,000 real NHAI
+> highway crashes a vulnerable road user's involvement roughly doubles the odds of
+> a fatal/grievous outcome (OR 1.97, 95% CI 1.73-2.26). I also want to be upfront
+> about something that did *not* work: on those same Indian crashes,
+> lower-severity crashes did not anticipate severe ones beyond plain crash volume
+> (I ran the test with a permutation control and reported it as a negative
+> result). So crash records alone cannot test the near-miss idea - which is
+> exactly the gap where [TRIPC / RBG Labs] would be the ideal collaborator.
 >
-> I'd value 20 minutes to explore a joint study: I bring the full system,
-> analysis and writing; access to iRAD/e-DAR fields for even one district (or your
-> crash datasets) would let us produce the first Indian field validation and a
-> strong joint publication. The code, a methodology paper draft, and a live demo
-> are ready to share.
+> What would let us do the first real Indian field validation is small and
+> specific: (1) iRAD/e-DAR crash records with location and time for **one
+> corridor or district**, so black spots can be built by iRAD's own rule; and
+> (2) **any near-miss-like signal for the same corridor** - fleet or dashcam
+> telemetry, or junction video from an ICCC. I bring the full system, the
+> analysis pipeline and the writing; the code, a methodology paper draft with its
+> negative results stated, and a live demo are ready to share. I'd value 20
+> minutes to see whether a joint study is feasible.
 >
 > Live system: https://trie-dashboard.vercel.app · Research/methods:
 > https://trie-dashboard.vercel.app/research · Code: https://github.com/adityaayushman/TRIE

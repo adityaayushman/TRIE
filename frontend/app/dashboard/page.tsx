@@ -90,7 +90,7 @@ export default function OverviewPage() {
         <StatCard label="Geo-tagged" value={stats.geoTagged} hint="feed black-spot discovery" />
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&>*]:min-w-0">
         <RiskTimeline events={events} />
 
         <Card>
