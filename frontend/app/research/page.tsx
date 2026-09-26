@@ -891,6 +891,53 @@ export default function ResearchPage() {
             </p>
           </div>
 
+          {/* A negative result, reported as such */}
+          <div className="mt-5 rounded-2xl border border-amber-800/40 bg-amber-950/10 p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm font-semibold text-slate-200">Tested on real Indian crashes: do minor crashes anticipate the severe ones?</p>
+              <span className="text-[0.65rem] uppercase tracking-wide text-amber-400">a negative result</span>
+            </div>
+            <p className="mt-1 text-xs leading-relaxed text-slate-400">
+              The real field validation of black-spot discovery needs near-miss telemetry at known
+              black spots, which nobody publishes. What real data does allow is a retrospective test
+              of the idea underneath it: the NHAI crash records carry a date, a km-marker and a
+              severity, so 831 500&nbsp;m stretches can be built &mdash; <span className="text-slate-200">94 of them meet
+              iRAD&apos;s own rule</span> (five fatal/grievous crashes in three years). Do the lower-severity
+              (minor and non-injury) crashes at a stretch anticipate those?
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Lead time</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums text-slate-200">52% · 329 days</p>
+                <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-400">
+                  of the 94 stretches had ≥3 minor crashes in a year <em>before</em> iRAD would flag them,
+                  a median 329 days ahead. But shuffling the severities among the same crashes gives
+                  51% · 276 days (permutation p = 0.41): <span className="text-slate-200">it is crash volume, not severity.</span>
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Prediction</p>
+                <p className="mt-1 text-2xl font-bold tabular-nums text-slate-200">ΔAUC 0.000</p>
+                <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-400">
+                  Predicting later fatal/grievous crashes from a stretch&apos;s history: KSI history alone
+                  AUC 0.68, minor crashes alone 0.64. Adding minor crashes to KSI history changes AUC by
+                  0.000 (95% CI −0.005 to +0.005); rate ratio per minor crash 1.04 (p = 0.10).
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-[0.7rem] leading-relaxed text-slate-400">
+              <span className="text-slate-300">Reading:</span> on this data, lower-severity crashes carry no
+              detectable information beyond a stretch&apos;s fatal/grievous history and its crash volume.
+              An early version of the comparison looked positive (combined AUC 0.755 vs 0.678) until a
+              control showed the gain came entirely from road-level base rates, not from minor crashes.
+              This does <span className="text-slate-300">not</span> test near-miss telemetry &mdash; a richer,
+              far more frequent signal than recorded minor crashes &mdash; which remains untested; and three
+              inferred road segments and 227 positive stretches limit power (a rate ratio up to about 1.09
+              is not excluded). Reproduce with{" "}
+              <code className="rounded-sm bg-slate-800 px-1.5 py-0.5 text-[0.7rem] text-slate-300">python -m ai.trie.blackspot_crash_validation</code>.
+            </p>
+          </div>
+
           {/* Lead-time comparison */}
           <div className="mt-5 rounded-2xl border border-slate-800/80 bg-slate-950/40 p-6">
             <p className="text-sm font-semibold text-slate-200">Time to flag a dangerous stretch, vs iRAD</p>

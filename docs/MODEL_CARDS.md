@@ -239,6 +239,8 @@ Indian roads." Field validation against MoRTH's published black spots requires
 near-miss telemetry for real locations, which is not publicly available. This
 is `ROADMAP.md` item 0.1 — named as the open experiment, not papered over.
 
+**Retrospective check on real crashes (negative).** `python -m ai.trie.blackspot_crash_validation` tests the hypothesis underneath the engine on 831 real 500 m NHAI cells (94 meet iRAD's rule): lower-severity crashes add no predictive information beyond fatal/grievous history and crash volume (ΔAUC 0.000, 95% CI ±0.005), and the apparent lead time equals a severity-shuffled null. It is not a test of near-miss telemetry, so the field-validation gap above is unchanged.
+
 ---
 
 ## Cross-cutting notes
