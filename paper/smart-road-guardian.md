@@ -35,9 +35,9 @@ database: the factors the model weights predict fatal outcomes with ROC-AUC
 likelihood-ratio test confirms a significant speed×VRU interaction (p<1e-9) — the
 compounding the VRU-first thesis predicts. The premise is then confirmed on real
 Indian data twice over: descriptively on 2,898 fatal crashes (56% VRU victims;
-69.5% killed by a heavier vehicle), and inferentially on 8,116 record-level NHAI
+69.5% killed by a heavier vehicle), and inferentially on 4,058 record-level NHAI
 highway crashes, where VRU involvement carries an adjusted odds ratio of 1.97
-(95% CI 1.80–2.17) for a killed-or-serious outcome. We report honest limitations
+(95% CI 1.73–2.26) for a killed-or-serious outcome. We report honest limitations
 prominently: the black-spot evaluation is a controlled simulation, and the
 Indian inferential model covers national-highway crashes at injury-severity
 granularity. All code and evaluations are open.
@@ -202,9 +202,14 @@ dropping poor surface costs nothing (−0.00), consistent with its null OR.
 replace the heuristic band with class-conditional (by-label) split conformal at
 α=0.1, applied separately per sensor regime (a three-way fit/calibrate/test split
 of the 128k casualties). The distribution-free guarantee — that ≥90% of truly
-fatal outcomes fall in the model's "cannot rule out fatal" set — holds in **every**
+fatal outcomes fall in the model's "cannot rule out fatal" set — is a guarantee on
+*expected* coverage over the calibration draw, and is met empirically in every
 regime: **92.8%** with the full sensor suite, **96.5%** without the camera, **94.8%**
-telemetry-only. The *cost* is the alarm rate, and it is exactly the observability
+telemetry-only on the reported split. (A single split's empirical coverage carries
+sampling noise of roughly ±2 points at ~300 fatal test cases — an independent
+re-run of the same code landed at 89.5% / 95.5% / 93.0% — so a value a point or two
+under target on one split is consistent with the guarantee, not a violation; the
+CI gate accordingly asserts coverage within ~2 SE of target, not a hard ≥ 90%.) The *cost* is the alarm rate, and it is exactly the observability
 thesis made rigorous: with the full suite the model confidently clears **32%** of
 cases of any fatal risk, versus only **12–17%** once the camera is removed — same
 guaranteed fatal-recall, quantified price for fewer sensors, a theorem where the
@@ -231,28 +236,33 @@ media-reported, fatal-only sample, so it corroborates the premise
 ai.trie.india_validation`.
 
 **Indian inferential model.** The fatal-only limitation is then removed on a
-second Indian source that carries non-fatal crashes: **8,116** record-level
-accidents from four National Highways Authority of India (NHAI) segments,
-2013-2022 (Khanum et al., *Scientific Reports*, 2025; Zenodo
-10.5281/zenodo.16946653, CC-BY-4.0), decoded with the authors' published
-codebook. A multivariable logistic regression on a Killed-or-Seriously-Injured
-outcome — the direct Indian counterpart to the STATS19 model — replicates every
-factor the risk model rests on, each significant in the predicted direction:
-**VRU involvement OR 1.97** (95% CI 1.80–2.17, *p*≈7×10⁻⁴⁵), the
-**VRU-struck-by-heavier-vehicle mismatch OR 1.48** (1.18–1.87, *p*<10⁻³),
-overspeeding OR 1.23 (*p*<10⁻⁵) and night OR 1.25 (*p*<10⁻⁶). A crash involving
-a vulnerable road user has nearly double the adjusted odds of a severe outcome,
-and dropping VRU costs more discrimination than dropping any other factor
-(leave-one-out ablation); AUC 0.60 (95% CI 0.59–0.62), well calibrated (ECE
-0.036). Reported in full: three geometry/weather terms come out *protective*
-(adverse weather 0.88×, sharp curve 0.46×) — a known highway-exposure and
-behavioural-compensation artefact (severe crashes concentrate on high-speed
-divided straights; drivers slow in rain), not a contradiction of the four
-factors above. Scope: NHAI national highways (a high-speed inter-urban profile),
-injury severity not the live risk score, night an 18:00–06:00 time proxy (no
-light field in the data). Within that scope it is the first *inferential*
-confirmation of the VRU-first factor structure on real Indian crashes.
-Reproduce: `python -m ai.trie.india_severity_model`.
+second Indian source that carries non-fatal crashes: **4,058** record-level
+accidents from National Highways Authority of India (NHAI) segments, dated
+2013-2018 and 2022-2023 (no 2019-2021 records; Khanum et al., *Scientific
+Reports*, 2025; Zenodo 10.5281/zenodo.16946653, CC-BY-4.0), decoded with the
+authors' published codebook. *Data note:* the released file lists every crash
+twice (8,116 rows; 4,054 of 4,058 rows identical across the two halves); we
+detect and remove the duplicate copy, since treating it as independent inflates
+the sample, narrows confidence intervals by about √2, and leaks duplicates across
+cross-validation folds. A multivariable logistic regression on a
+Killed-or-Seriously-Injured outcome — the direct Indian counterpart to the
+STATS19 model — supports the factor structure the risk model rests on:
+**VRU involvement OR 1.97** (95% CI 1.73–2.26, *p*≈3×10⁻²³), the
+**VRU-struck-by-heavier-vehicle mismatch OR 1.48** (1.07–2.05, *p*=0.018),
+overspeeding OR 1.23 (1.09–1.40, *p*=0.001) and night OR 1.25 (1.10–1.42,
+*p*<10⁻³). A crash involving a vulnerable road user has nearly double the
+adjusted odds of a severe outcome, and dropping VRU costs more discrimination
+than dropping any other factor (leave-one-out ablation). Discrimination is
+modest and stated as such: cross-validated AUC 0.58 (95% CI 0.56–0.60), not
+better than a gradient-boosted baseline (0.57). Reported in full: sharp curves
+come out *protective* (0.46×, *p*=0.004) — a known highway-exposure and
+behavioural-compensation artefact — while the undivided-road (0.84×) and
+adverse-weather (0.88×) terms are not significant (*p*≈0.09). Scope: NHAI
+national highways (a high-speed inter-urban profile), injury severity not the
+live risk score, night an 18:00–06:00 time proxy (no light field in the data).
+Within that scope it is an *inferential* confirmation of the VRU-first factor
+structure on real Indian crashes, and a modest one where discrimination is
+concerned. Reproduce: `python -m ai.trie.india_severity_model`.
 
 ### 4.2 Per-rider vulnerability detector
 
@@ -340,7 +350,7 @@ Every result is one command from the open-source repository:
 | Statistical validation (ORs, interactions, calibration) | `python -m ai.trie.statistical_validation` |
 | Conformal coverage guarantee (per sensor regime) | `python -m ai.trie.conformal_validation` |
 | Indian corroboration (2,898 real fatal crashes) | `python -m ai.trie.india_validation` |
-| Indian inferential severity model (8,116 NHAI records) | `python -m ai.trie.india_severity_model` |
+| Indian inferential severity model (4,058 distinct NHAI crashes) | `python -m ai.trie.india_severity_model` |
 | Black-spot discovery evaluation | `python -m ai.blackspot.evaluate` |
 | Learned-fusion study | `python -m ai.trie.fusion_study` |
 | Interaction analysis (H-statistic) | `python -m ai.trie.interaction_analysis` |

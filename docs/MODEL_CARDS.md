@@ -33,8 +33,8 @@ weighting) is validated on two real crash datasets:
 - UK STATS19 (~128k casualties, 2024): AUC 0.725 (95% CI 0.713–0.737); every
   factor direction confirmed; speed×VRU interaction significant (p<10⁻⁹).
   `python -m ai.trie.statistical_validation`
-- Indian NHAI highways (8,116 records): VRU involvement OR 1.97 (95% CI
-  1.80–2.17, p≈7×10⁻⁴⁵) for a killed-or-seriously-injured outcome.
+- Indian NHAI highways (4,058 distinct crashes): VRU involvement OR 1.97 (95% CI
+  1.73–2.26, p≈3×10⁻²³) for a killed-or-seriously-injured outcome.
   `python -m ai.trie.india_severity_model`
 
 **Known limitation.** The exact rule-based weights themselves are a
@@ -160,21 +160,29 @@ not a claim of matching published RDD2022 leaderboard results.
 | | |
 |---|---|
 | **Type** | Multivariable logistic regression (statsmodels), plus a HistGradientBoosting baseline for comparison |
-| **Training/eval data** | 8,116 real NHAI-highway crash records, 2013–2022 (Khanum et al., Zenodo 10.5281/zenodo.16946653, CC-BY-4.0) |
+| **Training/eval data** | 4,058 distinct real NHAI-highway crashes, 2013–2018 and 2022–2023 (Khanum et al., Zenodo 10.5281/zenodo.16946653, CC-BY-4.0). The released file lists each crash twice (8,116 rows); the code de-duplicates. |
 | **Outcome** | Killed-or-Seriously-Injured (KSI) — Fatal or Grievous injury |
 | **Validation** | 5-fold cross-validated AUC + bootstrap 95% CI, calibration (Brier/ECE), leave-one-factor-out ablation |
 
-**Measured performance:** AUC 0.603 (95% CI 0.589–0.617), GBM baseline AUC
-0.622, ECE 0.036 (well-calibrated), Brier 0.239.
+**Measured performance:** cross-validated AUC 0.576 (95% CI 0.559–0.595) —
+modest — and the GBM baseline is no better (0.573). ECE 0.072, Brier 0.252.
 
-**Key result:** VRU involvement OR 1.97 (95% CI 1.80–2.17, p≈7×10⁻⁴⁵); VRU
-struck by a heavier vehicle OR 1.48 (95% CI 1.18–1.87, p<10⁻³). Dropping VRU
+**Key result:** VRU involvement OR 1.97 (95% CI 1.73–2.26, p≈3×10⁻²³); VRU
+struck by a heavier vehicle OR 1.48 (95% CI 1.07–2.05, p=0.018). Dropping VRU
 from the feature set costs more discrimination than dropping any other factor.
 
-**Reported honestly:** three geometry/weather terms (undivided road, adverse
-weather, sharp curve) come out *protective*, a known highway-exposure /
-behavioural-compensation artefact (severe crashes concentrate on high-speed
-divided straights; drivers slow in rain), not hidden from the result.
+**Reported honestly:** sharp curves come out *protective* (OR 0.46, p=0.004), a
+known highway-exposure / behavioural-compensation artefact; undivided road
+(0.84) and adverse weather (0.88) point the same way but are not significant
+(p≈0.09).
+
+**Correction history.** An earlier version of this card reported n=8,116, AUC
+0.603, GBM AUC 0.622, and "three protective terms". Those came from treating
+the released file's duplicated rows as independent: the point estimates were
+unchanged, but CIs were too narrow, cross-validation leaked duplicates across
+folds (inflating AUC, and the GBM more than the logistic model — the apparent
+"GBM beats logistic" gap was that leakage), and two of the "protective" terms
+were not significant once the sample size was honest.
 
 **Scope.** NHAI *national highways* only (a high-speed, inter-urban exposure
 profile — not representative of urban Indian roads); outcome is injury

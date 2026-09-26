@@ -93,10 +93,14 @@ project's honesty stance.
   Indian dataset with a genuine non-fatal comparison group, enabling the first
   *inferential* Indian severity model (the direct counterpart to dataset #1's
   role for the UK model).
-- **Composition.** 8,116 record-level accidents from four National Highways
+- **Composition.** ~4,058 distinct record-level accidents (the released file
+  has 8,116 rows because **every record appears twice** — 4,054 of 4,058 rows
+  are identical across the two halves; `load_deduplicated` in
+  `ai/trie/india_severity_model.py` removes the copy) from National Highways
   Authority of India (NHAI) highway segments: Pune-Solapur & Nagpur region,
-  Barwa-Adda–Panagarh (NH-2, Jharkhand & West Bengal, 3,710 records),
-  Chengapally–Walayar (Tamil Nadu, 422 records), 2013–2022. 13 fields: date,
+  Barwa-Adda–Panagarh (NH-2, Jharkhand & West Bengal), Chengapally–Walayar
+  (Tamil Nadu). Dated 2013–2018 and 2022–2023 — **no records for 2019–2021**
+  (the paper's and Zenodo's per-segment counts are of the doubled file). 13 fields: date,
   day of week, time, location/chainage, severity (1=Fatal, 2=Grievous,
   3=Minor, 4=Non-injury), cause, road feature, road condition, weather,
   vehicle types (up to 2 per accident).
@@ -109,7 +113,7 @@ project's honesty stance.
   1. Cross-referencing the peer-reviewed source (Khanum, Garg, Faheem &
      Kulkarni, *Scientific Reports*, 2025 / *IntechOpen* chapter) which names
      the exact four highway segments and record counts;
-  2. Inspecting the actual downloaded CSV: date range 1 Sep 2013 – 7 Jun 2022,
+  2. Inspecting the actual downloaded CSV: dates spanning 2013–2018 and 2022–2023 (the first/last rows I originally quoted, 1 Sep 2013 – 7 Jun 2022, were file order, not the true range),
      highway **chainage-km** location markers (a distinctly Indian
      highway-engineering convention, absent from any Western or mislabeled
      dataset checked in this project);
