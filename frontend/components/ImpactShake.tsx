@@ -62,6 +62,11 @@ export function ImpactShake({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
+    // The static outer wrapper clips sideways overflow: the jolt below translates
+    // the whole page by up to ~14px, which on a phone briefly made it scroll
+    // horizontally. `clip` (not `hidden`) so it does not become a scroll
+    // container — that would break the sticky tab bar inside.
+    <div className="overflow-x-clip">
     <div ref={wrapRef} className="will-change-transform">
       {children}
       {flashKey > 0 && (
@@ -80,6 +85,7 @@ export function ImpactShake({ children }: { children: React.ReactNode }) {
           }}
         />
       )}
+    </div>
     </div>
   );
 }

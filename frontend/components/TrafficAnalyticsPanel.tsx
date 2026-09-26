@@ -87,7 +87,7 @@ function FlowChart({ data }: { data: DemoClipData }) {
   const gridColor = "#1e293b";
 
   return (
-    <div className="relative">
+    <div className="relative overflow-x-auto">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
