@@ -28,6 +28,10 @@
 
 ---
 
+<p align="center">
+  <img src="TRIE/demo.webp" alt="TRIE demo" width="420" />
+</p>
+
 > **Predict. Explain. Prevent.**
 
 An Explainable Multimodal Edge AI Transportation Intelligence Platform for
