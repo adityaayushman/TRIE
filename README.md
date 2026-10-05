@@ -1,6 +1,32 @@
-# Smart Road Guardian AI X
+<div align="center">
 
-[![CI](https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml/badge.svg)](https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml)
+# 🚦 Smart Road Guardian AI X
+
+**Explainable multimodal edge-AI platform that predicts road accidents before they happen and explains why.**
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/YOLOv11-111F68?style=for-the-badge&logo=yolo&logoColor=white" />
+  <img src="https://img.shields.io/badge/MediaPipe-0097A7?style=for-the-badge&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+</p>
+
+<p>
+  <a href="https://trie-dashboard.vercel.app"><img src="https://img.shields.io/badge/Live_Dashboard-000000?style=for-the-badge&logo=vercel&logoColor=white" /></a> <a href="https://trie-backend.onrender.com/docs"><img src="https://img.shields.io/badge/API_Docs-46E3B7?style=for-the-badge&logo=render&logoColor=white" /></a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/github/stars/adityaayushman/TRIE?style=social" /> <img src="https://img.shields.io/github/last-commit/adityaayushman/TRIE?style=flat-square" /> <img src="https://img.shields.io/github/languages/top/adityaayushman/TRIE?style=flat-square" />
+  <img src="https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml/badge.svg" />
+</p>
+
+</div>
+
+---
 
 > **Predict. Explain. Prevent.**
 
