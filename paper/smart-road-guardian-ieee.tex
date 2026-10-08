@@ -1,0 +1,217 @@
+\documentclass[journal]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+
+\begin{document}
+
+\title{Observability-Aware, VRU-First Risk Fusion for Indian Roads:\\
+A Predictive, Explainable Transportation-Risk System\\
+Validated on Real Crash Records}
+
+\author{Aditya~Ayushman~Sahoo
+\thanks{A. A. Sahoo is an independent researcher (e-mail: adityaasahoo@gmail.com). Code, a live demonstration system, and every result in this paper are open at \url{https://github.com/adityaayushman/TRIE} and \url{https://trie-dashboard.vercel.app}.}}
+
+\markboth{Preprint, 2026}{Sahoo: Observability-Aware, VRU-First Risk Fusion for Indian Roads}
+
+\maketitle
+
+\begin{abstract}
+Most road-safety technology was built for a setting Indian roads do not match: it reacts only after crashes accumulate, it scores risk to the person inside the vehicle rather than the much larger number of people outside it, and it reports a single confident number regardless of which sensors actually fired. On Indian roads, where lane markings are often absent, two-wheelers outnumber cars, and 66.8\% of the roughly 1.7 lakh people killed each year have no metal around them, each of those assumptions works against the people most at risk. We present a transportation-risk system built around the opposite assumptions. An observability-aware fusion model scores only the factors a given sensor suite can actually measure and redistributes the rest, carrying a distribution-free conformal coverage guarantee that is conditioned on which sensors are present. A vulnerable-road-user-first weighting, extended by a fine-tuned helmet and triple-riding detector, turns rider vulnerability into a per-rider multiplier rather than a footnote. A predictive black-spot engine nominates dangerous stretches from near-misses before a crash record exists, instead of waiting for one. Because no public dataset pairs India's live telemetry factors with crash outcomes, we first validate the model's premise on 128,269 real casualties from the UK STATS19 database: the factors the model weights predict fatal outcomes with an ROC-AUC of 0.725 (95\% CI 0.713--0.737), every factor points in the expected direction, and a likelihood-ratio test confirms a significant speed-by-VRU interaction ($p<10^{-9}$), the compounding effect the VRU-first design assumes. We then test the same premise on real Indian crashes twice. Descriptively, on 2,898 fatal crashes, VRUs are 56\% of the victims and 69.5\% were killed by a heavier vehicle. Inferentially, on 4,058 distinct record-level crashes from National Highways Authority of India segments, VRU involvement carries an adjusted odds ratio of 1.97 (95\% CI 1.73--2.26) for a killed-or-seriously-injured outcome. We also report a negative result: a retrospective test of whether lower-severity crashes anticipate the severe ones the black-spot engine is built to catch found no evidence that they do, once crash volume is controlled for. Limitations are stated as prominently as the results that look good: the black-spot discovery evaluation is a controlled simulation, and the Indian inferential model is scoped to national-highway crashes. All code, data-provenance notes, and evaluation scripts are open.
+\end{abstract}
+
+\begin{IEEEkeywords}
+road safety, vulnerable road users, surrogate safety measures, explainable artificial intelligence, conformal prediction, risk fusion, India.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+India recorded roughly 1.68 lakh road deaths in 2022 and 1.77 lakh in 2024, by the Ministry of Road Transport and Highways' own count \cite{morth}. Two-wheeler riders account for 46.2\% of that toll and pedestrians for another 20.6\%, so two of every three people who die on an Indian road are a vulnerable road user, not an occupant. Yet the safety paradigms in wide use were developed somewhere else, under three assumptions that do not hold here.
+
+The first is that safety work can be reactive. India's own black-spot programme, iRAD/e-DAR, only flags a roughly 500~m stretch of road after it has produced five fatal or grievous crashes, or ten deaths, within three years \cite{morth}. A location has to kill people before the system will name it.
+
+The second is that risk belongs to the occupant. Advanced driver-assistance and collision-warning systems model time-to-collision and driver state for the person inside the vehicle. They were not built to ask how dangerous that vehicle is to the people walking or riding beside it, which on an Indian road is usually the more urgent question.
+
+The third is that a single number is an honest number. Most risk scores report one figure with no sense of how much of the scene the system could actually see. A missing lane-departure signal is typically read as "in lane" rather than "unknown," and the reported confidence does not change whether every sensor fired or only one did.
+
+\subsection{Contributions}
+
+This paper inverts each of those three assumptions; more importantly, it tests whether the resulting design actually holds up against real crash data rather than only against its own simulations.
+
+\begin{itemize}
+\item \textbf{An observability-aware risk fusion with a conformal coverage guarantee.} The model is a transparent additive sum that scores only the factors it can observe and redistributes the weight of anything it cannot. Its uncertainty is not a heuristic band but a class-conditional, observability-conditional split conformal guarantee: in every sensor regime we test, at least $1-\alpha$ of truly fatal outcomes are guaranteed, distribution-free, to fall inside the model's "cannot rule out fatal" set, and the alarm-rate cost of that guarantee grows exactly as sensors drop. This is the paper's primary contribution, and the one we validate most heavily on real data (Section~\ref{sec:ext-validation}).
+\item \textbf{VRU-first weighting with per-rider vulnerability.} Vulnerable road users are a first-class, exposure-weighted factor rather than an afterthought, and a fine-tuned detector reads whether a rider is helmeted, bare-headed, or riding three-up, turning that into a WHO-grounded severity multiplier.
+\item \textbf{Predictive black-spot discovery.} The same 500~m unit iRAD uses is instead nominated from near-misses, exposure-normalised and ranked by a Wilson lower bound, so a stretch can be flagged days or weeks before it produces a crash record. We treat this as a secondary contribution, because our own controlled evaluation of it (Section~\ref{sec:blackspot-results}) is a simulation, and we say so plainly.
+\item \textbf{A reproducible, honesty-first evaluation.} Every claim in this paper, including the ones that did not pan out, is one command away in the open repository, and the limitations are written with the same weight as the results.
+\end{itemize}
+
+Predicting hazard from near-misses is not itself a new idea; Section~\ref{sec:related} places this work against the surrogate-safety-measures literature that originated it. What we believe is new is the system design: fusing heterogeneous, partially observed factors into a single score that is honest about its own uncertainty, weighted toward the people who actually die on Indian roads, and then shown, not merely asserted, to rest on factor relationships that hold in real crash records.
+
+\section{Related Work and Positioning}
+\label{sec:related}
+
+Table~\ref{tab:related} summarises the literatures this work draws on and what it adds to each.
+
+\begin{table*}[t]
+\centering
+\caption{Positioning against prior work}
+\label{tab:related}
+\small
+\begin{tabular}{p{2.6cm}p{4.0cm}p{4.8cm}p{5.0cm}}
+\toprule
+\textbf{Prior area} & \textbf{Representative work} & \textbf{What it does} & \textbf{What this paper adds} \\
+\midrule
+Surrogate safety measures / traffic conflict techniques & SSAM \cite{gettman2008}; time-to-collision and post-encroachment-time indicators; a VRU surrogate-indicator review \cite{johnsson2018} & Use near-misses as proactive precursors to crashes, increasingly for vulnerable road users & Folds surrogate exposure into a multi-factor, explainable fusion with sensor-aware uncertainty instead of a single conflict indicator, and uses it for segment nomination rather than point-level conflict counting \\
+Hotspot / black-spot identification & Empirical Bayes methods \cite{hauer2002}; the AASHTO Highway Safety Manual \cite{aashto2010}; a comparative evaluation of identification methods \cite{cheng2005} & Combine a safety performance function with observed crash counts, using Bayesian shrinkage to correct regression-to-the-mean & Empirical Bayes still needs crash history to run; this system nominates from near-misses with a Wilson lower bound, before crashes accrue, so the two approaches are complementary rather than competing \\
+Explainable machine learning for crash severity & Post-hoc attribution over ensemble severity models, e.g. XGBoost with SHAP on fatal pedestrian crashes \cite{chang2022} & Explain a black-box severity classifier after the fact & The shipped model is exactly additive by construction, so its explanation is the decomposition itself; calibrated uncertainty tied to observability is also added, which post-hoc attribution does not provide \\
+VRU and helmet safety & WHO's estimated 42\% helmet fatality reduction \cite{who2006}; helmet-detection computer vision & Detect or enforce helmet use, and quantify its benefit in aggregate & Converts per-rider detection directly into a scene vulnerability multiplier that is wired into the live risk score, not reported separately \\
+Uncertainty quantification & Bayesian and ensemble uncertainty; conformal prediction & Produce predictive uncertainty, in some cases with distribution-free coverage guarantees & Applies class-conditional, observability-conditional split conformal prediction: a guarantee tied specifically to which sensors were available, which is the deployment-relevant question \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+No prior system we are aware of combines observability-aware fusion that never silently scores a missing factor as safe, a calibrated uncertainty band tied to sensor coverage, VRU-first weighting extended to individual rider vulnerability, and predictive segment nomination, and then checks whether the premise behind that combination holds on real crash records. Near-miss-based prediction is well established on its own; the claim here is the combination of fusion design, stated honesty about uncertainty, and VRU-first weighting, not near-miss prediction in isolation.
+
+\section{System and Method}
+
+\subsection{Observability-aware risk fusion}
+
+Given the available driver, vehicle, road, traffic, perception, and environmental state, the engine computes a magnitude in $[0,1]$ for each factor and fuses them as a weighted sum. The base weights are ordered by each factor's share of Indian road deaths rather than by how easy it is to measure: driver distraction 0.28, speed 0.22, VRU exposure 0.20, road quality 0.13, lane drift 0.09, and traffic congestion 0.08, with a seventh, low-light environmental factor weighted at 0.10 and folded in so that the six perception factors keep their exact relative weights whenever it is absent.
+
+Two design choices do the actual work here. First, a factor with no sensor behind it — no cabin camera, so no distraction signal; no lane markings, so no lane-drift signal — is dropped and its weight is renormalised across the factors that are observed, rather than silently scored as zero, which would read as "safe." This keeps the output a genuine 0--100 score that stays comparable across sensor suites and across the very different road types a vehicle might be on. Second, the point score alone assumes an unmeasured factor behaves like the average of what was measured; a calibrated band makes that assumption explicit, with its lower bound assuming every unmeasured factor is benign and its upper bound assuming the worst, so the band's width is exactly the unobserved weight. A fully instrumented vehicle collapses the band to a point; a speed-only deployment produces roughly a 30-point band (for example, a 28\% point score becomes a 17--54\% band), an honest admission that the system cannot see enough to be more precise.
+
+Because the fusion is additive, the contributing-factor breakdown the system reports is exactly the decomposition of the score, not a post-hoc approximation of one.
+
+\subsection{VRU-first weighting and per-rider vulnerability}
+
+Two-wheelers and pedestrians are kept as distinct perception classes throughout the pipeline and weighted for exposure, meaning proximity combined with crowding, rather than folded into a generic "other road user" bucket. A fine-tuned YOLOv11 detector further classifies each rider as helmeted, bare-headed, or riding three-up; those counts become a scene-level vulnerability multiplier. Using WHO's estimate that a helmet cuts fatality risk by roughly 42\% \cite{who2006}, a bare head is treated as $1/(1-0.42) \approx 1.72\times$ the risk, triple-riding adds a bounded aggravating factor of about $1.4\times$, and the product of the two is capped at $1.85\times$ so no single scene can dominate the score. This multiplier amplifies the VRU-exposure magnitude before weighting, so the score stays additive and the reason it moved stays legible.
+
+\subsection{Predictive black-spot discovery}
+
+The same 500~m unit iRAD uses is instead nominated from near-misses: every vehicle pass through a cell is the exposure denominator, and cells are ranked by a Wilson score lower bound rather than a raw near-miss rate, so a stretch can be flagged before anyone is hurt there, and a cell with one near-miss out of one pass cannot outrank a well-attested one.
+
+\subsection{Environmental context and temporal forecast}
+
+A time-of-day lighting-risk factor is grounded in MoRTH's own published crash-timing data, under which the 18:00--21:00 window holds 20.4\% of all accidents, the single highest three-hour band on record \cite{morth}; because it reads from the clock rather than a camera, it is available on every deployment regardless of hardware. A self-supervised temporal model separately extrapolates each vehicle's own risk trend over time.
+
+\section{Experiments and Results}
+\label{sec:results}
+
+\subsection{External validation of the premise on real crashes}
+\label{sec:ext-validation}
+
+\paragraph{Data} We use the UK Department for Transport's STATS19 database for 2024 \cite{dft2024}: 100,928 police-reported injury collisions and 128,272 casualties, merged to 128,269 casualty records carrying speed limit, light condition, road-surface condition, and casualty type (vulnerable road user versus vehicle occupant), together with a fatal or non-fatal outcome.
+
+\paragraph{Multivariable logistic regression} With all four factors mutually adjusted, a vulnerable road user carries an odds ratio of 3.66 (95\% CI 3.27--4.09, $p<10^{-115}$) for a fatal outcome; speed limit, per standard deviation, carries 2.23 (2.12--2.34, $p<10^{-229}$); darkness carries 1.73 (1.56--1.92, $p<10^{-24}$); and poor road surface is essentially null, at 1.02 (0.92--1.15, $p=0.67$).
+
+\paragraph{Interactions} A likelihood-ratio test ($\chi^2=39.2$, $df=2$, $p=3\times10^{-9}$) shows the speed-by-VRU interaction is significant (OR 1.34, $p<10^{-9}$): VRU risk compounds with speed, exactly as the VRU-first design predicts. The speed-by-darkness interaction is not significant ($p=0.21$). We note this partly because an earlier raw-rate chart of ours had suggested a widening dark-driving penalty at speed; the formal test demoted that impression, and we rely on the test rather than the chart.
+
+\paragraph{Discrimination and calibration} Five-fold cross-validated ROC-AUC is 0.725 (95\% CI 0.713--0.737); a gradient-boosted baseline reaches only 0.733, so the four factors already carry nearly all the signal a more flexible model can extract. The model is well calibrated, with a Brier score of 0.0121 and an expected calibration error of 0.18\%. A leave-one-out ablation shows dropping speed costs the most discrimination ($\Delta$AUC $-0.13$) and dropping poor surface costs essentially nothing ($-0.00$), consistent with its null odds ratio.
+
+\paragraph{Conformal coverage guarantee} We replace the heuristic uncertainty band with class-conditional, by-label split conformal prediction at $\alpha=0.1$, fitted separately for each sensor regime on a three-way split of the 128k casualties. The resulting guarantee, that at least 90\% of truly fatal outcomes fall inside the model's "cannot rule out fatal" set, is a guarantee on coverage in expectation over the calibration draw. It is met empirically in every regime on the split we report: 92.8\% with the full sensor suite, 96.5\% with the camera removed, and 94.8\% telemetry-only. Because the fatal class is rare, a single split's empirical coverage carries real sampling noise, roughly $\pm2$ points on about 300 fatal test cases; an independent re-run of the identical code landed at 89.5\%, 95.5\%, and 93.0\% on those same three regimes. A value a point or two under the 90\% target on any one split is therefore consistent with the guarantee rather than a violation of it, and our own automated check accordingly asserts coverage within about two standard errors of target rather than a hard inequality. The cost of the guarantee is the alarm rate, and it is exactly the observability thesis made rigorous: with the full sensor suite the model can confidently clear 32\% of cases of any fatal risk at all, against only 12--17\% once the camera is removed, the same guaranteed fatal recall at a quantified price for fewer sensors, where the model previously shipped only a heuristic band. This result is reproducible with \texttt{python -m ai.trie.conformal\_validation}.
+
+\paragraph{Interpretation and scope} This experiment validates the factor structure the model rests on — the right factors, in the right direction, in the right order of importance — on real crash records. It is British, not Indian, data: the two VRU classes that dominate Indian deaths, pedestrians and motorcyclists, are exactly the high-fatality classes here too, but Britain's comparatively well-protected cyclists score low, which is an honest cross-domain difference rather than something to paper over. Crash severity is also not identical to the live risk score the system reports day to day. These results are reproducible with \texttt{python -m ai.trie.external\_validation} and \texttt{python -m ai.trie.statistical\_validation}.
+
+\paragraph{Indian corroboration} The British-data caveat above is answered directly with real Indian crashes: 2,898 fatal crashes reported nationally in 2022--2023, extracted by natural-language processing from Times of India coverage \cite{sharma2025}. Vulnerable road users are 56.2\% of the fatal-crash victims in this sample (38.8\% two-wheeler riders, 16.0\% pedestrians, 1.3\% cyclists), consistent in direction with MoRTH's own 66.8\% figure, and 69.5\% of VRU victims were killed by a heavier road user, which is direct support for the exposure argument the VRU-first weighting is built on. Because this is a media-reported, fatal-only sample, it corroborates the premise descriptively rather than re-fitting the severity model, and is reproducible with \texttt{python -m ai.trie.india\_validation}.
+
+\paragraph{Indian inferential model} To remove the fatal-only limitation, we use a second Indian source that does carry non-fatal crashes: 4,058 distinct record-level crashes from National Highways Authority of India highway segments, dated 2013--2018 and 2022--2023, with no records for 2019--2021 \cite{khanum2025}, decoded with the authors' own published codebook. The released file lists every crash twice, 8,116 rows for those 4,058 crashes, with 4,054 of the 4,058 rows identical across the two halves; we detect and remove the duplicate, since treating it as independent would narrow the confidence intervals by roughly $\sqrt{2}$ and leak duplicate rows across cross-validation folds. A multivariable logistic regression on a killed-or-seriously-injured outcome, the direct Indian counterpart to the STATS19 model above, supports the same factor structure: VRU involvement carries an odds ratio of 1.97 (95\% CI 1.73--2.26, $p\approx3\times10^{-23}$); a VRU struck by a heavier vehicle carries 1.48 (1.07--2.05, $p=0.018$); overspeeding carries 1.23 (1.09--1.40, $p=0.001$); and night-time carries 1.25 (1.10--1.42, $p<10^{-3}$). A crash involving a vulnerable road user very nearly doubles the adjusted odds of a severe outcome, and dropping VRU involvement from the model costs more discrimination than dropping any other factor. Discrimination here is modest, and we report it as such: cross-validated AUC is 0.58 (95\% CI 0.56--0.60), no better than a gradient-boosted baseline at 0.57. We also report, in full, that sharp curves come out protective (odds ratio 0.46, $p=0.004$), a known highway-exposure and behavioural-compensation artefact, while the undivided-road (0.84) and adverse-weather (0.88) terms point the same way but are not statistically significant ($p\approx0.09$). The scope of this result is NHAI national highways specifically, a high-speed inter-urban profile rather than urban Indian roads generally; the outcome is injury severity, not the live risk score; and night-time is an 18:00--06:00 proxy, since the data carries no measured light-condition field. Within that scope, this is an inferential confirmation of the VRU-first factor structure on real Indian crashes, modest where discrimination is concerned but consistent in direction and significance on the factor that matters most to the thesis. Reproducible with \texttt{python -m ai.trie.india\_severity\_model}.
+
+\subsection{Per-rider vulnerability detector}
+\label{sec:rider-detector}
+
+A YOLOv11s detector fine-tuned for helmet, no-helmet, triple-riding, and plate classes, evaluated on 383 held-out images after training to 25 epochs with the best checkpoint at epoch 15, reaches an overall mAP@50 of 78.2\%. Per class, triple-riding reaches 91.0, plate 83.2, no-helmet 75.6, and with-helmet 62.9, the noisiest class with only 27 validation instances. We present this as a component metric feeding the vulnerability multiplier above, not as a leaderboard claim. Reproducible with \texttt{python -m ai.training.train\_helmet --evaluate}.
+
+\subsection{Predictive black-spot discovery: evaluation}
+\label{sec:blackspot-results}
+
+\paragraph{Controlled evaluation} Across 40 random seeds and two traffic volumes, comparing a genuinely dangerous stretch against a busy-but-safe one, the engine achieves 100\% detection and 0\% false positives on the busy-but-safe road, which is the load-bearing result here: it shows the system is flagging danger rather than merely traffic volume. Median lead time over iRAD's own reactive threshold is one day on the busy stretch and 7.5 days on the quiet one, against iRAD's own 170 to 888 days, or never, within its three-year window. We are explicit that this is a controlled evaluation against authored ground truth, and that a true field retrospective against MoRTH's published black-spot list needs near-miss telemetry for real Indian locations, which is not publicly available. Reproducible with \texttt{python -m ai.blackspot.evaluate}.
+
+\paragraph{A negative retrospective result on real crashes} Field validation against MoRTH's black spots needs near-miss telemetry that nobody publishes, but real crash data does permit a test of the hypothesis underneath predictive discovery: that lower-severity crashes at a stretch anticipate the severe ones before iRAD's own rule would catch them. Using the de-duplicated NHAI records above, we build 831 real 500~m cells across three inferred road segments, of which 94 meet iRAD's own rule of five or more fatal or grievous crashes within three years. The design, including a permutation-based null, was fixed in advance. A precursor rule requiring three or more minor or non-injury crashes within a trailing year fires before iRAD qualification in 52\% of the 94 qualifying cells, a median of 329 days ahead; but a severity-permutation null, which shuffles severities among the same crashes within each road while holding places and dates fixed, gives 51\% and 276 days ($p=0.41$; thresholds of two and four crashes give $p\geq0.47$), which indicates the apparent lead time is a crash-volume effect rather than a severity effect. On the prediction side, splitting each road at its median crash date, a cell's earlier fatal-or-grievous count predicts two or more such crashes later with an AUC of 0.68 (95\% CI 0.61--0.74); earlier minor crashes alone reach 0.64; total crash volume reaches 0.69. A road-adjusted logistic model using both fatal history and minor-crash history reaches an AUC of 0.755, but the identical model with the minor-crash term removed also reaches 0.755, so the minor crashes' own contribution beyond fatal history and road identity is an AUC difference of 0.000 (95\% CI $-0.005$ to $+0.005$), and their Poisson rate ratio given fatal-crash history is 1.04 (95\% CI 0.99--1.09, $p=0.10$). An earlier version of this comparison, run against road-blind scores rather than a road-adjusted baseline, appeared to favour the combined model; adding the road-adjusted control showed that apparent gain was entirely road-level base rates, not the minor-crash signal, and we report this corrected analysis, superseding our earlier, upward-biased comparison. We therefore find no evidence, on real Indian crash records, that lower-severity crashes carry predictive information beyond a stretch's own severe-crash history and traffic volume. This is not a test of near-miss telemetry, which is a richer and far more frequent signal than recorded minor crashes and is what the deployed engine actually consumes, and that question remains untested; three inferred road segments and 227 positive cells also limit the statistical power available to detect a smaller effect. Reproducible with \texttt{python -m ai.trie.blackspot\_crash\_validation}.
+
+\subsection{Learned fusion and interaction analysis}
+\label{sec:fusion-results}
+
+On a controlled ground truth where risk genuinely compounds across factors, a learned fusion model outperforms the hand-set additive rule (ROC-AUC 0.781 for the rule, 0.815 for a linear learned model, and 0.819 for a gradient-boosted model, all calibrated, with Brier scores around 0.16). Friedman's H-statistic applied to the gradient-boosted model recovers the three interactions the rule-based system was authored to encode among its top three by strength: speed-by-road at 0.25, speed-by-VRU at 0.22, and distraction-by-VRU at 0.19. The transparent rule is what ships; the learned model is evidence that the same architecture admits a learned, calibrated fusion when labelled telemetry becomes available. We use the H-statistic rather than SHAP deliberately, since the shipped model is already exactly additive and needs no post-hoc attribution. Reproducible with \texttt{python -m ai.trie.fusion\_study} and \texttt{python -m ai.trie.interaction\_analysis}.
+
+\subsection{Supporting components}
+
+A YOLOv11s road-damage detector fine-tuned on the Indian split of RDD2022 \cite{arya2024}, evaluated on 1,542 held-out images, reaches an overall mAP@50 of 33.0\% (57.7 for alligator cracks, 44.3 for potholes); we present this as a working component, not a state-of-the-art result. On the temporal-forecast side, we found, somewhat to our own surprise, that the linear extrapolation currently shipped (mean absolute error 19.0) is actually worse than simple persistence (13.4), while a small LSTM model (10.1) cuts error by roughly 47\% relative to the shipped approach, a finding we report against ourselves rather than only against a weaker baseline.
+
+\section{Discussion}
+
+The result this paper is built around is Section~\ref{sec:ext-validation}: the model's premise is not asserted from authored scenarios but demonstrated on six figures' worth of real crashes, with statistical significance, calibration, and an ablation behind it. The system-level inversions we set out to make are each defended against the prior art surveyed in Section~\ref{sec:related}: predictive instead of reactive, VRU-first rather than occupant-centric, observability-aware instead of silently confident, and explainable by construction rather than by post-hoc attribution. We would also argue that the honesty running through this work is itself part of the contribution: dropping unmeasured factors instead of guessing them, reporting an uncertainty band instead of a false point estimate, demoting an interaction effect the eye initially over-read, and publishing a negative result rather than quietly dropping the experiment that produced it.
+
+\section{Limitations and Future Work}
+
+The headline predictive-discovery claim remains simulation-only. The highest-value next experiment is a field retrospective against MoRTH's own black-spot list, which requires near-miss telemetry for real Indian locations, meaning a data partnership with traffic police, a city, or iRAD itself, not a modelling change on our end. External validation of the factor structure, similarly, is British rather than Indian data; the factor structure appears to transfer, but the magnitudes and the India-specific vehicle mix, auto-rickshaws and six-up motorcycles among them, likely do not, and an Indian labelled crash-feature dataset is the asset that would let us check. Perception itself is presently a COCO-pretrained baseline for general road users, with the fine-tuned helmet detector as the one exception; we make no leaderboard claim there and none is needed for the argument this paper makes. Finally, the learned fusion model described in Section~\ref{sec:fusion-results} is not what ships; it waits on labelled Indian telemetry that does not yet exist, and the transparent rule-based model remains what runs in production.
+
+\section{Conclusion}
+
+Road safety for the roads India actually has needs a system that acts before the crash, protects the people most exposed to it, and is honest about what it cannot see. We have presented one, and, we believe unusually for a project of this kind, shown that the factor relationships it rests on hold up on real crash records rather than only on scenarios we authored ourselves. The gap that remains is real Indian field data for the predictive black-spot claim specifically, and we have named that as the next experiment throughout this paper rather than quietly working around it.
+
+\appendix
+\section{Reproducibility}
+
+Every quantitative result in this paper is one command away in the open-source repository (Table~\ref{tab:repro}).
+
+\begin{table}[h]
+\centering
+\caption{Reproducing every result}
+\label{tab:repro}
+\small
+\begin{tabular}{p{4.3cm}p{3.7cm}}
+\toprule
+\textbf{Result} & \textbf{Command} \\
+\midrule
+External validation (real crashes) & \texttt{ai.trie.external\_validation} \\
+Statistical validation (ORs, interactions, calibration) & \texttt{ai.trie.statistical\_validation} \\
+Conformal coverage guarantee & \texttt{ai.trie.conformal\_validation} \\
+Indian corroboration (2,898 fatal crashes) & \texttt{ai.trie.india\_validation} \\
+Indian inferential severity model (4,058 crashes) & \texttt{ai.trie.india\_severity\_model} \\
+Black-spot precursor test (negative result) & \texttt{ai.trie.blackspot\_crash\_validation} \\
+Black-spot discovery evaluation & \texttt{ai.blackspot.evaluate} \\
+Learned-fusion study & \texttt{ai.trie.fusion\_study} \\
+Interaction analysis (H-statistic) & \texttt{ai.trie.interaction\_analysis} \\
+Temporal forecast study & \texttt{ai.temporal\_prediction.forecast\_study} \\
+Helmet detector evaluation & \texttt{ai.training.train\_helmet --evaluate} \\
+Road-damage detector evaluation & \texttt{ai.training.train\_road\_damage --evaluate} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Every command above is prefixed with \texttt{python -m} and is run from the repository root; each one downloads or regenerates its own public source data rather than relying on a vendored copy.
+
+\section*{Acknowledgment}
+This work received no external funding.
+
+\begin{thebibliography}{12}
+
+\bibitem{morth} Ministry of Road Transport \& Highways, Government of India, \emph{Road Accidents in India}, annual reports, 2021--2024.
+
+\bibitem{hauer2002} E. Hauer, D. W. Harwood, F. M. Council, and M. S. Griffith, ``Estimating safety by the empirical Bayes method: a tutorial,'' \emph{Transp. Res. Rec.}, vol. 1784, pp. 126--131, 2002, doi: 10.3141/1784-16.
+
+\bibitem{aashto2010} American Association of State Highway and Transportation Officials, \emph{Highway Safety Manual}, 1st ed. Washington, DC, USA: AASHTO, 2010.
+
+\bibitem{gettman2008} D. Gettman, L. Pu, T. Sayed, and S. Shelby, \emph{Surrogate Safety Assessment Model and Validation: Final Report}, Federal Highway Administration, Rep. FHWA-HRT-08-051, 2008.
+
+\bibitem{cheng2005} W. Cheng and S. P. Washington, ``Experimental evaluation of hotspot identification methods,'' \emph{Accid. Anal. Prev.}, vol. 37, no. 5, pp. 870--881, 2005, doi: 10.1016/j.aap.2005.04.015.
+
+\bibitem{johnsson2018} C. Johnsson, A. Laureshyn, and T. De Ceunynck, ``In search of surrogate safety indicators for vulnerable road users: a review of surrogate safety indicators,'' \emph{Transp. Rev.}, vol. 38, no. 6, pp. 765--785, 2018, doi: 10.1080/01441647.2018.1442888.
+
+\bibitem{who2006} World Health Organization, \emph{Helmets: A Road Safety Manual for Decision-Makers and Practitioners}. Geneva, Switzerland: WHO, 2006, ISBN 978-92-4-156299-7 (2nd ed., 2023).
+
+\bibitem{arya2024} D. Arya, H. Maeda, S. K. Ghosh, D. Toshniwal, and Y. Sekimoto, ``RDD2022: a multi-national image dataset for automatic road damage detection,'' \emph{Geosci. Data J.}, vol. 11, no. 4, 2024, doi: 10.1002/gdj3.260. Preprint: arXiv:2209.08538, 2022.
+
+\bibitem{dft2024} Department for Transport (Great Britain), \emph{Road Safety Data (STATS19)}, 2024.
+
+\bibitem{chang2022} I. Chang, H. Park, E. Hong, J. Lee, and N. Kwon, ``Predicting effects of built environment on fatal pedestrian accidents at location-specific level: application of XGBoost and SHAP,'' \emph{Accid. Anal. Prev.}, vol. 166, 2022, Art. no. 106545.
+
+\bibitem{khanum2025} H. Khanum, A. Garg, M. I. Faheem, and R. Kulkarni, ``Accident data of selected Indian highways for accident severity prediction using machine learning models,'' dataset, Zenodo, 2025, doi: 10.5281/zenodo.16946653.
+
+\bibitem{sharma2025} Sharma \emph{et al.}, ``Media-reported fatal road traffic crash data, India 2022--2023,'' \emph{Data in Brief}, 2025, Mendeley Data, doi: 10.17632/bc5sv6wnd9.7.
+
+\end{thebibliography}
+
+\end{document}
