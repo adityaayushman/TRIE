@@ -82,15 +82,15 @@ Fig.~\ref{fig:architecture} shows the data flow the rest of this section describ
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}[
-  node distance=0.4cm,
-  box/.style={draw, rounded corners, align=center, minimum height=0.9cm, minimum width=1.6cm, font=\scriptsize, fill=gray!8},
+  node distance=0.3cm,
+  box/.style={draw, rounded corners, align=center, text width=1.55cm, minimum height=0.8cm, font=\scriptsize, fill=gray!8, inner sep=2pt},
   arr/.style={-{Stealth[length=2mm]}, thick}
 ]
-\node[box] (sensors) {Sensors\\camera, GPS/IMU, clock};
-\node[box, right=of sensors] (factors) {Per-factor\\magnitudes $m_i\!\in\![0,1]$};
-\node[box, right=of factors] (fusion) {Observability-aware\\fusion \& renormalisation};
-\node[box, right=of fusion] (score) {Risk score\\+ conformal band};
-\node[box, below=of fusion] (vru) {VRU vulnerability\\multiplier};
+\node[box] (sensors) {Sensors: camera, GPS/IMU, clock};
+\node[box, right=of sensors] (factors) {Per-factor magnitudes};
+\node[box, right=of factors] (fusion) {Fusion \& renormalisation};
+\node[box, right=of fusion] (score) {Risk score + band};
+\node[box, below=of fusion] (vru) {VRU multiplier};
 
 \draw[arr] (sensors) -- (factors);
 \draw[arr] (factors) -- (fusion);
