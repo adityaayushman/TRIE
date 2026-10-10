@@ -3,18 +3,18 @@
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
 \usepackage[hidelinks]{hyperref}
 
 \begin{document}
 
-\title{Observability-Aware, VRU-First Risk Fusion for Indian Roads:\\
-A Predictive, Explainable Transportation-Risk System\\
-Validated on Real Crash Records}
+\title{VRU-First, Observability-Aware Risk Fusion for Indian Roads}
 
 \author{Aditya~Ayushman~Sahoo
 \thanks{A. A. Sahoo is an independent researcher (e-mail: adityaasahoo@gmail.com). Code, a live demonstration system, and every result in this paper are open at \url{https://github.com/adityaayushman/TRIE} and \url{https://trie-dashboard.vercel.app}.}}
 
-\markboth{Preprint, 2026}{Sahoo: Observability-Aware, VRU-First Risk Fusion for Indian Roads}
+\markboth{Preprint, 2026}{Sahoo: VRU-First, Observability-Aware Risk Fusion for Indian Roads}
 
 \maketitle
 
@@ -54,12 +54,13 @@ Predicting hazard from near-misses is not itself a new idea; Section~\ref{sec:re
 
 Table~\ref{tab:related} summarises the literatures this work draws on and what it adds to each.
 
-\begin{table*}[t]
+\begin{table*}[!t]
 \centering
 \caption{Positioning against prior work}
 \label{tab:related}
-\small
-\begin{tabular}{p{2.6cm}p{4.0cm}p{4.8cm}p{5.0cm}}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{2.3cm}p{3.6cm}p{4.3cm}p{4.3cm}}
 \toprule
 \textbf{Prior area} & \textbf{Representative work} & \textbf{What it does} & \textbf{What this paper adds} \\
 \midrule
@@ -75,6 +76,30 @@ Uncertainty quantification & Bayesian and ensemble uncertainty; conformal predic
 No prior system we are aware of combines observability-aware fusion that never silently scores a missing factor as safe, a calibrated uncertainty band tied to sensor coverage, VRU-first weighting extended to individual rider vulnerability, and predictive segment nomination, and then checks whether the premise behind that combination holds on real crash records. Near-miss-based prediction is well established on its own; the claim here is the combination of fusion design, stated honesty about uncertainty, and VRU-first weighting, not near-miss prediction in isolation.
 
 \section{System and Method}
+
+Fig.~\ref{fig:architecture} shows the data flow the rest of this section describes in detail: per-factor magnitudes are extracted from whatever sensors are present, the fusion step drops and renormalises around anything missing rather than guessing it, and the reported score always carries the calibrated band alongside it.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=0.4cm,
+  box/.style={draw, rounded corners, align=center, minimum height=0.9cm, minimum width=1.6cm, font=\scriptsize, fill=gray!8},
+  arr/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[box] (sensors) {Sensors\\camera, GPS/IMU, clock};
+\node[box, right=of sensors] (factors) {Per-factor\\magnitudes $m_i\!\in\![0,1]$};
+\node[box, right=of factors] (fusion) {Observability-aware\\fusion \& renormalisation};
+\node[box, right=of fusion] (score) {Risk score\\+ conformal band};
+\node[box, below=of fusion] (vru) {VRU vulnerability\\multiplier};
+
+\draw[arr] (sensors) -- (factors);
+\draw[arr] (factors) -- (fusion);
+\draw[arr] (fusion) -- (score);
+\draw[arr] (vru) -- (fusion);
+\end{tikzpicture}
+\caption{Data flow through the risk-fusion engine. A missing sensor drops its factor instead of scoring it as safe; the fusion step renormalises the remaining weights, and the reported band's width is exactly the unobserved weight mass.}
+\label{fig:architecture}
+\end{figure}
 
 \subsection{Observability-aware risk fusion}
 
@@ -99,6 +124,32 @@ A time-of-day lighting-risk factor is grounded in MoRTH's own published crash-ti
 \section{Experiments and Results}
 \label{sec:results}
 
+\subsection{Datasets}
+\label{sec:datasets}
+
+Table~\ref{tab:datasets} summarises every dataset used in this paper: one large real-crash source used to validate the factor structure externally, two independent real Indian crash sources used to corroborate it, two Indian imagery sets used to fine-tune the two detectors actually shipped, one Indian imagery set earmarked for a perception fine-tune still in progress (Section~\ref{sec:limitations}), and the government aggregate statistics used for context and cross-checking rather than for fitting any model. One further candidate dataset, a Kaggle release claiming to be Indian road-accident records, was inspected and rejected before use: its road-alignment, location, and vehicle-category fields matched the published Addis Ababa, Ethiopia accident dataset exactly, down to row and column counts, under an incorrect geographic label. We record the rejection rather than silently omitting the dataset, since the check itself is part of the methodology this paper asks a reader to trust.
+
+\begin{table*}[!t]
+\centering
+\caption{Datasets used in this work}
+\label{tab:datasets}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{3.3cm}p{3.1cm}p{3.6cm}p{2.6cm}p{2.3cm}}
+\toprule
+\textbf{Dataset} & \textbf{Role} & \textbf{Scale} & \textbf{Geography} & \textbf{License} \\
+\midrule
+DfT STATS19 \cite{dft2024} & External validation of the factor structure & 128,269 casualty records, 2024 & Great Britain & UK Open Government Licence \\
+NHAI highway accident data \cite{khanum2025} & Indian inferential severity model & 4,058 distinct crashes, de-duplicated from 8,116 released rows, 2013--2018 \& 2022--2023 & India, 4 NHAI highway segments & CC-BY-4.0 \\
+Media-reported fatal crashes \cite{sharma2025} & Indian descriptive corroboration & 2,898 fatal crashes, 2022--2023 & India, national & CC BY \\
+RDD2022, Indian split \cite{arya2024} & Road-damage detector fine-tuning & 1,542 held-out validation images & India & Research use \\
+Traffic-violation imagery (Kaggle) & Helmet / triple-riding detector fine-tuning & 11,195 training images & India & Open, attribution \\
+India Driving Dataset (IDD) & Perception fine-tune, not yet in production & 15 road-user classes & India & Non-commercial research \\
+MoRTH \emph{Road Accidents in India} \cite{morth} & Reference statistics only; not used to fit any model & National annual aggregates, 2021--2024 & India & Government report \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \subsection{External validation of the premise on real crashes}
 \label{sec:ext-validation}
 
@@ -121,7 +172,7 @@ A time-of-day lighting-risk factor is grounded in MoRTH's own published crash-ti
 \subsection{Per-rider vulnerability detector}
 \label{sec:rider-detector}
 
-A YOLOv11s detector fine-tuned for helmet, no-helmet, triple-riding, and plate classes, evaluated on 383 held-out images after training to 25 epochs with the best checkpoint at epoch 15, reaches an overall mAP@50 of 78.2\%. Per class, triple-riding reaches 91.0, plate 83.2, no-helmet 75.6, and with-helmet 62.9, the noisiest class with only 27 validation instances. We present this as a component metric feeding the vulnerability multiplier above, not as a leaderboard claim. Reproducible with \texttt{python -m ai.training.train\_helmet --evaluate}.
+A YOLOv11s detector, fine-tuned for helmet, no-helmet, triple-riding, and plate classes on 11,195 training images at 640px resolution (batch size 12), evaluated on 383 held-out images after training to 25 epochs with the best checkpoint at epoch 15, reaches an overall mAP@50 of 78.2\%. Per class, triple-riding reaches 91.0, plate 83.2, no-helmet 75.6, and with-helmet 62.9, the noisiest class with only 27 validation instances. We present this as a component metric feeding the vulnerability multiplier above, not as a leaderboard claim. Reproducible with \texttt{python -m ai.training.train\_helmet \mbox{-{}-evaluate}}.
 
 \subsection{Predictive black-spot discovery: evaluation}
 \label{sec:blackspot-results}
@@ -137,13 +188,37 @@ On a controlled ground truth where risk genuinely compounds across factors, a le
 
 \subsection{Supporting components}
 
-A YOLOv11s road-damage detector fine-tuned on the Indian split of RDD2022 \cite{arya2024}, evaluated on 1,542 held-out images, reaches an overall mAP@50 of 33.0\% (57.7 for alligator cracks, 44.3 for potholes); we present this as a working component, not a state-of-the-art result. On the temporal-forecast side, we found, somewhat to our own surprise, that the linear extrapolation currently shipped (mean absolute error 19.0) is actually worse than simple persistence (13.4), while a small LSTM model (10.1) cuts error by roughly 47\% relative to the shipped approach, a finding we report against ourselves rather than only against a weaker baseline.
+A YOLOv11s road-damage detector, fine-tuned for 55 epochs at 640px resolution on the Indian split of RDD2022 \cite{arya2024}, is evaluated on 1,542 held-out images (Table~\ref{tab:damage}). Overall mAP@50 is 33.0\% (mAP@50--95: 14.2\%); we present this as a working component, not a state-of-the-art result, and report the weakest class rather than only the strongest two. Alligator cracks and potholes, the damage types most relevant to vehicle-level risk, are detected reasonably well (57.7\% and 44.3\% mAP@50); transverse cracks are close to non-functional at 1.9\% mAP@50, almost certainly a thin, low-instance-count class that would need more data or class-balancing before being relied on, and we disclose it rather than folding it into the aggregate.
+
+\begin{table}[h]
+\centering
+\caption{Road-damage detector, per class}
+\label{tab:damage}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Class} & \textbf{mAP@50} & \textbf{mAP@50--95} \\
+\midrule
+Alligator crack & 57.7\% & 27.3\% \\
+Pothole & 44.3\% & 16.5\% \\
+Longitudinal crack & 28.0\% & 12.5\% \\
+Transverse crack & 1.9\% & 0.4\% \\
+\midrule
+\textbf{Overall} & \textbf{33.0\%} & \textbf{14.2\%} \\
+\bottomrule
+\end{tabular}
+\end{table} On the temporal-forecast side, we found, somewhat to our own surprise, that the linear extrapolation currently shipped (mean absolute error 19.0) is actually worse than simple persistence (13.4), while a small LSTM model (10.1) cuts error by roughly 47\% relative to the shipped approach, a finding we report against ourselves rather than only against a weaker baseline.
 
 \section{Discussion}
 
 The result this paper is built around is Section~\ref{sec:ext-validation}: the model's premise is not asserted from authored scenarios but demonstrated on six figures' worth of real crashes, with statistical significance, calibration, and an ablation behind it. The system-level inversions we set out to make are each defended against the prior art surveyed in Section~\ref{sec:related}: predictive instead of reactive, VRU-first rather than occupant-centric, observability-aware instead of silently confident, and explainable by construction rather than by post-hoc attribution. We would also argue that the honesty running through this work is itself part of the contribution: dropping unmeasured factors instead of guessing them, reporting an uncertainty band instead of a false point estimate, demoting an interaction effect the eye initially over-read, and publishing a negative result rather than quietly dropping the experiment that produced it.
 
+A further trade-off worth stating explicitly is interpretability against ceiling accuracy. Section~\ref{sec:fusion-results} shows a learned, gradient-boosted fusion model reaching a materially higher ROC-AUC (0.819) than the transparent additive rule it is compared against (0.781) on the same controlled ground truth. We ship the rule anyway: every factor contribution it reports is the literal arithmetic behind the score rather than a post-hoc approximation of one, and an operator reading an alert, not a researcher reading a paper, is the system's actual audience. The learned variant remains an upgrade path for whenever labelled Indian telemetry exists to train and calibrate it responsibly, rather than something shipped on data it was never validated against.
+
+A second trade-off is geographic transfer. The factor structure validated in Section~\ref{sec:ext-validation} and corroborated on Indian data immediately after it transfers in direction, and for several factors in relative order of importance; it does not necessarily transfer in magnitude. Britain's protected-cyclist environment suppresses a fatality channel that is far more exposed on an Indian road, and neither Indian crash source used here carries the labelled live-telemetry factors the deployed fusion engine actually consumes. The Indian results in this paper therefore validate the premise behind the system rather than its live risk score directly, a distinction Section~\ref{sec:limitations} returns to.
+
 \section{Limitations and Future Work}
+\label{sec:limitations}
 
 The headline predictive-discovery claim remains simulation-only. The highest-value next experiment is a field retrospective against MoRTH's own black-spot list, which requires near-miss telemetry for real Indian locations, meaning a data partnership with traffic police, a city, or iRAD itself, not a modelling change on our end. External validation of the factor structure, similarly, is British rather than Indian data; the factor structure appears to transfer, but the magnitudes and the India-specific vehicle mix, auto-rickshaws and six-up motorcycles among them, likely do not, and an Indian labelled crash-feature dataset is the asset that would let us check. Perception itself is presently a COCO-pretrained baseline for general road users, with the fine-tuned helmet detector as the one exception; we make no leaderboard claim there and none is needed for the argument this paper makes. Finally, the learned fusion model described in Section~\ref{sec:fusion-results} is not what ships; it waits on labelled Indian telemetry that does not yet exist, and the transparent rule-based model remains what runs in production.
 
@@ -165,18 +240,18 @@ Every quantitative result in this paper is one command away in the open-source r
 \toprule
 \textbf{Result} & \textbf{Command} \\
 \midrule
-External validation (real crashes) & \texttt{ai.trie.external\_validation} \\
-Statistical validation (ORs, interactions, calibration) & \texttt{ai.trie.statistical\_validation} \\
-Conformal coverage guarantee & \texttt{ai.trie.conformal\_validation} \\
-Indian corroboration (2,898 fatal crashes) & \texttt{ai.trie.india\_validation} \\
-Indian inferential severity model (4,058 crashes) & \texttt{ai.trie.india\_severity\_model} \\
-Black-spot precursor test (negative result) & \texttt{ai.trie.blackspot\_crash\_validation} \\
-Black-spot discovery evaluation & \texttt{ai.blackspot.evaluate} \\
-Learned-fusion study & \texttt{ai.trie.fusion\_study} \\
-Interaction analysis (H-statistic) & \texttt{ai.trie.interaction\_analysis} \\
-Temporal forecast study & \texttt{ai.temporal\_prediction.forecast\_study} \\
-Helmet detector evaluation & \texttt{ai.training.train\_helmet --evaluate} \\
-Road-damage detector evaluation & \texttt{ai.training.train\_road\_damage --evaluate} \\
+External validation (real crashes) & \texttt{ai.\allowbreak trie.\allowbreak external\_validation} \\
+Statistical validation (ORs, interactions, calibration) & \texttt{ai.\allowbreak trie.\allowbreak statistical\_validation} \\
+Conformal coverage guarantee & \texttt{ai.\allowbreak trie.\allowbreak conformal\_validation} \\
+Indian corroboration (2,898 fatal crashes) & \texttt{ai.\allowbreak trie.\allowbreak india\_validation} \\
+Indian inferential severity model (4,058 crashes) & \texttt{ai.\allowbreak trie.\allowbreak india\_severity\_model} \\
+Black-spot precursor test (negative result) & \texttt{ai.\allowbreak trie.\allowbreak blackspot\_crash\_validation} \\
+Black-spot discovery evaluation & \texttt{ai.\allowbreak blackspot.\allowbreak evaluate} \\
+Learned-fusion study & \texttt{ai.\allowbreak trie.\allowbreak fusion\_study} \\
+Interaction analysis (H-statistic) & \texttt{ai.\allowbreak trie.\allowbreak interaction\_analysis} \\
+Temporal forecast study & \texttt{ai.\allowbreak temporal\_prediction.\allowbreak forecast\_study} \\
+Helmet detector evaluation & \texttt{ai.\allowbreak training.\allowbreak train\_helmet \mbox{-{}-evaluate}} \\
+Road-damage detector evaluation & \texttt{ai.\allowbreak training.\allowbreak train\_road\_damage \mbox{-{}-evaluate}} \\
 \bottomrule
 \end{tabular}
 \end{table}
