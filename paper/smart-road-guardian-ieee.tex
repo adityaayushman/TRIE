@@ -62,7 +62,7 @@ Table~\ref{tab:related} summarises the literatures this work draws on and what i
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{p{2.3cm}p{3.6cm}p{4.3cm}p{4.3cm}}
 \toprule
-\textbf{Prior area} & \textbf{Representative work} & \textbf{What it does} & \textbf{What this paper adds} \\
+\multicolumn{1}{c}{\textbf{Prior area}} & \multicolumn{1}{c}{\textbf{Representative work}} & \multicolumn{1}{c}{\textbf{What it does}} & \multicolumn{1}{c}{\textbf{What this paper adds}} \\
 \midrule
 Surrogate safety measures / traffic conflict techniques & SSAM \cite{gettman2008}; time-to-collision and post-encroachment-time indicators; a VRU surrogate-indicator review \cite{johnsson2018} & Use near-misses as proactive precursors to crashes, increasingly for vulnerable road users & Folds surrogate exposure into a multi-factor, explainable fusion with sensor-aware uncertainty instead of a single conflict indicator, and uses it for segment nomination rather than point-level conflict counting \\
 Hotspot / black-spot identification & Empirical Bayes methods \cite{hauer2002}; the AASHTO Highway Safety Manual \cite{aashto2010}; a comparative evaluation of identification methods \cite{cheng2005} & Combine a safety performance function with observed crash counts, using Bayesian shrinkage to correct regression-to-the-mean & Empirical Bayes still needs crash history to run; this system nominates from near-misses with a Wilson lower bound, before crashes accrue, so the two approaches are complementary rather than competing \\
@@ -137,7 +137,7 @@ Table~\ref{tab:datasets} summarises every dataset used in this paper: one large 
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{p{3.3cm}p{3.1cm}p{3.6cm}p{2.6cm}p{2.3cm}}
 \toprule
-\textbf{Dataset} & \textbf{Role} & \textbf{Scale} & \textbf{Geography} & \textbf{License} \\
+\multicolumn{1}{c}{\textbf{Dataset}} & \multicolumn{1}{c}{\textbf{Role}} & \multicolumn{1}{c}{\textbf{Scale}} & \multicolumn{1}{c}{\textbf{Geography}} & \multicolumn{1}{c}{\textbf{License}} \\
 \midrule
 DfT STATS19 \cite{dft2024} & External validation of the factor structure & 128,269 casualty records, 2024 & Great Britain & UK Open Government Licence \\
 NHAI highway accident data \cite{khanum2025} & Indian inferential severity model & 4,058 distinct crashes, de-duplicated from 8,116 released rows, 2013--2018 \& 2022--2023 & India, 4 NHAI highway segments & CC-BY-4.0 \\
