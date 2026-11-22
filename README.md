@@ -20,7 +20,6 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/github/stars/adityaayushman/TRIE?style=social" /> <img src="https://img.shields.io/github/last-commit/adityaayushman/TRIE?style=flat-square" /> <img src="https://img.shields.io/github/languages/top/adityaayushman/TRIE?style=flat-square" />
   <img src="https://github.com/adityaayushman/TRIE/actions/workflows/ci.yml/badge.svg" />
 </p>
 
