@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚦 Smart Road Guardian AI X
+# Smart Road Guardian AI X
 
 **Explainable multimodal edge-AI platform that predicts road accidents before they happen and explains why.**
 
