@@ -28,7 +28,7 @@
 ---
 
 <p align="center">
-  <img src="TRIE/demo.webp" alt="TRIE demo" width="420" />
+  <img src="TRIE/demo.webp" alt="TRIE demo" width="640" />
 </p>
 
 > **Predict. Explain. Prevent.**
